@@ -231,6 +231,7 @@ export default {
   "proc.search": "Search title, text or id",
   "proc.paragraphs": "{n} paragraphs",
   "proc.no_results": "No documents match.",
+  "proc.empty": "There are no documents on this device yet.",
   "proc.count": "{n} documents on this device.",
   "proc.fictional": "All documents are fictional, not real HRP documents.",
   "proc.sample": "Sample documents: the backend does not serve /docs yet.",

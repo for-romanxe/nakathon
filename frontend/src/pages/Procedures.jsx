@@ -90,7 +90,9 @@ export default function Procedures() {
         </aside>
 
         <article className="panel proc-doc">
-          {!shown && <p className="panel-empty muted">{t('common.loading')}</p>}
+          {/* No document asked for and an empty list: nothing will load, so say so instead of "Loading" */}
+          {!openId && <p className="panel-empty muted">{t('proc.empty')}</p>}
+          {openId && !shown && <p className="panel-empty muted">{t('common.loading')}</p>}
           {shown?.missing && (
             <p className="notice lv-hold">{t('proc.doc_missing', { id: shown.id })}</p>
           )}

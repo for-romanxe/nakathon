@@ -231,6 +231,7 @@ export default {
   "proc.search": "제목·본문·id 검색",
   "proc.paragraphs": "{n}문단",
   "proc.no_results": "맞는 문서가 없어요.",
+  "proc.empty": "기기 안에 아직 문서가 없어요.",
   "proc.count": "기기 안 문서 {n}개.",
   "proc.fictional": "모든 문서는 가상이며 실제 HRP 문서가 아니에요.",
   "proc.sample": "예시 문서예요. 백엔드가 아직 /docs를 제공하지 않아요.",
