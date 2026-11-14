@@ -304,6 +304,7 @@ export default {
   "crew.tx.actions": "작업",
   "crew.tx.hint": "경보가 먼저 나가요. 패킷은 통신 창이 열렸을 때만 나가고, 지구의 답장은 편도 지연의 두 배 이상 걸려요.",
   "proc.search": "제목·본문·id 검색",
+  "proc.back": "← 모든 문서",
   "proc.paragraphs": "{n}문단",
   "proc.no_results": "맞는 문서가 없어요.",
   "proc.empty": "기기 안에 아직 문서가 없어요.",

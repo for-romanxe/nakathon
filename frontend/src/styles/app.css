@@ -398,16 +398,27 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
 
 /* ---- Procedures ---- */
 .proc-page { max-width: 1280px; }
-.proc-layout { display: grid; grid-template-columns: minmax(240px, 320px) 1fr; gap: 16px; align-items: start; }
-.proc-search { padding: 12px; border-bottom: 1px solid var(--line); }
+/* Grid view: title and search on one line, then every document as a card filling the width */
+.proc-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
+.proc-search { flex: 1 1 280px; max-width: 420px; }
 .proc-search input { width: 100%; min-height: 44px; padding: 0 12px; font: inherit; color: var(--text); background: var(--well); border: 1px solid var(--line); border-radius: var(--radius); }
 .proc-search input:focus { outline: none; border-color: var(--accent); }
-.proc-list ul { list-style: none; margin: 0; padding: 0; }
-.proc-list a { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; color: var(--text); text-decoration: none; border-bottom: 1px solid var(--line); border-left: 3px solid transparent; }
-.proc-list a:hover { background: var(--bezel-2); }
-.proc-list a.on { background: var(--bezel-2); border-left-color: var(--accent); }
-.proc-title { font-weight: 500; }
-.proc-doc .panel-head h2 { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.proc-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.proc-grid li { display: flex; }
+.proc-card {
+  flex: 1; display: flex; flex-direction: column; gap: 6px; min-height: 150px; padding: 14px 16px;
+  color: var(--text); text-decoration: none; border-top: 3px solid var(--line);
+}
+.proc-card:hover, .proc-card:focus-visible { background: var(--bezel-2); border-color: var(--accent); }
+.proc-title { font-weight: 600; line-height: 1.4; }
+.proc-excerpt {
+  color: var(--text-2); font-size: 0.86rem; line-height: 1.55;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.proc-meta { margin-top: auto; }
+/* Document view */
+.proc-doc .panel-head { align-items: baseline; flex-wrap: wrap; }
+.proc-doc-title { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; font-size: 1.25rem; }
 .proc-paras { list-style: none; margin: 0; padding: 8px 0; }
 .proc-paras li { display: grid; grid-template-columns: 44px 1fr; gap: 10px; padding: 10px 16px; border-left: 3px solid transparent; scroll-margin: 80px; }
 .proc-paras li.hl { border-left-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
@@ -415,7 +426,6 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
 .proc-pid { padding-top: 3px; }
 a.cite { text-decoration: none; }
 a.cite:hover { text-decoration: underline; }
-@media (max-width: 760px) { .proc-layout { grid-template-columns: 1fr; } }
 
 /* ---- Body ---- */
 .body-page { max-width: 1280px; }

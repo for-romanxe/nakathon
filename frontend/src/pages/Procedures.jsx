@@ -1,5 +1,7 @@
-// Procedures.jsx — on-device documents (spec §7-5): list + search on the left, the open document on the right.
-// /procedures?id=hrp:sm-03#p5 opens that document and highlights paragraph 5 (source links land here).
+// Procedures.jsx — on-device documents (spec §7-5). Two views on one route:
+//   /procedures              every document as a card, filling the screen (search on top)
+//   /procedures?id=hrp:sm-03#p5  that document on its own, paragraph 5 highlighted (source links land here)
+// The search text rides along as ?q= so "← All documents" comes back to the same filtered grid.
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client.js'
@@ -19,13 +21,19 @@ function matches(doc, q) {
     || (doc.paragraphs ?? []).some((p) => p.text.toLowerCase().includes(s))
 }
 
+const withQuery = (q, extra = {}) => {
+  const p = new URLSearchParams({ ...extra, ...(q ? { q } : {}) })
+  const s = p.toString()
+  return `/procedures${s ? `?${s}` : ''}`
+}
+
 export default function Procedures() {
   const { t, lang } = useT()
-  const [params] = useSearchParams()
-  const { docId: askedId, n } = parseRef(params.get('id'))
+  const [params, setParams] = useSearchParams()
+  const { docId: openId, n } = parseRef(params.get('id'))
+  const query = params.get('q') ?? ''
   const [list, setList] = useState(null)
   const [error, setError] = useState(false)
-  const [query, setQuery] = useState('')
   const [doc, setDoc] = useState(null) // { id, data } | { id, missing: true }
   const highlight = useRef(null)
 
@@ -33,10 +41,8 @@ export default function Procedures() {
     api.getDocs().then(setList).catch(() => setError(true))
   }, [])
 
-  const openId = askedId ?? list?.docs[0]?.id ?? null
-
   useEffect(() => {
-    if (!openId) return
+    if (!openId) return undefined
     let alive = true
     api.getDoc(openId)
       .then((data) => alive && setDoc({ id: openId, data }))
@@ -44,62 +50,30 @@ export default function Procedures() {
     return () => { alive = false }
   }, [openId])
 
-  const shown = doc?.id === openId ? doc : null
+  const shown = openId && doc?.id === openId ? doc : null
 
-  // Bring the highlighted paragraph into view once the document is on screen
+  // Bring the highlighted paragraph into view once the document is on screen; the grid starts at the top
   useEffect(() => {
-    highlight.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-  }, [shown, n])
+    if (shown) highlight.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    else window.scrollTo({ top: 0 })
+  }, [shown, n, openId])
 
   if (error) return <section className="page"><p className="error">{t('common.error')}</p></section>
-  if (!list) return <section className="page"><p className="muted">{t('common.loading')}</p></section>
 
-  const found = list.docs.filter((d) => matches(d, query.trim()))
-  const paragraphs = shown?.data?.paragraphs ?? []
-  const paraMissing = shown?.data && n != null && !paragraphs.some((p) => p.n === n)
-
-  return (
-    <section className="page proc-page">
-      <h1>{t('nav.procedures')}</h1>
-      <div className="proc-layout">
-        <aside className="panel proc-list">
-          <div className="proc-search">
-            <label className="sr-only" htmlFor="proc-search">{t('proc.search')}</label>
-            <input id="proc-search" type="search" value={query} placeholder={t('proc.search')}
-              onChange={(e) => setQuery(e.target.value)} />
-          </div>
-          <ul>
-            {found.map((d) => (
-              <li key={d.id}>
-                <Link to={`/procedures?id=${encodeURIComponent(d.id)}`} className={d.id === openId ? 'on' : ''}
-                  aria-current={d.id === openId ? 'page' : undefined}>
-                  <span className="cite">{d.id}</span>
-                  <span className="proc-title">{d.title}</span>
-                  <span className="muted small">
-                    {d.org}{d.paragraphs && ` · ${t('proc.paragraphs', { n: d.paragraphs.length })}`}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          {found.length === 0 && <p className="panel-empty muted">{t('proc.no_results')}</p>}
-          <p className="panel-empty muted small">
-            {t('proc.count', { n: list.docs.length })}
-            {list.sample && ` ${t('proc.fictional')} ${t('proc.sample')}`}
-          </p>
-        </aside>
-
+  // ---- One document ----
+  if (openId) {
+    const paragraphs = shown?.data?.paragraphs ?? []
+    const paraMissing = shown?.data && n != null && !paragraphs.some((p) => p.n === n)
+    return (
+      <section className="page proc-page">
+        <Link className="back-link" to={withQuery(query)}>{t('proc.back')}</Link>
         <article className="panel proc-doc">
-          {/* No document asked for and an empty list: nothing will load, so say so instead of "Loading" */}
-          {!openId && <p className="panel-empty muted">{t('proc.empty')}</p>}
-          {openId && !shown && <p className="panel-empty muted">{t('common.loading')}</p>}
-          {shown?.missing && (
-            <p className="notice lv-hold">{t('proc.doc_missing', { id: shown.id })}</p>
-          )}
+          {!shown && <p className="panel-empty muted">{t('common.loading')}</p>}
+          {shown?.missing && <p className="notice lv-hold">{t('proc.doc_missing', { id: shown.id })}</p>}
           {shown?.data && (
             <>
               <div className="panel-head">
-                <h2><span className="cite">{shown.data.id}</span> {shown.data.title}</h2>
+                <h1 className="proc-doc-title"><span className="cite">{shown.data.id}</span> {shown.data.title}</h1>
                 <span className="muted small">{shown.data.org}</span>
               </div>
               {paraMissing && <p className="notice lv-hold">{t('proc.para_missing', { id: `${shown.id}#p${n}` })}</p>}
@@ -118,7 +92,43 @@ export default function Procedures() {
             </>
           )}
         </article>
+      </section>
+    )
+  }
+
+  // ---- Every document as a card ----
+  if (!list) return <section className="page"><p className="muted">{t('common.loading')}</p></section>
+  const found = list.docs.filter((d) => matches(d, query.trim()))
+  return (
+    <section className="page proc-page">
+      <div className="proc-top">
+        <h1>{t('nav.procedures')}</h1>
+        <div className="proc-search">
+          <label className="sr-only" htmlFor="proc-search">{t('proc.search')}</label>
+          <input id="proc-search" type="search" value={query} placeholder={t('proc.search')}
+            onChange={(e) => setParams(e.target.value ? { q: e.target.value } : {}, { replace: true })} />
+        </div>
       </div>
+      {list.docs.length === 0 && <p className="panel panel-empty muted">{t('proc.empty')}</p>}
+      {list.docs.length > 0 && found.length === 0 && <p className="panel panel-empty muted">{t('proc.no_results')}</p>}
+      <ul className="proc-grid">
+        {found.map((d) => (
+          <li key={d.id}>
+            <Link className="panel proc-card" to={withQuery(query, { id: d.id })}>
+              <span className="cite">{d.id}</span>
+              <span className="proc-title">{d.title}</span>
+              {d.paragraphs?.[0]?.text && <span className="proc-excerpt" lang="ko">{d.paragraphs[0].text}</span>}
+              <span className="muted small proc-meta">
+                {d.org}{d.paragraphs && ` · ${t('proc.paragraphs', { n: d.paragraphs.length })}`}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <p className="muted small">
+        {t('proc.count', { n: list.docs.length })}
+        {list.sample && ` ${t('proc.fictional')} ${t('proc.sample')}`}
+      </p>
     </section>
   )
 }
