@@ -33,15 +33,21 @@ export default function Log() {
   async function finish(eventId, urgent) {
     const key = `run-${eventId}`
     setItems((list) => [...list, { key, kind: 'pipeline', stages: [], final: null }])
-    const final = await runPipeline(eventId, {
-      urgent,
-      onStage: (stage) => setItems((list) => list.map((i) => (i.key === key ? { ...i, stages: [...i.stages, stage] } : i))),
-    })
-    update(key, { final })
-    const event = await api.getEvent(eventId)
-    push({ kind: 'result', event })
-    setResults((n) => n + 1)
-    setPhase('idle')
+    try {
+      const final = await runPipeline(eventId, {
+        urgent,
+        onStage: (stage) => setItems((list) => list.map((i) => (i.key === key ? { ...i, stages: [...i.stages, stage] } : i))),
+      })
+      update(key, { final })
+      const event = await api.getEvent(eventId)
+      push({ kind: 'result', event })
+      setResults((n) => n + 1)
+    } catch {
+      update(key, { final: 'interrupted' })
+      push({ kind: 'error' })
+    } finally {
+      setPhase('idle') // the input never stays locked
+    }
   }
 
   async function send(value) {
