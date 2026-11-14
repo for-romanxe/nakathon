@@ -426,7 +426,6 @@ export default {
   "demo.clock.hour_hint": "Move the clock forward",
   "demo.clock.next_sol": "Next sol",
   "demo.clock.next_sol_hint": "Tomorrow 06:10",
-  "demo.clock.fixtures": "The demo clock needs the backend. Connect it to move time.",
   "demo.clock.forbidden": "Only the medical officer can move the clock while sign-in is on.",
   "demo.clock.no_window": "The backend reported no next comm window, so the clock was not moved.",
   "demo.clock.bad_mission": "The mission clock from the backend could not be read, so the clock was not moved.",

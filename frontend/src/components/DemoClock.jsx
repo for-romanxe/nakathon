@@ -1,8 +1,9 @@
 // DemoClock.jsx — presentation controls for the backend's virtual mission clock (spec: demo time control).
 // Each button is one POST /demo/clock; the app-wide mission state is refreshed right after, so the top bar,
-// Today and Crew follow. Needs the real backend: in fixture mode the buttons are off.
+// Today and Crew follow. In fixture mode the same buttons move an in-memory clock (api/client.js), so the evening
+// check-out and other timed scenes can be shown without the backend.
 import { useState } from 'react'
-import { api, USE_FIXTURES } from '../api/client.js'
+import { api } from '../api/client.js'
 import { useMission } from '../mission.jsx'
 import { useT } from '../i18n/index.jsx'
 
@@ -64,13 +65,12 @@ export default function DemoClock() {
       <div className="demo-clock">
         {SCENES.map((s) => (
           <button key={s.key} type="button" className="btn-secondary" onClick={() => go(s)}
-            disabled={busy || USE_FIXTURES || (s.needsWindow && mission != null && !hasWindow(mission))}>
+            disabled={busy || (s.needsWindow && mission != null && !hasWindow(mission))}>
             <span>{t(`demo.clock.${s.key}`)}</span>
             <span className="muted small">{t(`demo.clock.${s.key}_hint`)}</span>
           </button>
         ))}
       </div>
-      {USE_FIXTURES && <p className="panel-empty muted small">{t('demo.clock.fixtures')}</p>}
       {error && <p role="alert" className="panel-empty error">{t(error)}</p>}
     </section>
   )

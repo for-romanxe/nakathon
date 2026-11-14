@@ -426,7 +426,6 @@ export default {
   "demo.clock.hour_hint": "시계를 앞으로 돌려요",
   "demo.clock.next_sol": "다음 Sol",
   "demo.clock.next_sol_hint": "내일 06:10",
-  "demo.clock.fixtures": "데모 시계는 백엔드가 있어야 움직여요. 백엔드를 연결해 주세요.",
   "demo.clock.forbidden": "로그인을 켠 동안에는 의무관만 시계를 움직일 수 있어요.",
   "demo.clock.no_window": "백엔드가 다음 통신 창을 알려 주지 않아서 시계를 움직이지 않았어요.",
   "demo.clock.bad_mission": "백엔드의 임무 시계를 읽지 못해서 시계를 움직이지 않았어요.",
