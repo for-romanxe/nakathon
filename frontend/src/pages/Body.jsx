@@ -1,11 +1,12 @@
 // Body.jsx — Body screen (spec §7-2): pixel body + region list + region detail.
 // Region colour = the most serious backend level among that region's metrics (GET /crew/{id}/today).
 // Nothing is recomputed from z; each metric row shows its own backend level.
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client.js'
 import { METRICS, metricLabel, formatMetric } from '../api/contract.js'
-import BodyFigure from '../components/BodyFigure.jsx'
+// three.js is large: load the hologram only when the Body screen opens
+const HoloBody = lazy(() => import('../components/HoloBody.jsx'))
 import Cite from '../components/Cite.jsx'
 import { REGIONS } from '../components/bodyRegions.js'
 import { useMission } from '../mission.jsx'
@@ -52,6 +53,7 @@ export default function Body() {
   const sol = mission?.clock?.sol
   const [result, setResult] = useState(null)
   const [picked, setPicked] = useState(null)
+  const [noSensor, setNoSensor] = useState(false) // the last figure click was on the right arm (no sensor)
   const [openable, setOpenable] = useState({}) // "doc#pN" -> true when that paragraph exists on this device
   const key = `${lang}:${sol}`
 
@@ -129,7 +131,7 @@ export default function Body() {
             {regions.map((r) => (
               <li key={r.id}>
                 <button type="button" className={r.id === selectedId ? 'on' : ''} aria-pressed={r.id === selectedId}
-                  onClick={() => setPicked(r.id)}>
+                  onClick={() => { setNoSensor(false); setPicked(r.id) }}>
                   <span className={`badge ${badgeClass(r.level)}`}>{LEVEL_ICONS[r.level]} {t(`level.${r.level}`)}</span>
                   <span>{t(`body.region.${r.id}`)}</span>
                 </button>
@@ -141,6 +143,7 @@ export default function Body() {
             <li><i className="sw cell-caution" aria-hidden="true" />{t('body.legend.caution')}</li>
             <li><i className="sw cell-warning" aria-hidden="true" />{t('body.legend.warning')}</li>
             <li><i className="sw cell-hold" aria-hidden="true" />{t('body.legend.hold')}</li>
+            <li><i className="sw cell-base" aria-hidden="true" />{t('body.legend.no_sensor')}</li>
           </ul>
         </section>
 
@@ -149,8 +152,13 @@ export default function Body() {
             <h2>{t('body.figure')}</h2>
             <span className="muted small">{t('body.figure_hint')}</span>
           </div>
-          <BodyFigure levels={levels} selected={selectedId} onSelect={setPicked} label={t('body.figure_label')}
-            unavailableText={t('body.figure_unavailable')} />
+          <Suspense fallback={<p className="panel-empty muted">{t('common.loading')}</p>}>
+            <HoloBody levels={levels} selected={selectedId} label={t('body.figure_label')}
+              sideLabels={{ left: t('body.side.left'), right: t('body.side.right') }}
+              onSelect={(id) => { setNoSensor(false); setPicked(id) }} onNoSensor={() => setNoSensor(true)}
+              unavailableText={t('body.figure_unavailable')} />
+          </Suspense>
+          {noSensor && <p className="panel-empty muted small" role="status">{t('body.no_sensor')}</p>}
         </section>
 
         <section className={`panel body-detail lv-${sel.level}`}>

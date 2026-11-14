@@ -424,15 +424,23 @@ a.cite:hover { text-decoration: underline; }
 .body-legend .sw { width: 12px; height: 12px; border-radius: 2px; }
 .body-figure-panel { display: flex; flex-direction: column; }
 .body-figure { display: block; width: 100%; height: min(70vh, 600px); padding: 12px; }
-.cell { transition: opacity 0.2s; pointer-events: none; }
-.body-figure { cursor: pointer; }
+/* Hologram: a dark projection bay with a faint cyan glow and fixed scan lines over the 3D canvas */
+.body-figure.holo {
+  position: relative; padding: 0; overflow: hidden; touch-action: none;
+  background: radial-gradient(ellipse 55% 70% at 50% 62%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%), var(--well);
+}
+.body-figure.holo canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+.body-figure.holo::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--accent) 5%, transparent) 0 1px, transparent 1px 4px);
+}
 .cell-base { fill: var(--line); }
 .cell-normal, .body-legend .cell-normal { fill: color-mix(in srgb, var(--text-2) 55%, transparent); background: color-mix(in srgb, var(--text-2) 55%, transparent); }
 .cell-advisory { fill: color-mix(in srgb, var(--text-2) 55%, transparent); }
 .cell-caution, .body-legend .cell-caution { fill: var(--caution); background: var(--caution); }
 .cell-warning, .body-legend .cell-warning { fill: var(--warning); background: var(--warning); }
 .cell-hold, .body-legend .cell-hold { fill: color-mix(in srgb, var(--hold) 25%, transparent); background: color-mix(in srgb, var(--hold) 25%, transparent); }
-.cell-selected { stroke: var(--accent); stroke-width: 0.8; }
+.body-legend .cell-base { background: var(--line); }
 @media (prefers-reduced-motion: no-preference) {
   .cell-warning { animation: cell-pulse 1.6s ease-in-out infinite; }
   @keyframes cell-pulse { 50% { opacity: 0.55; } }
