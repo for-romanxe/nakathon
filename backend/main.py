@@ -440,6 +440,29 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
         require_event_access(event, member)
         return event_error() if event is None else event_payload(event)
 
+    @app.post("/events/{event_id}/action/{i}/done")
+    def complete_action(event_id: int, i: int, member=Depends(viewer)):
+        with closing(connect(db_path)) as connection, connection:
+            connection.execute("BEGIN IMMEDIATE")
+            event = connection.execute("SELECT * FROM event WHERE id = ?", (event_id,)).fetchone()
+            if event is None:
+                return event_error()
+            require_event_access(event, member, write=True)
+            state = json.loads(event["pipeline"] or "{}")
+            actions = state.get("risk", {}).get("actions", [])
+            if not 0 <= i < len(actions):
+                return event_error("action_not_found", "Action not found.")
+            if actions[i]["done"]:
+                return event_payload(event)
+            if event["closed_at"]:
+                return event_error("event_already_closed", "The event is closed.", 409)
+            actions[i]["done"] = True
+            event = connection.execute(
+                "UPDATE event SET pipeline = ? WHERE id = ? RETURNING *",
+                (json.dumps(state), event_id),
+            ).fetchone()
+            return event_payload(event)
+
     @app.post("/events/{event_id}/share")
     def share_event(event_id: int, member=Depends(viewer)):
         with closing(connect(db_path)) as connection, connection:

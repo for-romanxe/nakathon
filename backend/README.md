@@ -145,8 +145,16 @@ identity system.
 - `POST /events/{id}/override` closes an event with a reason from
   `contracts/enums.json` and an optional note, for example
   `{"reason":"action_done","note":"Scenario completed."}`.
+- `POST /events/{id}/action/{index}/done` marks a response action complete.
+  Only the event owner can write. The index is zero-based in
+  `event.risk.actions`. Repeating a completion returns the stored result.
 
-All three return the updated event. Repeating the same resolution is safe.
+A verified explanation can expose response actions from the optional
+`action_text` field on cited evidence paragraphs for the verified condition.
+Use team-reviewed text for this field. The event stores that text and its
+paragraph ID with the completion state.
+
+These endpoints return the updated event. Repeating the same resolution is safe.
 A conflicting resolution returns 409. Closed events remain in history with
 their original readings and level. They stop contributing to the active Today
 status, which still reflects any current reading warnings. Existing transmission

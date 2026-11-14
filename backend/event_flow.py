@@ -25,6 +25,9 @@ def load_evidence() -> list[dict]:
                 or not isinstance(row.get("condition_id"), str) or row["condition_id"] not in conditions):
             raise ValueError("Invalid or duplicate evidence paragraph.")
         ids.add(row["id"])
+        action = row.get("action_text")
+        if action is not None and (not isinstance(action, str) or not action.strip()):
+            raise ValueError(f"Invalid action_text for {row['id']}.")
     return rows
 
 
@@ -66,4 +69,13 @@ def explain(event: dict, state: dict, evidence: list[dict], lang: str) -> None:
     state["stages"].extend(["generate", "verify"])
     if result["hold"]:
         state["hold_reason"] = "explanation_not_verified"
+    elif (explanation := result["explanation"]) is not None:
+        cited = set(explanation["cites"])
+        actions = [
+            {"text": row["action_text"].strip(), "doc": row["id"], "done": False}
+            for row in evidence
+            if row["id"] in cited and row["condition_id"] == explanation["condition_id"] and row.get("action_text")
+        ]
+        if actions:
+            state["risk"] = {"actions": actions}
     state["stages"].append("hold" if result["hold"] else "done")

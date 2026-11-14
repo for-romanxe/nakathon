@@ -142,6 +142,12 @@ export const api = {
     request(`/events/${eventId}`, () => fixtureEvent(eventId)),
   shareEvent: (id) =>
     request(`/events/${id}/share`, () => (fixtureEvents[id] = { ...fixtureEvent(id), shared: true }), { method: 'POST' }),
+  completeAction: (id, index) => request(`/events/${id}/action/${index}/done`, () => {
+    const event = structuredClone(fixtureEvent(id))
+    event.risk.actions[index].done = true
+    fixtureEvents[id] = event
+    return event
+  }, { method: 'POST' }),
   closeEvent: (id) =>
     request(`/events/${id}/close`, () => (fixtureEvents[id] = {
       ...fixtureEvent(id), status: 'closed', closed_reason: 'resolved',

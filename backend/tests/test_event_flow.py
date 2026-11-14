@@ -56,6 +56,7 @@ class EventFlowTest(TestCase):
             event = api.get(url).json()
             self.assertEqual((event["answer"], event["hold_reason"], event["level"]), ("yes", "no_matching_evidence", "caution"))
             self.assertIsNone(event["explanation"])
+            self.assertIsNone(event["risk"])
 
     def test_reading_warning_bypasses_model_but_is_not_urgent_symptom(self):
         with TestClient(create_app(self.db), headers={"X-Demo-Viewer": "c2"}) as api, closing(connect(self.db)) as db:
@@ -115,10 +116,13 @@ class EventFlowTest(TestCase):
 
     def test_verified_retry_history_is_persisted_and_stream_replays(self):
         evidence = self.root / "evidence.json"
-        evidence.write_text(json.dumps([{
+        cited = {
             "id": "test:standing#p1", "text": "Synthetic paragraph for verification tests.",
             "codes": ["dizziness"], "condition_id": "orthostatic_intolerance",
-        }]), encoding="utf-8")
+            "action_text": "Complete the synthetic exercise.",
+        }
+        uncited = dict(cited, id="test:standing#p2", action_text="Do not display this test action.")
+        evidence.write_text(json.dumps([cited, uncited]), encoding="utf-8")
         os.environ["CREW_HEALTH_EVIDENCE"] = str(evidence)
         verified = {"category": "cardiovascular", "condition_id": "orthostatic_intolerance",
                     "lines": ["The report describes dizziness after standing."], "cites": ["test:standing#p1"]}
@@ -136,3 +140,12 @@ class EventFlowTest(TestCase):
             self.assertEqual(event["explanation"], verified)
             self.assertEqual(event["verified"], 5)
             self.assertEqual([run["fails"] for run in event["runs"]], [["cites"], []])
+            actions = [{"text": cited["action_text"], "doc": cited["id"], "done": False}]
+            self.assertEqual(event["risk"]["actions"], actions)
+            self.assertEqual(api.post(f"{url}/action/1/done").status_code, 404)
+            self.assertEqual(api.post(f"{url}/action/0/done", headers={"X-Demo-Viewer": "c2"}).status_code, 403)
+            completed = api.post(f"{url}/action/0/done").raise_for_status().json()
+            self.assertEqual(completed["risk"]["actions"], [dict(actions[0], done=True)])
+            self.assertEqual(api.post(f"{url}/action/0/done").json(), completed)
+        with TestClient(create_app(self.db)) as api:
+            self.assertEqual(api.get(url).raise_for_status().json(), completed)

@@ -97,7 +97,7 @@ def event_payload(row: sqlite3.Row) -> dict:
         "id": row["id"], "crew": row["crew_id"], "ts": row["ts"], "title": title,
         "symptom_text": row["symptom_text"], "codes": json.loads(row["codes"]),
         "urgent": urgent, "level": row["level"], "findings": json.loads(row["findings"]),
-        "risk": None, "explanation": state.get("explanation"), "runs": state.get("runs", []),
+        "risk": state.get("risk"), "explanation": state.get("explanation"), "runs": state.get("runs", []),
         "verified": state.get("verified", 0), "stage": stage, "hold_reason": state.get("hold_reason"),
         "question": state.get("question"), "answer": state.get("answer"),
         "status": "closed" if row["closed_at"] else "open",
