@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from contextlib import asynccontextmanager, closing
 from pathlib import Path
@@ -54,16 +55,23 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
     evidence = []
     docs = []
     medication_references = []
+    medication_catalog_failed = False
     sessions = None
     frontend_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        nonlocal evidence, sessions, docs, medication_references
+        nonlocal evidence, sessions, docs, medication_references, medication_catalog_failed
         sessions = CrewSessions(crew_id for crew_id, *_ in CREW)
         evidence = event_flow.load_evidence()
         docs = build_docs(evidence)
-        medication_references = load_medication_references()
+        try:
+            medication_references = load_medication_references()
+            medication_catalog_failed = False
+        except (OSError, ValueError):
+            logging.getLogger(__name__).warning("Medication catalog could not be loaded.")
+            medication_references = []
+            medication_catalog_failed = True
         initialize(db_path)
         with closing(connect(db_path)) as connection:
             seed(connection)
@@ -251,6 +259,8 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
 
     @app.get("/medication-references")
     def get_medication_references(member=Depends(viewer)):
+        if medication_catalog_failed:
+            return event_error("medication_catalog_invalid", "Medication catalog could not be loaded.", 503)
         return {"references": [reference.model_dump(mode="json", exclude_none=True) for reference in medication_references]}
 
     @app.get("/crew/{crew_id}/medication-intakes")

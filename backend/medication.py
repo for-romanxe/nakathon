@@ -13,6 +13,7 @@ from backend.mission import mission_sol
 PRODUCT_ID = r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
 CatalogID = Annotated[str, Field(pattern=PRODUCT_ID, max_length=80)]
 INTAKE_COLUMNS = "id, name, amount, ts, mission_day, product_id, unit_count"
+LABEL_HOSTS = {"dailymed.nlm.nih.gov", "www.dailymed.nlm.nih.gov", "www.accessdata.fda.gov", "accessdata.fda.gov", "www.fda.gov", "fda.gov"}
 
 
 class IntakeLimits(BaseModel):
@@ -54,8 +55,9 @@ class MedicationReference(BaseModel):
     @field_validator("label_url")
     @classmethod
     def require_https(cls, url: HttpUrl) -> HttpUrl:
-        if url.scheme != "https" or url.username is not None or url.password is not None:
-            raise ValueError("Use an HTTPS product label URL.")
+        if (url.scheme != "https" or url.host not in LABEL_HOSTS or url.port != 443
+                or url.username is not None or url.password is not None):
+            raise ValueError("Use an HTTPS product label URL from DailyMed or FDA.")
         return url
 
 
@@ -121,6 +123,20 @@ def intake_summary(
     ).fetchone()
     last = row["last_intake_at"]
     elapsed = None if last is None else int((now - datetime.fromisoformat(last)).total_seconds() // 60)
+    shortest_gap = None
+    if limits is not None:
+        gaps = connection.execute(
+            """SELECT ts, LAG(ts) OVER (ORDER BY ts, id) AS previous
+               FROM medication_intake
+               WHERE crew_id = ? AND product_id = ? AND ts > ? AND ts <= ?""",
+            (crew_id, reference.id, (now - timedelta(hours=24) - timedelta(minutes=limits.minimum_interval_minutes)).isoformat(),
+             now.isoformat()),
+        )
+        # Include the preceding intake even when it falls before the 24-hour window.
+        shortest_gap = min((
+            int((datetime.fromisoformat(gap["ts"]) - datetime.fromisoformat(gap["previous"])).total_seconds() // 60)
+            for gap in gaps if gap["previous"] is not None and gap["ts"] > cutoff
+        ), default=None)
     review = review_other_products(connection, crew_id, reference, now, review_minutes, references)
     if limits is None:
         comparison = {"status": "hold", "reason": "no_limits"}
@@ -141,6 +157,11 @@ def intake_summary(
         "product_id": reference.id, "last_intake_at": last, "minutes_since_last": elapsed,
         "recorded_units_24h": row["recorded_units_24h"], "text_entries_24h": row["text_entries_24h"],
         "limit_comparison": comparison,
+        "recorded_limit_exceeded": limits is not None and row["recorded_units_24h"] > limits.maximum_units_24h,
+        "shortest_violating_gap_minutes": (
+            shortest_gap if limits is not None and shortest_gap is not None
+            and shortest_gap < limits.minimum_interval_minutes else None
+        ),
         "product_review": review,
     }
 
@@ -208,6 +229,7 @@ def save_intake(
         key,
     ).fetchone()
     if row is not None:
+        # A replay confirms the original write, even if its catalog entry has changed.
         if isinstance(entry, ProductIntake):
             matches = (row["product_id"], row["unit_count"]) == (entry.product_id, entry.unit_count)
         else:

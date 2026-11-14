@@ -7,13 +7,22 @@ from unittest.mock import patch
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
+from pydantic import HttpUrl
 
 from backend.db import MEDICATION_SCHEMA, connect, initialize
 from backend.main import create_app
+from backend.medication import MedicationReference
 from backend.seed import seed
 
 
 class MedicationIntakeTest(TestCase):
+    def test_only_approved_label_hosts_are_accepted(self):
+        for url in ("https://127.0.0.1/label", "https://intranet.local/label",
+                    "https://dailymed.nlm.nih.gov.example.org/label",
+                    "https://dailymed.nlm.nih.gov:8443/label", "http://dailymed.nlm.nih.gov/label"):
+            with self.subTest(url=url), self.assertRaisesRegex(ValueError, "DailyMed or FDA"):
+                MedicationReference.require_https(HttpUrl(url))
+
     def test_label_reference_requires_a_local_catalog(self):
         root = Path(self.enterContext(TemporaryDirectory()))
         path = root / "crew.sqlite3"
@@ -24,7 +33,7 @@ class MedicationIntakeTest(TestCase):
         reference = {
             "id": "synthetic-product", "product": "Synthetic product", "strength": "Test strength",
             "directions": "Synthetic reference text.", "warnings": "Synthetic warning.",
-            "label_revision": "Test revision", "label_url": "https://example.org/label",
+            "label_revision": "Test revision", "label_url": "https://dailymed.nlm.nih.gov/label",
         }
         catalog = root / "catalog.json"
         with patch.dict("os.environ", {"CREW_HEALTH_MEDICATION_REFERENCES": str(catalog)}):
@@ -32,9 +41,9 @@ class MedicationIntakeTest(TestCase):
             with TestClient(create_app(path)) as api:
                 self.assertEqual(api.get(url).raise_for_status().json(), {"references": [reference]})
             catalog.write_text(json.dumps([reference, reference]), encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "Duplicate medication"):
-                with TestClient(create_app(path)):
-                    pass
+            with TestClient(create_app(path)) as api:
+                self.assertEqual(api.get(url).status_code, 503)
+                self.assertEqual(api.get("/mission").status_code, 200)
 
     def test_history_keeps_latest_fifty_at_same_mission_time_after_backup(self):
         root = Path(self.enterContext(TemporaryDirectory()))
@@ -74,7 +83,7 @@ class MedicationIntakeTest(TestCase):
         reference = {
             "id": "synthetic-product", "product": "Synthetic product", "strength": "Test strength",
             "directions": "Synthetic reference text.", "warnings": "Synthetic warning.",
-            "label_revision": "Test revision", "label_url": "https://example.org/label",
+            "label_revision": "Test revision", "label_url": "https://dailymed.nlm.nih.gov/label",
         }
         catalog.write_text(json.dumps([
             dict(reference, count_unit="test unit"), dict(reference, id="text-only"),
@@ -127,7 +136,7 @@ class MedicationIntakeTest(TestCase):
         reference = {
             "id": "synthetic-product", "product": "Synthetic product", "strength": "Test strength",
             "directions": "Synthetic text.", "warnings": "Synthetic warning.", "count_unit": "test unit",
-            "label_revision": "Test revision", "label_url": "https://example.org/label",
+            "label_revision": "Test revision", "label_url": "https://dailymed.nlm.nih.gov/label",
         }
         catalog = root / "catalog.json"
         catalog.write_text(json.dumps([
@@ -168,6 +177,7 @@ class MedicationIntakeTest(TestCase):
                     "product_id": "synthetic-product", "last_intake_at": "2026-11-14T09:00:00+00:00",
                     "minutes_since_last": 60, "recorded_units_24h": 5, "text_entries_24h": 1,
                     "limit_comparison": {"status": "hold", "reason": "unmatched_entries"},
+                    "recorded_limit_exceeded": False, "shortest_violating_gap_minutes": 60,
                     "product_review": {
                         "shared_ingredients": [], "cautions": [], "unknown_product_history": True,
                         "shared_ingredient_in_limit_window": False,
@@ -175,6 +185,14 @@ class MedicationIntakeTest(TestCase):
                 })
                 self.assertEqual(api.get(summary_url, headers={"X-Demo-Viewer": "c3"}).status_code, 403)
                 self.assertEqual(api.get(summary_url.replace("synthetic-product", "unknown")).status_code, 404)
+                api.post("/demo/clock", json={"time": "10:05", "sol": 16}).raise_for_status()
+                api.post(url, json={"request_id": str(uuid4()), "product_id": "synthetic-product",
+                                    "unit_count": 3}).raise_for_status()
+                api.post("/demo/clock", json={"time": "13:00", "sol": 16}).raise_for_status()
+                held = api.get(summary_url).raise_for_status().json()
+                self.assertEqual(held["limit_comparison"]["status"], "hold")
+                self.assertTrue(held["recorded_limit_exceeded"])
+                self.assertEqual(held["shortest_violating_gap_minutes"], 55)
 
     def test_product_review_reports_overlap_and_reverse_pair_caution(self):
         root = Path(self.enterContext(TemporaryDirectory()))
@@ -182,7 +200,7 @@ class MedicationIntakeTest(TestCase):
         base = {
             "product": "Synthetic product", "strength": "Test strength", "count_unit": "unit",
             "directions": "Synthetic text.", "warnings": "Synthetic warning.",
-            "label_revision": "Test revision", "label_url": "https://example.org/label",
+            "label_revision": "Test revision", "label_url": "https://dailymed.nlm.nih.gov/label",
         }
         selected = dict(base, id="selected", active_ingredients=["test-ingredient"],
                         intake_limits={"minimum_interval_minutes": 60, "maximum_units_24h": 5},
@@ -198,6 +216,11 @@ class MedicationIntakeTest(TestCase):
                 api.post("/crew/c1/medication-intakes", json={
                     "request_id": str(uuid4()), "product_id": "recorded", "unit_count": 1,
                 }).raise_for_status()
+                api.post("/demo/clock", json={"advance": "2h"}).raise_for_status()
+                api.post("/crew/c1/medication-intakes", json={
+                    "request_id": str(uuid4()), "product_id": "recorded", "unit_count": 1,
+                }).raise_for_status()
+                api.post("/demo/clock", json={"sol": 16, "time": "06:12"}).raise_for_status()
                 summary = api.get(url).raise_for_status().json()
                 review = summary["product_review"]
                 self.assertEqual(review["shared_ingredients"][0]["ingredients"], ["test-ingredient"])
@@ -210,7 +233,7 @@ class MedicationIntakeTest(TestCase):
                 self.assertEqual([row["source_product_id"] for row in review["cautions"]], ["recorded"])
                 api.post("/demo/clock", json={"advance": "30m"}).raise_for_status()
                 self.assertEqual(api.get(url).raise_for_status().json()["product_review"]["cautions"], [])
-                api.post("/demo/clock", json={"advance": "23h"}).raise_for_status()
+                api.post("/demo/clock", json={"advance": "25h"}).raise_for_status()
                 result = api.get(url).raise_for_status().json()
                 self.assertEqual(result["product_review"]["shared_ingredients"], [])
                 self.assertEqual(result["limit_comparison"]["status"], "compared")

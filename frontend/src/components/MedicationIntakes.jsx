@@ -13,8 +13,10 @@ export default function MedicationIntakes({ crew }) {
   const [saving, setSaving] = useState(false)
   const [loadFailed, setLoadFailed] = useState(false)
   const [saveFailed, setSaveFailed] = useState(false)
+  const [retryPending, setRetryPending] = useState(false)
   const [saved, setSaved] = useState(false)
   const pending = useRef(null)
+  const editingLocked = saving || retryPending
   const countUnit = reference?.count_unit
   const count = Number(amount)
   const validAmount = countUnit ? Number.isInteger(count) && count > 0 && count <= 1000000 : Boolean(amount.trim())
@@ -33,24 +35,27 @@ export default function MedicationIntakes({ crew }) {
     event.preventDefault()
     const cleanName = name.trim()
     if (saving || !validAmount || (!countUnit && !cleanName)) return
-    const payload = countUnit
-      ? { product_id: reference.id, unit_count: count }
-      : { name: cleanName, amount: amount.trim() }
     setSaving(true)
     setSaveFailed(false)
     setSaved(false)
     try {
-      const key = JSON.stringify(payload)
-      if (pending.current?.key !== key) {
-        pending.current = { key, entry: { request_id: crypto.randomUUID(), ...payload } }
+      pending.current ??= {
+        request_id: crypto.randomUUID(),
+        ...(countUnit ? { product_id: reference.id, unit_count: count } : { name: cleanName, amount: amount.trim() }),
       }
-      const entry = await api.recordMedicationIntake(crew, pending.current.entry)
-      setEntries((current) => [entry, ...(current ?? []).filter((row) => row.id !== entry.id)].slice(0, 50))
+      const entry = await api.recordMedicationIntake(crew, pending.current)
+      setEntries((current) => [entry, ...(current ?? []).filter((row) => row.id !== entry.id)]
+        .sort((a, b) => b.ts.localeCompare(a.ts) || b.id - a.id).slice(0, 50))
       pending.current = null
+      setRetryPending(false)
       setName('')
       setAmount('')
       setSaved(true)
-    } catch {
+    } catch (error) {
+      if (['invalid_request', 'intake_product_unavailable', 'intake_conflict'].includes(error.code)) {
+        pending.current = null
+      }
+      setRetryPending(pending.current !== null)
       setSaveFailed(true)
     } finally {
       setSaving(false)
@@ -60,19 +65,22 @@ export default function MedicationIntakes({ crew }) {
   return (
     <section className="panel">
       <div className="panel-head"><h2>{t('intake.title')}</h2></div>
-      <MedicationReferences reference={reference} disabled={saving} onSelect={(row) => { setReference(row); setAmount('') }} />
+      <MedicationReferences reference={reference} disabled={editingLocked} onSelect={(row) => { setReference(row); setAmount('') }} />
       {countUnit && <IntakeSummary key={reference.id} crew={crew} reference={reference} entries={entries} />}
       <div className="panel-empty">
+        {countUnit && !reference.intake_limits && <p className="muted">{t('intake.record_only')}</p>}
         <form className="intake-form" onSubmit={submit}>
           {!countUnit && <label>{t('intake.name')}
-            <input required maxLength={120} value={name} onChange={(e) => setName(e.target.value)} disabled={saving} />
+            <input required maxLength={120} value={name} onChange={(e) => setName(e.target.value)} disabled={editingLocked} />
           </label>}
           <label>{t('intake.amount')}{countUnit && ` (${countUnit})`}
             <input required type={countUnit ? 'number' : 'text'} min={1} max={1000000} step={1}
-              maxLength={80} value={amount} onChange={(e) => setAmount(e.target.value)} disabled={saving} />
+              maxLength={80} value={amount} onChange={(e) => setAmount(e.target.value)} disabled={editingLocked} />
           </label>
           <button type="submit" className="btn-secondary"
-            disabled={saving || entries == null || (!countUnit && !name.trim()) || !validAmount}>{t('intake.save')}</button>
+            disabled={saving || entries == null || (!countUnit && !name.trim()) || !validAmount}>
+            {editingLocked && !saving ? t('intake.retry_save') : t('intake.save')}
+          </button>
         </form>
         {loadFailed && <p role="alert" className="error">{t('intake.load_failed')}</p>}
         {saveFailed && <p role="alert" className="error">{t('event.save_failed')}</p>}
@@ -98,13 +106,13 @@ function IntakeSummary({ crew, reference, entries }) {
   const [result, setResult] = useState(null)
 
   useEffect(() => {
-    let active = true
-    api.getMedicationIntakeSummary(crew, reference.id).then((summary) => {
-      if (active) setResult({ summary, sol, time, entries })
+    const request = new AbortController()
+    api.getMedicationIntakeSummary(crew, reference.id, request.signal).then((summary) => {
+      if (!request.signal.aborted) setResult({ summary, sol, time, entries })
     }).catch(() => {
-      if (active) setResult({ summary: null, sol, time, entries })
+      if (!request.signal.aborted) setResult({ summary: null, sol, time, entries })
     })
-    return () => { active = false }
+    return () => request.abort()
   }, [crew, reference.id, sol, time, entries])
 
   const current = result?.sol === sol && result?.time === time && result?.entries === entries ? result : null
@@ -121,6 +129,9 @@ function IntakeSummary({ crew, reference, entries }) {
             : t('intake.elapsed', { n: summary.minutes_since_last })}</p>
           {summary.text_entries_24h > 0 && <p className="muted">{t('intake.text_excluded', { n: summary.text_entries_24h })}</p>}
           <IntakeLimitComparison comparison={summary.limit_comparison} unit={reference.count_unit} />
+          {summary.recorded_limit_exceeded && <p>{t('intake.limit_exceeded')}</p>}
+          {summary.shortest_violating_gap_minutes != null &&
+            <p>{t('intake.violating_gap', { n: summary.shortest_violating_gap_minutes })}</p>}
           <IntakeProductReview review={summary.product_review} reason={summary.limit_comparison.reason} />
         </>
       )}
@@ -136,8 +147,8 @@ function IntakeLimitComparison({ comparison, unit }) {
         <>
           {comparison.minutes_below_minimum_interval > 0 &&
             <p>{t('intake.interval_short', { n: comparison.minutes_below_minimum_interval })}</p>}
-          <p>{comparison.exceeds_24h_limit ? t('intake.limit_exceeded') :
-            t('intake.below_limit', { n: comparison.units_below_24h_limit, unit })}</p>
+          {!comparison.exceeds_24h_limit &&
+            <p>{t('intake.below_limit', { n: comparison.units_below_24h_limit, unit })}</p>}
         </>
       )}
       <p className="muted">{t('medref.confirm')}</p>
