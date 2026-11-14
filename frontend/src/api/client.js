@@ -34,7 +34,7 @@ function checkinFixture(body) {
 const fixtureEvents = {}
 let fixtureNextId = 101
 // Same phrases as backend/events.py WARNING_PHRASES + CONSCIOUSNESS_CHANGE, so rehearsed demo lines behave the same
-const FIXTURE_URGENT = /\bchest pain\b|흉통|가슴 통증|가슴이 아파|\bshortness of breath\b|\b(can't|cannot) breathe\b|호흡곤란|숨을 못 쉬|\bkill myself\b|\bwant to die\b|죽고 싶|\bloss of consciousness\b|\bunresponsive\b|의식 소실|의식이 없/i
+const FIXTURE_URGENT = /\bchest pain\b|흉통|가슴\s*통증|가슴이\s*아파|\bshortness of breath\b|\b(can't|cannot) breathe\b|호흡곤란|숨을\s*못\s*쉬|숨이\s*안\s*쉬어|\bkill myself\b|\bwant to die\b|\bend it all\b|죽고\s*싶|다\s*끝내고\s*싶|\bloss of consciousness\b|\bunresponsive\b|의식 소실|의식이 없/i
 
 function fixtureSymptom({ crewId, text }) {
   const urgent = FIXTURE_URGENT.test(text)
