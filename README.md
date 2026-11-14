@@ -1,6 +1,6 @@
 # NASA Space Apps Challenge 2026 — 서울 준비
 
-로컬 전용 레포입니다. 원격(GitHub)은 연결하지 않았습니다.
+팀 `Nakathon` 공용 레포. **먼저 읽을 것: [`docs/CONTRACT.md`](docs/CONTRACT.md)** (이름·enum·API·모델 경계 계약, 기계용 사본은 `contracts/`). 제품 명세는 `docs/superpowers/specs/2026-11-11-crew-health-product-spec.md`.
 
 ## 확인된 사실
 - 행사: NASA Space Apps Challenge, 서울 로컬 이벤트
@@ -16,6 +16,10 @@
 - AI 코딩 도구 사용 가능 여부 (안내 메일에 언급 없음)
 
 ## 폴더
+- `frontend/` `backend/` — 행사 중 생성(계약 §1 참조)
+- `contracts/` — enum·JSON 스키마 (코드에서 로드, 하드코딩 금지)
+- `docs/` — 명세·계약·운영진 안내 슬라이드
+- `ml/` — 모델 학습·평가 파이프라인 (결과: `notes/model-candidates.md`)
+- `mockup/` — 정적 HTML 목업
 - `notes/` — 챌린지 조사, 아이디어, 회의 기록
 - `data/` — 공개 데이터 등 (대용량은 커밋하지 않음). PSI-25 자료는 이전 후보 주제 8의 흔적
-- `src/` — 프로토타입 코드

@@ -1,0 +1,39 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "title": "Explanation",
+ "description": "모델 ③ 출력. 숫자 문장은 템플릿이 쓰고 모델은 왜·무엇을 조심 1~2문장. 검증기 5검사 대상.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "category",
+  "condition_id",
+  "lines",
+  "cites"
+ ],
+ "properties": {
+  "category": {
+   "type": "string",
+   "description": "enums.json conditions[*].hrp"
+  },
+  "condition_id": {
+   "type": "string",
+   "description": "enums.json conditions 키 중 하나"
+  },
+  "lines": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   },
+   "minItems": 1,
+   "maxItems": 3
+  },
+  "cites": {
+   "type": "array",
+   "items": {
+    "type": "string",
+    "pattern": "^[a-z]+:[a-z0-9-]+#p[0-9]+$"
+   },
+   "minItems": 1
+  }
+ }
+}

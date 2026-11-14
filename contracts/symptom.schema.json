@@ -1,0 +1,66 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "title": "SymptomReport",
+ "description": "모델 ① 출력. ml/data/gen_symptoms.py 학습 라벨과 동일.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "codes",
+  "onset",
+  "worse_when",
+  "severity",
+  "needs_question"
+ ],
+ "properties": {
+  "codes": {
+   "type": "array",
+   "items": {
+    "enum": [
+     "chest_pain",
+     "shortness_of_breath",
+     "dizziness",
+     "nausea",
+     "headache",
+     "fatigue",
+     "sleep_issue",
+     "musculoskeletal_pain",
+     "congestion",
+     "skin_rash",
+     "vision_change",
+     "low_mood",
+     "crisis",
+     "none"
+    ]
+   },
+   "minItems": 1,
+   "uniqueItems": true
+  },
+  "onset": {
+   "enum": [
+    "now",
+    "hours",
+    "today",
+    "days",
+    "unknown"
+   ]
+  },
+  "worse_when": {
+   "enum": [
+    "standing",
+    "after_meal",
+    "exercise",
+    "lying",
+    "none",
+    "unknown"
+   ]
+  },
+  "severity": {
+   "type": "integer",
+   "minimum": 1,
+   "maximum": 5
+  },
+  "needs_question": {
+   "type": "boolean"
+  }
+ }
+}

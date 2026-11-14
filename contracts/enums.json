@@ -1,0 +1,233 @@
+{
+ "_doc": "팀 공통 enum. 원본 설명은 docs/CONTRACT.md §3. 코드는 이 파일을 로드해서 쓴다.",
+ "metrics": {
+  "hr": {
+   "label_ko": "안정 시 심박",
+   "label_en": "Resting HR",
+   "unit": "bpm",
+   "decimals": 0,
+   "source": "E4 PPG"
+  },
+  "hrv": {
+   "label_ko": "야간 HRV",
+   "label_en": "Night HRV (RMSSD)",
+   "unit": "ms",
+   "decimals": 0,
+   "source": "E4 PPG"
+  },
+  "eda": {
+   "label_ko": "피부전기활동",
+   "label_en": "EDA",
+   "unit": "µS",
+   "decimals": 1,
+   "source": "E4 EDA"
+  },
+  "temp": {
+   "label_ko": "피부온",
+   "label_en": "Skin temp",
+   "unit": "°C",
+   "decimals": 1,
+   "source": "E4 TEMP"
+  },
+  "sleep": {
+   "label_ko": "수면",
+   "label_en": "Sleep",
+   "unit": "h",
+   "decimals": 1,
+   "source": "band + self-report"
+  },
+  "act": {
+   "label_ko": "활동",
+   "label_en": "Activity",
+   "unit": "min",
+   "decimals": 0,
+   "source": "E4 ACC"
+  }
+ },
+ "level": [
+  "normal",
+  "advisory",
+  "caution",
+  "warning",
+  "hold"
+ ],
+ "symptom_codes": [
+  "chest_pain",
+  "shortness_of_breath",
+  "dizziness",
+  "nausea",
+  "headache",
+  "fatigue",
+  "sleep_issue",
+  "musculoskeletal_pain",
+  "congestion",
+  "skin_rash",
+  "vision_change",
+  "low_mood",
+  "crisis",
+  "none"
+ ],
+ "immediate_warning_codes": [
+  "chest_pain",
+  "shortness_of_breath",
+  "crisis"
+ ],
+ "onset": [
+  "now",
+  "hours",
+  "today",
+  "days",
+  "unknown"
+ ],
+ "worse_when": [
+  "standing",
+  "after_meal",
+  "exercise",
+  "lying",
+  "none",
+  "unknown"
+ ],
+ "checkin_kind": [
+  "morning",
+  "evening",
+  "weekly",
+  "monthly",
+  "quarterly"
+ ],
+ "event_status": [
+  "open",
+  "closed"
+ ],
+ "override_reason": [
+  "post_exercise",
+  "wear_fault",
+  "action_done",
+  "other"
+ ],
+ "tx_priority": [
+  "warning",
+  "caution",
+  "daily"
+ ],
+ "tx_status": [
+  "queued",
+  "sent",
+  "acked",
+  "missing"
+ ],
+ "lang": [
+  "ko",
+  "en"
+ ],
+ "sensitivity": {
+  "standard": [
+   2.0,
+   3.0
+  ],
+  "sensitive": [
+   1.8,
+   2.6
+  ],
+  "relaxed": [
+   2.3,
+   3.3
+  ]
+ },
+ "guide_key": [
+  "exercise",
+  "sleep",
+  "mood",
+  "diet_weekly",
+  "pmc_prep",
+  "body_mass",
+  "vitals",
+  "temp:<event_id>",
+  "advisory"
+ ],
+ "pipeline_stage": [
+  "collect",
+  "rules",
+  "symptom",
+  "question",
+  "retrieve",
+  "generate",
+  "verify",
+  "done",
+  "hold"
+ ],
+ "verify_check": [
+  "numbers",
+  "cites",
+  "level",
+  "schema",
+  "wording"
+ ],
+ "conditions": {
+  "_doc": "초안. 코퍼스 담당이 확정. 모델은 이 키 밖의 상태 이름을 내지 못한다.",
+  "orthostatic_intolerance": {
+   "ko": "기립성 저혈압 의심",
+   "en": "Orthostatic intolerance",
+   "hrp": "cardiovascular"
+  },
+  "space_motion_sickness": {
+   "ko": "우주 멀미",
+   "en": "Space motion sickness",
+   "hrp": "sensorimotor"
+  },
+  "dehydration": {
+   "ko": "탈수",
+   "en": "Dehydration",
+   "hrp": "nutrition"
+  },
+  "sleep_deficit": {
+   "ko": "수면 부족",
+   "en": "Sleep deficit",
+   "hrp": "sleep"
+  },
+  "co2_headache": {
+   "ko": "CO2 두통",
+   "en": "Elevated CO2 headache",
+   "hrp": "environment"
+  },
+  "musculoskeletal_strain": {
+   "ko": "근골격 통증",
+   "en": "Musculoskeletal strain",
+   "hrp": "musculoskeletal"
+  },
+  "upper_respiratory": {
+   "ko": "상기도 감염 의심",
+   "en": "Upper respiratory infection",
+   "hrp": "immune"
+  },
+  "skin_irritation": {
+   "ko": "피부 발진",
+   "en": "Skin irritation",
+   "hrp": "immune"
+  },
+  "sans_suspect": {
+   "ko": "안압 상승 의심(SANS)",
+   "en": "SANS suspect",
+   "hrp": "sans"
+  },
+  "mood_low": {
+   "ko": "기분 저하·불안",
+   "en": "Low mood / anxiety",
+   "hrp": "behavioral"
+  },
+  "behavioral_crisis": {
+   "ko": "위기",
+   "en": "Behavioral crisis",
+   "hrp": "behavioral"
+  },
+  "cardiac_emergency": {
+   "ko": "심장 응급 의심",
+   "en": "Possible cardiac emergency",
+   "hrp": "cardiovascular"
+  },
+  "none": {
+   "ko": "해당 없음",
+   "en": "None",
+   "hrp": ""
+  }
+ }
+}

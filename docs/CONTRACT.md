@@ -1,0 +1,126 @@
+# 팀 계약 (CONTRACT) — 이름·형식·경계
+
+> 이 문서는 **팀원 넷이 서로 맞춰야 하는 것만** 적는다. 제품 명세는 `docs/superpowers/specs/2026-11-11-crew-health-product-spec.md`(이하 "명세")가 원본이고, 이 문서와 명세가 다르면 **이 문서가 이긴다**(여기가 더 늦게 정해졌으므로). 바꾸고 싶으면 PR이 아니라 팀 채팅에서 한 줄 합의 후 이 파일을 고친다.
+> 기계가 읽는 사본: `contracts/*.json` (enum·JSON 스키마). 코드는 여기서 import/로드하고 **하드코딩하지 않는다.**
+
+작성 2026-11-14 (행사 시작 후). 표시 없는 항목은 명세에서 그대로 가져온 것, **[결정 11/14]**는 이 문서에서 새로 정한 것.
+
+---
+
+## 0. 꼭 지킬 것 5가지
+
+1. **판정은 규칙 엔진만 한다.** 모델(SLM)은 ① 증상 문장 → enum JSON, ② 기분 문장 → 척도, ③ 설명 문장, ④ 약 안내 문장화만. 모델 출력이 경보를 **올릴 수는 있어도 낮출 수는 없다.**
+2. **모든 설명 문장에는 출처 id가 붙는다** (`hrp:sm-03#p5` 형식). 출처 없는 문장은 검증기가 버린다.
+3. **상태 이름·증상 코드는 고정 목록(`contracts/enums.json`)에서만.** 목록 밖 이름은 버그다.
+4. **API JSON 필드는 snake_case**, 프론트도 변환 없이 그대로 쓴다. 코드 식별자는 영어, UI 문자열은 i18n 사전(ko/en)에만.
+5. **제출 규정**: NASA 로고 금지(AI 이미지 포함), 미성년자 식별 정보 금지, AI 사용 내역은 프로젝트 페이지에 공개, 라이선스 Apache-2.0 **[결정 11/14]**.
+
+---
+
+## 1. 레포 구조 **[결정 11/14]**
+
+```
+frontend/   React + Vite (프론트 담당)         포트 5173
+backend/    FastAPI + SQLite (백엔드 담당)      포트 8000
+ml/         모델·학습·평가 (AI 담당)             모델 서버 포트 8080
+contracts/  enum·JSON 스키마 (모두가 읽음, AI 담당이 관리)
+docs/       명세·계약·발표 자료
+notes/      조사·회의 기록
+mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님)
+```
+
+- 브랜치: 각자 `main`에 바로 푸시해도 된다. 단 **푸시 전 `git pull --rebase`**, `main`에 force-push 금지, 남의 폴더 파일을 고치면 채팅으로 알린다.
+- 커밋 메시지 접두어: `fe:` `be:` `ml:` `docs:` `contract:` (예: `be: 기준선 계산 14일 창`).
+- 비밀·대용량(모델 가중치, 어댑터, 원본 데이터) 커밋 금지 — `.gitignore`에 이미 있음.
+
+## 2. 이름 규칙
+
+| 대상 | 규칙 | 예 |
+|---|---|---|
+| Python 변수·함수·파일 | snake_case | `compute_baseline`, `rules_engine.py` |
+| Python 클래스 | PascalCase | `SymptomReport` |
+| TS/JS 변수·함수 | camelCase (단, API 응답 타입의 필드는 snake_case 그대로) | `fetchToday`, `event.symptom_text` |
+| React 컴포넌트·파일 | PascalCase | `TodayScreen.tsx` |
+| API JSON 필드 | snake_case | `needs_question`, `baseline_days` |
+| enum 값 | snake_case 영어 소문자 | `shortness_of_breath`, `after_meal` |
+| i18n 키 | `screen.section.key` | `today.guide.title`, `common.level.caution` |
+| 문서(출처) id | `org:slug#pN` | `hrp:sm-03#p5`, `med:ibuprofen#p2` |
+| 승무원 id | `c1`~`c4` **[결정 11/14]** | CMO는 `c2` (목업 기준, 바뀌면 여기 고침) |
+| 시간 | `ts` ISO 8601 문자열(가상 시계), `sol` 정수, `date` `YYYY-MM-DD` | `"2026-11-14T14:00:00Z"`, `4` |
+| 지연·수치 | 단위는 필드명에 넣지 않고 `contracts/enums.json`의 metric 표를 따른다 | `hr` 는 bpm |
+
+## 3. 고정 목록 (enum) — 원본은 `contracts/enums.json`
+
+**지표 6개** `metric`: `hr`(안정 시 심박, bpm) · `hrv`(야간 RMSSD, ms) · `eda`(µS) · `temp`(피부온 °C) · `sleep`(h) · `act`(활동 min). 목업 `mockup/app/app.js`와 동일.
+
+**경보 계층** `level`: `normal` | `advisory` | `caution` | `warning` | `hold`
+- 색: normal=초록(`--normal`), caution=노랑, warning=빨강, advisory·hold=무색. 토큰은 `DESIGN.md`.
+- hold = 기준선 14일 미만 또는 검증 2회 실패("판단 보류").
+
+**증상 코드** `codes[]` (14개, ml 학습셋과 동일):
+`chest_pain, shortness_of_breath, dizziness, nausea, headache, fatigue, sleep_issue, musculoskeletal_pain, congestion, skin_rash, vision_change, low_mood, crisis, none`
+- `onset`: `now | hours | today | days | unknown`
+- `worse_when`: `standing | after_meal | exercise | lying | none | unknown`
+- `severity`: 정수 1~5, `needs_question`: bool
+- **즉시 경보 코드**(규칙이 모델보다 먼저 키워드로 잡음): `chest_pain, shortness_of_breath, crisis` + 의식 변화 키워드.
+
+**체크인 종류** `checkin.kind`: `morning | evening | weekly | monthly | quarterly`
+**이벤트 상태** `event.status`: `open | closed` · **무시 이유** `override.reason`: `post_exercise | wear_fault | action_done | other`
+**전송** `tx.priority`: `warning | caution | daily` · `tx.status`: `queued | sent | acked | missing`
+**언어** `lang`: `ko | en` · **민감도** `sensitivity`: `standard(2/3σ) | sensitive(1.8/2.6) | relaxed(2.3/3.3)`
+**가이드 키** `guide_item.key`: `exercise | sleep | mood | diet_weekly | pmc_prep | body_mass | vitals | temp:<event_id> | advisory`
+**상태(condition) 목록** `condition_id`: 문서 코퍼스를 만드는 사람이 `contracts/enums.json`의 `conditions`에 채운다(10~15개, 초안 포함). 모델은 이 목록 밖 이름을 못 낸다.
+
+## 4. 모델 ↔ 백엔드 경계 (AI 담당 제공) **[결정 11/14]**
+
+명세 §11·§18의 "Ollama" 문구는 아래로 대체한다. 측정 결과(`notes/model-candidates.md`)에 따라 기본 모델은 **Ministral 3 8B + LoRA**, 비교용 Gemma 4 E4B.
+
+- 모델 서버는 **OpenAI 호환 `POST /v1/chat/completions`** 하나만 노출한다 (Mac: `mlx_lm.server`, PC: 같은 인터페이스). 백엔드는 이 URL만 안다.
+- 백엔드 환경변수: `MODEL=mock|live` (기본 `mock`), `MODEL_URL=http://127.0.0.1:8080`, `MODEL_NAME`.
+- `MODEL=mock`이면 `backend/mock/*.json`의 시나리오 응답을 1초 지연으로 돌려준다. **프론트·백엔드 담당은 mock으로 개발한다.**
+- 모델 호출 함수는 `backend/model/client.py` 한 곳. 함수 3개 고정:
+  - `extract_symptoms(text, lang, recent_summary) -> SymptomReport` (`contracts/symptom.schema.json`)
+  - `score_mood(text, lang) -> MoodScore` (`contracts/mood.schema.json`)
+  - `explain(level, findings, condition_candidates, paragraphs, lang) -> Explanation` (`contracts/explanation.schema.json`)
+- 모델 출력은 **항상 검증기(`backend/verify.py`)를 거친다.** 검사 5개의 이름 고정: `numbers, cites, level, schema, wording`. 결과는 `runs[].fails[]`에 이 이름으로 기록.
+- 파이프라인 단계 이름(SSE `stage` 값) 고정: `collect → rules → symptom → question → retrieve → generate → verify → done | hold`.
+
+## 5. API (백엔드 담당 구현, 명세 §18 초안 확정) **[결정 11/14]**
+
+기본 경로 `http://localhost:8000`, JSON, 오류는 `{ "error": { "code": "...", "message": "..." } }`.
+
+| 메서드 | 경로 | 요청 | 응답 |
+|---|---|---|---|
+| GET | `/crew` | | CMO용 4명 요약 |
+| GET | `/crew/{id}/today` | | `{status:{level,text}, guide:[guide_item], metrics:[{metric,value,baseline,sd,z}], events:[event], checkin:{morning_done,evening_done}, streak}` |
+| POST | `/crew/{id}/checkin` | `{kind, answers:{}, free_text?}` | 갱신된 `/today` |
+| POST | `/crew/{id}/symptom` | `{text, lang}` | `{event_id, needs_question, question?}` |
+| POST | `/events/{id}/answer` | `{answer:"yes"\|"no"}` | 202, 이후 `GET /events/{id}/stream` (SSE, `stage`) |
+| GET | `/events/{id}` | | event 전체 (§명세 9 엔티티) |
+| POST | `/events/{id}/action/{i}/done` · `/share` · `/close` | | event |
+| POST | `/events/{id}/override` | `{reason, note?}` | event |
+| POST | `/crew/{id}/med/ask` | `{text, lang}` | `{table:{...}, text, cites[]}` |
+| POST | `/crew/{id}/med/log` | `{med_id}` | 204 |
+| GET | `/crew/{id}/trends?metric=&days=` | | `{points:[{ts,value}], baseline:{mean,sd}, events:[...]}` |
+| GET | `/docs` · `/docs/{id}` | | 문서 목록 / `{id,title,org,kind,paragraphs:[{n,text}]}` |
+| GET/POST | `/tx` · `/tx/send` | `{event_id}` 또는 `{daily:true}` | tx_packet 목록 |
+| GET/PUT | `/settings` | | settings |
+| POST | `/demo/clock` · `/demo/reset` · `/demo/viewer/{id}` | `{sol,time}` 또는 `{advance:"2h"}` | |
+
+프론트 라우트(목업 파일명과 동일): `/today /body /trends /log /procedures /crew /settings /events/:id /warning`.
+
+## 6. 작업 분담과 넘겨주는 것 (초안, 팀 미팅에서 확정)
+
+| 담당 | 산출물 | 남에게 주는 것 |
+|---|---|---|
+| 프론트 | `frontend/` 9화면, i18n ko/en | 없음(API만 소비) |
+| 백엔드 | `backend/` 규칙 엔진·기준선·API·SQLite·전송 큐·mock | API(§5), mock 응답 |
+| AI(Tyler) | `ml/`, `contracts/`, `backend/model/client.py`, `backend/verify.py`, 평가 30문항 | 스키마·enum, 모델 서버, 검증기 |
+| 기획·발표 | 문서 코퍼스(`backend/corpus/*.md`, id 규칙 §2), `conditions` 목록, 슬라이드 7장 or 30초 영상, README(영문), References | 코퍼스·condition enum |
+
+## 7. 아직 안 정한 것 (답이 나오면 여기 고침)
+
+- 행사 전 만든 학습셋·어댑터 사용 가능 여부 (팀 미팅/Connect에서 질문; 안 되면 행사 중 재학습 ~45분).
+- `conditions` 최종 목록과 코퍼스 출처 표기.
+- 승무원 이름·역할 4명(`c1`~`c4`), CMO 지정.
+- 슬라이드 7장 vs 30초 영상.
