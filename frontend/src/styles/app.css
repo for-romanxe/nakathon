@@ -79,6 +79,15 @@ p { margin: 0; }
 }
 
 /* ---- Today ---- */
+.tx-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.tx-amplitude { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.tx-amplitude input { font: inherit; width: 76px; padding: 4px 8px; }
+.tx-packets:empty { display: none; }
+.tx-packets li .tx-actions { grid-column: 1 / -1; }
+.tx-results { padding: 12px 16px; overflow: auto; }
+.tx-results table { width: 100%; text-align: left; border-collapse: collapse; }
+.tx-results td, .tx-results th { padding: 6px 8px; border-bottom: 1px solid var(--line); }
+
 .status {
   display: flex; align-items: center; gap: 10px;
   padding: 12px 14px; border-left: 3px solid var(--status);

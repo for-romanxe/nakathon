@@ -62,9 +62,10 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 - `onset`: `now | hours | today | days | unknown`
 - `worse_when`: `standing | after_meal | exercise | lying | none | unknown`
 - `severity`: 정수 1~5, `needs_question`: bool
-- **즉시 경보 코드**(규칙이 모델보다 먼저 키워드로 잡음): `chest_pain, shortness_of_breath, crisis` + 의식 변화 키워드.
+- **즉시 경보 코드**(규칙이 모델보다 먼저 키워드로 잡음): `chest_pain, shortness_of_breath, crisis` + 의식 변화 키워드. 걸리면 그 이벤트는 `urgent: true` (§5.4).
 
 **체크인 종류** `checkin.kind`: `morning | evening | weekly | monthly | quarterly`
+**판정 보류 이유** `metrics[].hold_reason`: `insufficient_baseline | missing_reading | zero_variance` (§5.3)
 **이벤트 상태** `event.status`: `open | closed` · **무시 이유** `override.reason`: `post_exercise | wear_fault | action_done | other`
 **전송** `tx.priority`: `warning | caution | daily` · `tx.status`: `queued | sent | acked | missing`
 **언어** `lang`: `ko | en` · **민감도** `sensitivity`: `standard(2/3σ) | sensitive(1.8/2.6) | relaxed(2.3/3.3)`
@@ -83,6 +84,7 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
   - `score_mood(text, lang) -> MoodScore` (`contracts/mood.schema.json`)
   - `explain(level, findings, condition_candidates, paragraphs, lang) -> Explanation` (`contracts/explanation.schema.json`)
 - 모델 출력은 **항상 검증기(`backend/verify.py`)를 거친다.** 검사 5개의 이름 고정: `numbers, cites, level, schema, wording`. 결과는 `runs[].fails[]`에 이 이름으로 기록.
+- **설명은 `backend/model/pipeline.py`의 `explain_verified(level, findings, condition_candidates, paragraphs, lang)`로 만든다** **[추가 11/14]**. 생성 → 검증 → 폐기되면 한 번 더(상한 2회) → 두 번 폐기되면 판단 보류까지 이 함수가 한다. 반환 `{explanation | null, hold, verified(0~5), runs:[{n, ok, fails[], note}]}`을 이벤트의 `explanation`·`runs`·`verified`에 그대로 넣는다. `hold`가 true면 `explanation`은 null이고 화면에는 수치와 절차서만 보여 준다. `runs[].note`는 폐기 이유를 한 줄로 적은 것이다(예: `numbers: 12`). 이 함수는 예외를 던지지 않는다. 모델 서버에 닿지 못하거나 입력이 잘못돼도(목록 밖 상태 후보, `id` 없는 문단 등) `hold`로 돌아오고, 이유는 `runs[].note`에 적힌다.
 - 파이프라인 단계 이름(SSE `stage` 값) 고정: `collect → rules → symptom → question → retrieve → generate → verify → done | hold`.
 
 ## 5. API (백엔드 담당 구현, 명세 §18 초안 확정) **[결정 11/14]**
@@ -92,11 +94,12 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 | 메서드 | 경로 | 요청 | 응답 |
 |---|---|---|---|
 | GET | `/crew` | | CMO용 4명 요약 |
-| GET | `/crew/{id}/today` | | `{status:{level,text}, guide:[guide_item], metrics:[{metric,value,baseline,sd,z}], events:[event], checkin:{morning_done,evening_done}, streak}` |
-| POST | `/crew/{id}/checkin` | `{kind, answers:{}, free_text?}` | 갱신된 `/today` |
+| GET | `/mission` | | `{clock:{sol,time}, environment, one_way_delay_min, next_window}` (§5.1) |
+| GET | `/crew/{id}/today?lang=` | | `{status:{level,text}, guide:[guide_item], metrics:[{metric,value,baseline,sd,z,level,hold_reason}], events:[event], checkin:{morning_done,evening_done}, streak}` (§5.3) |
+| POST | `/crew/{id}/checkin?lang=` | `{kind, answers:{…}, free_text?}` (§5.2) | 갱신된 `/today` |
 | POST | `/crew/{id}/symptom` | `{text, lang}` | `{event_id, needs_question, question?}` |
 | POST | `/events/{id}/answer` | `{answer:"yes"\|"no"}` | 202, 이후 `GET /events/{id}/stream` (SSE, `stage`) |
-| GET | `/events/{id}` | | event 전체 (§명세 9 엔티티) |
+| GET | `/events/{id}` | | event 전체 (§명세 9 엔티티, `urgent`·`level`은 §5.4) |
 | POST | `/events/{id}/action/{i}/done` · `/share` · `/close` | | event |
 | POST | `/events/{id}/override` | `{reason, note?}` | event |
 | POST | `/crew/{id}/med/ask` | `{text, lang}` | `{table:{...}, text, cites[]}` |
@@ -105,9 +108,115 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 | GET | `/docs` · `/docs/{id}` | | 문서 목록 / `{id,title,org,kind,paragraphs:[{n,text}]}` |
 | GET/POST | `/tx` · `/tx/send` | `{event_id}` 또는 `{daily:true}` | tx_packet 목록 |
 | GET/PUT | `/settings` | | settings |
-| POST | `/demo/clock` · `/demo/reset` · `/demo/viewer/{id}` | `{sol,time}` 또는 `{advance:"2h"}` | |
+| POST | `/demo/clock` | `{sol,time}` 또는 `{advance:"2h"}` | `/mission`과 같은 모양 (§5.1) |
+| POST | `/demo/reset` · `/demo/viewer/{id}` | | |
 
 프론트 라우트(목업 파일명과 동일): `/today /body /trends /log /procedures /crew /settings /events/:id /warning`.
+
+`?lang=ko|en`(기본 `en`)은 `/today`와 `/checkin` 응답의 `status.text`만 현지화한다. 가이드 문장은 현재 영어.
+
+### 5.1 `/mission` — 임무 시계와 통신 상태 **[추가 11/14, PR #1·#2 구현 기준]**
+
+```json
+{ "clock": { "sol": 16, "time": "06:12" }, "environment": "mars_base", "one_way_delay_min": 12, "next_window": "08:00" }
+```
+
+| 필드 | 형식 | 뜻 |
+|---|---|---|
+| `clock.sol` | 정수 ≥ 1 | 임무 일차. 임무 시작일이 1 |
+| `clock.time` | `"HH:MM"` (24시간) | 가상 시계의 현재 시각 |
+| `environment` | 문자열 | 임무 환경. 현재 값은 `mars_base` 하나. 프론트는 i18n 키 `env.<값>`으로 표시 |
+| `one_way_delay_min` | 정수(분) | 지구까지 편도 통신 지연 |
+| `next_window` | `"HH:MM"` | 다음 통신 창이 열리는 시각. 창은 임무 시각 08:00·20:00 (명세 §16) |
+
+- `POST /demo/clock` 요청은 `{sol, time}`(둘 다 필수) 또는 `{advance}` 중 **하나만**. `advance`는 `"<1~9999>h"` 또는 `"<1~9999>m"` (예: `"2h"`, `"30m"`).
+- 응답은 바뀐 시계를 담은 `/mission`과 같은 모양이다.
+
+### 5.2 체크인 `answers` 키 **[추가 11/14, PR #1·#2 구현 기준]**
+
+```json
+{ "kind": "morning", "answers": { "sleep_quality": 4, "mood": 3, "fatigue": 2, "symptoms": "none" } }
+```
+
+| 키 | 형식 | 어느 kind | 뜻 (1 → 5) |
+|---|---|---|---|
+| `sleep_quality` | 정수 1~5 | `morning` 필수 | 매우 나쁨 → 매우 좋음 |
+| `mood` | 정수 1~5 | `morning` 필수 | 매우 낮음 → 매우 좋음 |
+| `fatigue` | 정수 1~5 | `morning` 필수 | 없음 → 탈진 |
+| `symptoms` | `"none"` \| `"yes"` | 선택 (프론트 기본 `none`) | `yes`면 프론트가 증상 대화를 열고, 문장은 `POST /crew/{id}/symptom`으로 따로 보낸다 |
+| `stress` | 정수 1~5 | `evening` | 없음 → 매우 높음 (모델 ② `MoodScore.stress`와 같은 방향) |
+| `day_rating` | 정수 1~5 | `evening` **[제안, 미구현]** | 매우 나쁨 → 매우 좋음 (명세 §8 "오늘 어땠는지") |
+| `hydration_ok` | bool | `evening` **[제안, 미구현]** | 물을 충분히 마셨는지 (명세 §8) |
+
+- 척도 키는 **정수만** 받는다. 문자열 `"3"`, 소수, 범위 밖 값은 422 `invalid_request`.
+- `free_text`는 선택, 최대 4000자.
+- 같은 승무원·같은 sol·같은 `kind`로 다시 보내면 덮어쓴다(하루 한 건).
+- 표에 없는 키도 백엔드가 막지는 않지만, **새 키를 쓰려면 먼저 이 표에 추가한다.** `weekly`·`monthly`·`quarterly`의 키는 만들 때 여기에 적는다.
+
+### 5.3 지표별 `level` — `/today`의 `metrics[]` **[추가 11/14, PR #1·#2 구현 기준]**
+
+```json
+{ "metric": "hr", "value": 73, "baseline": 68, "sd": 2, "z": 2.5, "level": "caution", "hold_reason": null }
+```
+
+`level`은 백엔드 규칙 엔진이 지표마다 낸 판정이고 값은 §3의 `level` enum이다. **프론트는 `z`로 다시 계산하지 않고 `level`만 보고 표시한다.** 기준값은 민감도 `standard`(2.0 / 3.0, `contracts/enums.json`의 `sensitivity`).
+
+| `level` | 조건 |
+|---|---|
+| `hold` | `z`가 null이라 판정할 수 없음. 이유는 `hold_reason` |
+| `warning` | \|z\| ≥ 3.0 |
+| `caution` | 2.0 ≤ \|z\| < 3.0 이고, 오늘 벗어난 지표가 2개 이상이거나 이 지표가 어제도 벗어났음 |
+| `advisory` | 2.0 ≤ \|z\| < 3.0 이고 위 조건이 아님 (지표 1개, 하루) |
+| `normal` | \|z\| < 2.0 |
+
+- `hold_reason`: `insufficient_baseline`(기준선 14일 미만) · `missing_reading`(오늘 측정값 없음) · `zero_variance`(기준선 표준편차 0). `hold`가 아니면 null. `hold`일 때 `value`·`baseline`·`sd`·`z`는 null일 수 있다.
+- 전체 판정 `status.level`도 §3의 `level` enum(`normal | advisory | caution | warning | hold`) 값 중 하나다. 지표별 `level`과 오늘 이벤트 `level` 중 가장 높은 것을 쓰며 순서는 `warning` > `caution` > `advisory`. 벗어난 지표가 없는데 `hold` 지표가 있으면 `hold`, 그 외는 `normal`.
+
+### 5.4 이벤트의 `urgent`와 `level` **[추가 11/14, 백엔드·프론트 미구현 — PR #2·#5 리뷰 결정]**
+
+```json
+{ "id": 1, "symptom_text": "가슴이 아파요", "codes": ["chest_pain"], "urgent": true,  "level": "warning" }
+{ "id": 2, "symptom_text": "머리가 아파요", "codes": [],             "urgent": false, "level": "normal" }
+```
+
+(다른 필드는 생략. `/today`의 `events[]`와 `GET /events/{id}`가 같은 모양으로 준다.)
+
+| 필드 | 형식 | 뜻 |
+|---|---|---|
+| `urgent` | bool, 항상 있음 | 이 보고 문장이 즉시 경보 규칙(§3의 즉시 경보 코드 키워드, 의식 변화 키워드)에 걸렸는지. 경보의 **원인이 보고 문장**이라는 표시다 |
+| `level` | §3의 `level` enum | **이 보고 하나**의 판정. 아래 규칙 |
+
+**이벤트 `level`은 그날 전체 상태를 물려받지 않는다.** 그 보고의 증상 코드에 건 규칙과, 그 이벤트에 같이 저장되는 `findings`(보고 시점의 지표 스냅샷)만으로 정한다. `status.level`과 그날의 다른 이벤트 `level`은 읽지 않는다.
+
+| 보고 | `urgent` | `level` |
+|---|---|---|
+| 즉시 경보 규칙에 걸림 | `true` | `warning` |
+| 그 밖 | `false` | 이 이벤트의 `findings`에 든 지표 `level`만으로 §5.3의 전체 판정 규칙을 적용한 값. 그 값이 `advisory`면 `caution` (명세 §10 "지표 1개 + 증상 보고 = 주의") |
+
+- 방향은 한쪽뿐이다. `status.level`이 이벤트 `level`을 반영하고(§5.3), 이벤트는 `status.level`을 읽지 않는다.
+
+**경보(`warning`)는 원인과 상관없이 똑같이 다룬다 (명세 §10과 같은 규칙).** 전체 화면 경보와 모델 건너뜀은 `level`이 정하고, `urgent`는 원인만 알려 준다.
+
+| 경우 | `level` | `urgent` | 전체 화면 경보 | 모델 |
+|---|---|---|---|---|
+| 보고 문장이 즉시 경보 규칙에 걸림 | `warning` | `true` | 띄운다 | 건너뛴다 |
+| 즉시 경보 증상 없이 측정값만 \|z\| ≥ 3 | `warning` | `false` | 띄운다 | 건너뛴다 |
+| 그 밖 (`warning`이 아님) | `normal`·`caution`·`hold` | `false` | 안 띄운다 | 건너뛰지 않는다 |
+
+- **백엔드**: 이벤트 `level`이 `warning`이면 `urgent` 값과 상관없이 모델 단계(`symptom`~`verify`)를 돌리지 않는다. `needs_question`은 false, `explanation`은 null, `runs`는 `[]`, `codes`에는 키워드 규칙이 잡은 코드만 남는다.
+- **프론트 — 경보 여부는 `level`로**: 전체 화면 경보(경보 화면으로 가는 버튼 포함)와 "모델을 건너뛰었다"는 안내는 그 이벤트의 `level === "warning"`으로 판단한다. 증상 보고가 없어도 `/today`의 `metrics[]`에 `warning` 지표가 있으면 전체 화면 경보를 띄운다.
+- **프론트 — 원인 문구는 `urgent`로**: `true`면 "긴급 증상 보고", "보고 내용으로 규칙이 경보를 올렸다"는 문구를 쓴다. `false`인 경보는 측정값이 기준에서 크게 벗어났다는 문구와 그 수치를 보여 준다. `codes`로 원인을 판단하지 않는다(의식 변화 규칙은 `codes: []`로 온다).
+- `title`의 "긴급 증상 보고 / Urgent symptom report"도 `level`이 아니라 `urgent`로 고른다.
+
+근거 — main `bb9b6b9`, 새 DB, `c2`(지표 6개 모두 `normal`)에서 재현:
+
+| 보고 | 지금 `level` | `codes` | 지금 `title` | §5.4대로 하면 |
+|---|---|---|---|---|
+| ① `가슴이 아파요` | `warning` | `["chest_pain"]` | 긴급 증상 보고 | `urgent: true`, `warning` |
+| ② ① 뒤에 `머리가 아파요` | **`warning`** | `[]` | **긴급 증상 보고** | `urgent: false`, `normal` |
+| ③ `동료가 의식이 없어요` (단독) | `warning` | `[]` | 긴급 증상 보고 | `urgent: true`, `warning` |
+
+②는 ① 때문에 그날 상태가 `warning`이 된 것을 물려받았다(두통만 보고하면 `normal`). ②와 ③은 `level`과 `codes`가 같아서 지금 응답으로는 구분할 수 없다.
 
 ## 6. 작업 분담과 넘겨주는 것 (초안, 팀 미팅에서 확정)
 
@@ -120,6 +229,7 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 
 ## 7. 아직 안 정한 것 (답이 나오면 여기 고침)
 
+- 증상 보고 없이 측정값만 `warning`이 된 경우, 경보 확인·오경보 종결을 붙일 이벤트를 규칙이 만들지 (지금 백엔드는 증상 보고로만 이벤트를 만든다, §5.4).
 - 행사 전 만든 학습셋·어댑터 사용 가능 여부 (팀 미팅/Connect에서 질문; 안 되면 행사 중 재학습 ~45분).
 - `conditions` 최종 목록과 코퍼스 출처 표기.
 - 승무원 이름·역할 4명(`c1`~`c4`), CMO 지정.

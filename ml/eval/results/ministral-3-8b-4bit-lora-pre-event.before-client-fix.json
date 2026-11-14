@@ -1,0 +1,2147 @@
+{
+ "label": "ministral-3-8b-4bit-lora-pre-event",
+ "date": "2026-11-14T10:48",
+ "repeat": 3,
+ "question_set_version": 1,
+ "model_url": "http://127.0.0.1:8080",
+ "model_name": "default_model",
+ "summary": [
+  "symptom keyword hit 4/12  exact 4/12  | plain 1/2  paraphrase 1/5  negation 0/2  mixed 1/2  none 1/1",
+  "symptom model   hit 33/36  exact 33/36  | plain 3/6  paraphrase 15/15  negation 6/6  mixed 6/6  none 3/3",
+  "mood    model   in range 21/24  schema errors 0",
+  "explain model   first run rejected 24/30 (output_error 24)  hold 24/30",
+  "latency symptom median 1.1s  mean 1.5s  max 16.1s  (n=36)",
+  "latency mood    median 0.8s  mean 0.8s  max 1.1s  (n=24)",
+  "latency explain median 3.2s  mean 3.1s  max 4.6s  (n=30)",
+  "identical output across runs: 30/30 questions"
+ ],
+ "rows": [
+  {
+   "section": "symptom",
+   "id": "S01",
+   "kind": "plain",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "headache"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S01",
+   "kind": "plain",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "headache",
+     "nausea"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 16.12,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S01",
+   "kind": "plain",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "headache",
+     "nausea"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.13,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S01",
+   "kind": "plain",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "headache",
+     "nausea"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.17,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S02",
+   "kind": "plain",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "days",
+    "worse_when": "exercise",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S02",
+   "kind": "plain",
+   "by": "model",
+   "run": 1,
+   "out": null,
+   "error": "symptom: worse_when: 'bending' not in enum",
+   "sec": 1.21,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S02",
+   "kind": "plain",
+   "by": "model",
+   "run": 2,
+   "out": null,
+   "error": "symptom: worse_when: 'bending' not in enum",
+   "sec": 1.5,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S02",
+   "kind": "plain",
+   "by": "model",
+   "run": 3,
+   "out": null,
+   "error": "symptom: worse_when: 'bending' not in enum",
+   "sec": 1.07,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S03",
+   "kind": "paraphrase",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S03",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "dizziness"
+    ],
+    "onset": "unknown",
+    "worse_when": "standing",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.1,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S03",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "dizziness"
+    ],
+    "onset": "unknown",
+    "worse_when": "standing",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.23,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S03",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "dizziness"
+    ],
+    "onset": "unknown",
+    "worse_when": "standing",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.3,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S04",
+   "kind": "paraphrase",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S04",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.08,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S04",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.01,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S04",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.02,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S05",
+   "kind": "paraphrase",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S05",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.16,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S05",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.09,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S05",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.09,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S06",
+   "kind": "paraphrase",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S06",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "low_mood"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.05,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S06",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "low_mood"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.98,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S06",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "low_mood"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.0,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S07",
+   "kind": "paraphrase",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S07",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.07,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S07",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.98,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S07",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.98,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S08",
+   "kind": "negation",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "dizziness"
+    ],
+    "onset": "today",
+    "worse_when": "standing",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S08",
+   "kind": "negation",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.09,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S08",
+   "kind": "negation",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.04,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S08",
+   "kind": "negation",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.01,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S09",
+   "kind": "negation",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S09",
+   "kind": "negation",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "congestion"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.01,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S09",
+   "kind": "negation",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "congestion"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.98,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S09",
+   "kind": "negation",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "congestion"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.99,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S10",
+   "kind": "mixed",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "headache"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S10",
+   "kind": "mixed",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "headache",
+     "vision_change"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.16,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S10",
+   "kind": "mixed",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "headache",
+     "vision_change"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.35,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S10",
+   "kind": "mixed",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "headache",
+     "vision_change"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.11,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S11",
+   "kind": "mixed",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "days",
+    "worse_when": "exercise",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S11",
+   "kind": "mixed",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.11,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S11",
+   "kind": "mixed",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.04,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S11",
+   "kind": "mixed",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.04,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S12",
+   "kind": "none",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S12",
+   "kind": "none",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.03,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S12",
+   "kind": "none",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.93,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S12",
+   "kind": "none",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.93,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "mood",
+   "id": "M01",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 1,
+    "fatigue": 4,
+    "stress": 3,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.97,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M01",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 1,
+    "fatigue": 4,
+    "stress": 3,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.79,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M01",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 1,
+    "fatigue": 4,
+    "stress": 3,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 1.12,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M02",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 4,
+    "fatigue": 1,
+    "stress": 1,
+    "confidence": 0.9
+   },
+   "error": null,
+   "sec": 0.9,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M02",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 4,
+    "fatigue": 1,
+    "stress": 1,
+    "confidence": 0.9
+   },
+   "error": null,
+   "sec": 0.81,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M02",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 4,
+    "fatigue": 1,
+    "stress": 1,
+    "confidence": 0.9
+   },
+   "error": null,
+   "sec": 0.8,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M03",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 4,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.87,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M03",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 4,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.8,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M03",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 4,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.84,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M04",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 3,
+    "fatigue": 2,
+    "stress": 1,
+    "confidence": 0.8
+   },
+   "error": null,
+   "sec": 0.84,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M04",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 3,
+    "fatigue": 2,
+    "stress": 1,
+    "confidence": 0.8
+   },
+   "error": null,
+   "sec": 0.8,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M04",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 3,
+    "fatigue": 2,
+    "stress": 1,
+    "confidence": 0.8
+   },
+   "error": null,
+   "sec": 0.78,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M05",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 3,
+    "fatigue": 1,
+    "stress": 4,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 0.86,
+   "ok": false,
+   "out_of_range": [
+    "fatigue"
+   ]
+  },
+  {
+   "section": "mood",
+   "id": "M05",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 3,
+    "fatigue": 1,
+    "stress": 4,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 0.78,
+   "ok": false,
+   "out_of_range": [
+    "fatigue"
+   ]
+  },
+  {
+   "section": "mood",
+   "id": "M05",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 3,
+    "fatigue": 1,
+    "stress": 4,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 0.8,
+   "ok": false,
+   "out_of_range": [
+    "fatigue"
+   ]
+  },
+  {
+   "section": "mood",
+   "id": "M06",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 5,
+    "fatigue": 1,
+    "stress": 1,
+    "confidence": 1
+   },
+   "error": null,
+   "sec": 0.8,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M06",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 5,
+    "fatigue": 1,
+    "stress": 1,
+    "confidence": 1
+   },
+   "error": null,
+   "sec": 0.74,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M06",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 5,
+    "fatigue": 1,
+    "stress": 1,
+    "confidence": 1
+   },
+   "error": null,
+   "sec": 0.74,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M07",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 2,
+    "confidence": 0.8
+   },
+   "error": null,
+   "sec": 0.85,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M07",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 2,
+    "confidence": 0.8
+   },
+   "error": null,
+   "sec": 0.79,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M07",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 2,
+    "confidence": 0.8
+   },
+   "error": null,
+   "sec": 0.78,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M08",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 4,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.83,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M08",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 4,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.78,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M08",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 4,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.78,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "explain",
+   "id": "E01",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'orthostatic#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'orthostatic#p1' bad format"
+    }
+   ],
+   "sec": 3.69,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E01",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'orthostatic#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'orthostatic#p1' bad format"
+    }
+   ],
+   "sec": 3.36,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E01",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'orthostatic#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'orthostatic#p1' bad format"
+    }
+   ],
+   "sec": 3.34,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E02",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'fluids#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'fluids#p1' bad format"
+    }
+   ],
+   "sec": 3.06,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E02",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'fluids#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'fluids#p1' bad format"
+    }
+   ],
+   "sec": 2.88,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E02",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'fluids#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'fluids#p1' bad format"
+    }
+   ],
+   "sec": 2.86,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E03",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'sleep#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'sleep#p1' bad format"
+    }
+   ],
+   "sec": 3.75,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E03",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'sleep#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'sleep#p1' bad format"
+    }
+   ],
+   "sec": 3.58,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E03",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'sleep#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'sleep#p1' bad format"
+    }
+   ],
+   "sec": 3.55,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E04",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "lines": [
+       "Sleep disruption may worsen low mood or anxiety. Maintain routine and light exposure to mitigate effects."
+      ],
+      "cites": [
+       "eval:mood#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.62,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E04",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "lines": [
+       "Sleep disruption may worsen low mood or anxiety. Maintain routine and light exposure to mitigate effects."
+      ],
+      "cites": [
+       "eval:mood#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.41,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E04",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "lines": [
+       "Sleep disruption may worsen low mood or anxiety. Maintain routine and light exposure to mitigate effects."
+      ],
+      "cites": [
+       "eval:mood#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.4,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E05",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": {
+      "category": "sensorimotor",
+      "condition_id": "space_motion_sickness",
+      "lines": [
+       "운동 감각 적응 중 멀미가 발생할 가능성이 있습니다.",
+       "급격한 머리 움직임은 피하고 가벼운 음식을 섭취하세요."
+      ],
+      "cites": [
+       "eval:motion#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.97,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E05",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": {
+      "category": "sensorimotor",
+      "condition_id": "space_motion_sickness",
+      "lines": [
+       "운동 감각 적응 중 멀미가 발생할 가능성이 있습니다.",
+       "급격한 머리 움직임은 피하고 가벼운 음식을 섭취하세요."
+      ],
+      "cites": [
+       "eval:motion#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.79,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E05",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": {
+      "category": "sensorimotor",
+      "condition_id": "space_motion_sickness",
+      "lines": [
+       "운동 감각 적응 중 멀미가 발생할 가능성이 있습니다.",
+       "급격한 머리 움직임은 피하고 가벼운 음식을 섭취하세요."
+      ],
+      "cites": [
+       "eval:motion#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.79,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E06",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'co2#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'co2#p1' bad format"
+    }
+   ],
+   "sec": 3.19,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E06",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'co2#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'co2#p1' bad format"
+    }
+   ],
+   "sec": 3.06,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E06",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'co2#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'co2#p1' bad format"
+    }
+   ],
+   "sec": 3.09,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E07",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'msk#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'msk#p1' bad format"
+    }
+   ],
+   "sec": 4.05,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E07",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'msk#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'msk#p1' bad format"
+    }
+   ],
+   "sec": 3.93,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E07",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'msk#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'msk#p1' bad format"
+    }
+   ],
+   "sec": 3.96,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E08",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'uri#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'uri#p1' bad format"
+    }
+   ],
+   "sec": 3.18,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E08",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'uri#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'uri#p1' bad format"
+    }
+   ],
+   "sec": 3.05,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E08",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'uri#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'uri#p1' bad format"
+    }
+   ],
+   "sec": 3.03,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E09",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'mood#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'mood#p1' bad format"
+    }
+   ],
+   "sec": 4.6,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E09",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'mood#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'mood#p1' bad format"
+    }
+   ],
+   "sec": 4.19,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E09",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'mood#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'mood#p1' bad format"
+    }
+   ],
+   "sec": 4.16,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E10",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'skin#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'skin#p1' bad format"
+    }
+   ],
+   "sec": 3.41,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E10",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'skin#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'skin#p1' bad format"
+    }
+   ],
+   "sec": 3.25,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E10",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'skin#p1' bad format"
+    },
+    {
+     "out": null,
+     "ok": false,
+     "fails": [
+      "output_error"
+     ],
+     "note": "explanation: cites: [0] 'skin#p1' bad format"
+    }
+   ],
+   "sec": 3.24,
+   "ok": false,
+   "hold": true
+  }
+ ]
+}

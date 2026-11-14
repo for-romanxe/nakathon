@@ -4,14 +4,15 @@
 import todayFixture from './fixtures/today.json'
 import todayOthersFixture from './fixtures/today_others.json'
 import crewFixture from './fixtures/crew.json'
+import firstStepsFixture from './fixtures/first_steps.json'
+import txFixture from './fixtures/tx.json'
 import missionFixture from './fixtures/mission.json'
 import eventCautionFixture from './fixtures/event_caution.json'
 import eventWarningFixture from './fixtures/event_warning.json'
-import txFixture from './fixtures/tx.json'
-import firstStepsFixture from './fixtures/first_steps.json'
 import { PIPELINE_STAGES } from './contract.js'
+import { CURRENT_CREW } from '../session.js'
 
-const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES !== 'false'
+export const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES !== 'false'
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000' // CONTRACT §1
 
 // Fixture for POST /checkin: the updated /today with the check-in marked done
@@ -39,6 +40,10 @@ function fixtureSymptom({ text }) {
     : { event_id: id, needs_question: true, question: 'Is it worse when you stand up?' }
 }
 
+function fixtureEvent(id) {
+  return fixtureEvents[id] ?? { ...eventCautionFixture, id: Number(id) }
+}
+
 export class ApiError extends Error {
   constructor(code, message) {
     super(message)
@@ -54,9 +59,9 @@ async function request(path, fixture, options = {}) {
     await wait(300) // small delay so the loading state is visible
     return structuredClone(typeof fixture === 'function' ? fixture() : fixture)
   }
-  // Content-Type only when there is a body, so plain GETs skip the CORS preflight
-  const headers = options.body ? { 'Content-Type': 'application/json', ...options.headers } : options.headers
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
+  const headers = { 'X-Demo-Viewer': CURRENT_CREW, ...options.headers }
+  if (options.body) headers['Content-Type'] = 'application/json'
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers, credentials: 'include' })
   const body = res.status === 204 ? null : await res.json().catch(() => null)
   if (!res.ok) {
     // CONTRACT §5 error shape: { "error": { "code", "message" } }
@@ -66,13 +71,26 @@ async function request(path, fixture, options = {}) {
 }
 
 export const api = {
+  getSession: () => request('/session', { login_required: false, crew_id: null }),
+  login: (crew_id, access_code) => request('/session/login', null, {
+    method: 'POST', body: JSON.stringify({ crew_id, access_code }),
+  }),
+  logout: () => request('/session/logout', null, { method: 'POST' }),
+  selectViewer: (id) => request(`/demo/viewer/${id}`, () => ({ id }), { method: 'POST' }),
+  getSettings: () => request('/settings', () => ({
+    cmo_access: localStorage.getItem(`crew-health-cmo-${CURRENT_CREW}`) !== 'false',
+  })),
+  setSettings: (settings) => request('/settings', () => {
+    localStorage.setItem(`crew-health-cmo-${CURRENT_CREW}`, String(settings.cmo_access))
+    return settings
+  }, { method: 'PUT', body: JSON.stringify(settings) }),
   // GET /crew/{id}/today -> { status:{level,text}, guide, metrics:[{metric,value,baseline,sd,z}], events, checkin, streak }
   // ?lang=ko localises status.text (guide lines are English for now)
   getToday: (crewId, lang) =>
     request(`/crew/${crewId}/today?lang=${lang}`, () => {
       const today = todayOthersFixture[crewId] ?? {
         ...todayFixture,
-        events: [...todayFixture.events, ...Object.values(fixtureEvents)], // fixture-only reports from this session
+        events: [...todayFixture.events, ...Object.values(fixtureEvents)].sort((a, b) => b.id - a.id),
       }
       // the backend localises status.text via ?lang; the fixtures are English, so swap in its Korean sentence
       const ko = lang === 'ko' && todayOthersFixture.status_text_ko[crewId]
@@ -99,7 +117,17 @@ export const api = {
       }),
   // GET /events/{id} -> event (spec §9: findings, codes, risk, explanation, runs, verified, ...)
   getEvent: (eventId) =>
-    request(`/events/${eventId}`, () => fixtureEvents[eventId] ?? { ...eventCautionFixture, id: Number(eventId) }),
+    request(`/events/${eventId}`, () => fixtureEvent(eventId)),
+  shareEvent: (id) =>
+    request(`/events/${id}/share`, () => (fixtureEvents[id] = { ...fixtureEvent(id), shared: true }), { method: 'POST' }),
+  closeEvent: (id) =>
+    request(`/events/${id}/close`, () => (fixtureEvents[id] = {
+      ...fixtureEvent(id), status: 'closed', closed_reason: 'resolved',
+    }), { method: 'POST' }),
+  overrideEvent: (id, reason) =>
+    request(`/events/${id}/override`, () => (fixtureEvents[id] = {
+      ...fixtureEvent(id), status: 'closed', closed_reason: reason, override: { reason },
+    }), { method: 'POST', body: JSON.stringify({ reason }) }),
   // GET /tx -> transmission packets to Earth, warning first (seq, event_id, priority, status, attempts, ...)
   getTx: () => request('/tx', txFixture),
   // POST /tx {event_id} -> queues an event summary for Earth (warning events are queued by the backend already)
@@ -114,6 +142,12 @@ export const api = {
   getCrew: () => request('/crew', crewFixture),
   // GET /mission -> { clock:{sol,time}, environment, one_way_delay_min, next_window }
   getMission: () => request('/mission', missionFixture),
+  recordReceipt: (seq, status, attempt) =>
+    request(`/tx/${seq}/receipt`, [], { method: 'POST', body: JSON.stringify({ status, attempt }) }),
+  simulateTransmission: (seq, amplitude) =>
+    request(`/tx/${seq}/simulate`, null, { method: 'POST', body: JSON.stringify({ wide_amplitude: amplitude }) }),
+  setDemoClock: (clock) =>
+    request('/demo/clock', missionFixture, { method: 'POST', body: JSON.stringify(clock) }),
 }
 
 // Pipeline progress for one event (CONTRACT §4 stage names). Calls onStage(stage) as stages arrive and
@@ -131,7 +165,7 @@ export function runPipeline(eventId, { urgent, onStage }) {
   return new Promise((resolve) => {
     let source
     try {
-      source = new EventSource(`${API_BASE}/events/${eventId}/stream`)
+      source = new EventSource(`${API_BASE}/events/${eventId}/stream?demo_viewer=${CURRENT_CREW}`, { withCredentials: true })
     } catch {
       resolve('unavailable')
       return
