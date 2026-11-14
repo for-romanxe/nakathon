@@ -17,7 +17,9 @@ BANNED = [r"확실", r"틀림없", r"진단", r"분명히", r"\bcertain", r"defi
           r"\bis a\b (?!possib|chance|risk).*(infection|attack|stroke)"]     # "there is a possibility of ... infection"은 단정이 아니다
 # "~입니다"로 단정하는 문장을 막는다. 어간이 '이'로 끝나는 동사("움직입니다")는 단정이 아니라서 뺀다.
 # 여기 없는 말("~로 보입니다" 포함)은 그대로 막는다.
-COPULA = re.compile(r"[가-힣]*입니다\b")
+# 해요체에서는 같은 단정이 "~이에요/~예요"로 온다. "~입니다만"처럼 뒤에 말이 붙어도 단정이다.
+COPULA = re.compile(r"[가-힣]*입니다(?=만|\b)")
+COPULA_YO = re.compile(r"[가-힣]*(?:이에요|예요)\b")
 VERBS_IPNIDA = {"움직입니다", "줄입니다", "높입니다", "쌓입니다", "쓰입니다", "기울입니다", "들입니다", "붙입니다", "모입니다"}
 # 숫자 토큰 = (부호, 숫자). CO2·SpO2 처럼 글자에 붙은 숫자는 수치가 아니다.
 # 부호는 숫자 바로 앞에 있고 그 앞이 글자·숫자가 아닐 때만 부호다: "z=-2.5" 는 부호, "68-92" 는 범위.
@@ -73,6 +75,7 @@ def _bad_wording(expl, lines, candidates=None):
     bad = [m.group(0) for p in BANNED if (m := re.search(p, text))]
     if any(m.group(0) not in VERBS_IPNIDA for m in COPULA.finditer(text)):
         bad.append("입니다")
+    bad += sorted({"이에요" if m.group(0).endswith("이에요") else "예요" for m in COPULA_YO.finditer(text)})
     conds = {k: v for k, v in contracts.enums()["conditions"].items() if isinstance(v, dict)}
     if expl.get("condition_id") not in conds:
         return bad + [f"condition_id {expl.get('condition_id')!r}"]

@@ -38,6 +38,29 @@ class Verify(unittest.TestCase):
         self.assertIn("schema", verify(dict(GOOD, extra=1), FIND, "caution", DOCS)["fails"])
 
 
+class AssertiveEndings(unittest.TestCase):
+    """단정은 "~입니다"만이 아니다. 말투를 해요체로 바꾼 뒤(11/14)로는 "~이에요/~예요"가 같은 자리에 온다."""
+
+    def fails(self, lines):
+        return verify(dict(GOOD, lines=lines), FIND, "caution", DOCS)["fails"]
+
+    def test_the_polite_informal_copula_is_an_assertion_too(self):
+        self.assertIn("wording", self.fails(["기립성 저혈압이에요."]))
+        self.assertIn("wording", self.fails(["지금 상태는 수분 부족이에요, 물을 마셔 보세요."]))
+        self.assertIn("wording", self.fails(["오래 앉아 있었기 때문이에요."]))
+        self.assertIn("wording", self.fails(["흔한 문제예요."]))
+
+    def test_ipnida_followed_by_man_is_still_an_assertion(self):
+        self.assertIn("wording", self.fails(["기립성 저혈압입니다만 쉬면 나아져요."]))
+        self.assertEqual(self.fails(["자세를 바꿀 때는 천천히 움직입니다만 무리하지는 마세요."]), [])      # 동사는 그대로 통과
+
+    def test_hedged_sentences_still_pass(self):
+        self.assertEqual(self.fails(["기립성 저혈압일 수 있어요."]), [])
+        self.assertEqual(self.fails(["수분이 부족할 가능성이 있어요.", "물을 자주 마시는 게 좋아요."]), [])
+        self.assertEqual(self.fails(["증상이 계속되면 알려 주세요."]), [])
+        self.assertEqual(self.fails(["어지러움이 심하지 않은지 살펴보세요."]), [])
+
+
 class FalsePositives(unittest.TestCase):
     """평가 30문항과 연습 12문항에서 실제로 나온 오탐. 고친 뒤에도 진짜 위반은 그대로 잡혀야 한다."""
 
