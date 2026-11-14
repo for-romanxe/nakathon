@@ -120,9 +120,27 @@ function IntakeSummary({ crew, reference, entries }) {
           <p>{summary.minutes_since_last == null ? t('intake.no_product_record')
             : t('intake.elapsed', { n: summary.minutes_since_last })}</p>
           {summary.text_entries_24h > 0 && <p className="muted">{t('intake.text_excluded', { n: summary.text_entries_24h })}</p>}
+          <IntakeLimitComparison comparison={summary.limit_comparison} unit={reference.count_unit} />
         </>
       )}
     </section>
+  )
+}
+
+function IntakeLimitComparison({ comparison, unit }) {
+  const { t } = useT()
+  return (
+    <>
+      {comparison.status === 'hold' ? <p>{t(`intake.limits.${comparison.reason}`)}</p> : (
+        <>
+          {comparison.minutes_below_minimum_interval > 0 &&
+            <p>{t('intake.interval_short', { n: comparison.minutes_below_minimum_interval })}</p>}
+          <p>{comparison.exceeds_24h_limit ? t('intake.limit_exceeded') :
+            t('intake.below_limit', { n: comparison.units_below_24h_limit, unit })}</p>
+        </>
+      )}
+      <p className="muted">{t('intake.interactions_unassessed')} {t('medref.confirm')}</p>
+    </>
   )
 }
 

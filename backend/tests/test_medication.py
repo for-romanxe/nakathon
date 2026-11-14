@@ -130,15 +130,34 @@ class MedicationIntakeTest(TestCase):
             "label_revision": "Test revision", "label_url": "https://example.org/label",
         }
         catalog = root / "catalog.json"
-        catalog.write_text(json.dumps([reference, dict(reference, id="other-product")]), encoding="utf-8")
+        catalog.write_text(json.dumps([
+            dict(reference, intake_limits={"minimum_interval_minutes": 120, "maximum_units_24h": 5}),
+            dict(reference, id="other-product"),
+        ]), encoding="utf-8")
         with patch.dict("os.environ", {"CREW_HEALTH_MEDICATION_REFERENCES": str(catalog)}):
             with TestClient(create_app(root / "db.sqlite3")) as api:
-                self.assertIsNone(api.get(summary_url).raise_for_status().json()["minutes_since_last"])
+                initial = api.get(summary_url).raise_for_status().json()
+                self.assertIsNone(initial["minutes_since_last"])
+                self.assertIsNone(initial["limit_comparison"]["minutes_below_minimum_interval"])
                 for time, sol, count in (("10:00", 15, 4), ("11:00", 15, 2), ("09:00", 16, 3), ("11:00", 16, 8)):
                     api.post("/demo/clock", json={"time": time, "sol": sol}).raise_for_status()
                     api.post(url, json={
                         "request_id": str(uuid4()), "product_id": "synthetic-product", "unit_count": count,
                     }).raise_for_status()
+                api.post("/demo/clock", json={"time": "10:00", "sol": 16}).raise_for_status()
+                comparison = api.get(summary_url).raise_for_status().json()["limit_comparison"]
+                self.assertEqual(comparison, {
+                    "status": "compared", "minutes_below_minimum_interval": 60,
+                    "units_below_24h_limit": 0, "exceeds_24h_limit": False,
+                })
+                other = api.get(summary_url.replace("synthetic-product", "other-product")).raise_for_status().json()
+                self.assertEqual(other["limit_comparison"], {"status": "hold", "reason": "no_limits"})
+                api.post("/demo/clock", json={"time": "11:00", "sol": 16}).raise_for_status()
+                over = api.get(summary_url).raise_for_status().json()["limit_comparison"]
+                self.assertTrue(over["exceeds_24h_limit"])
+                api.post("/demo/clock", json={"time": "13:00", "sol": 16}).raise_for_status()
+                exact = api.get(summary_url).raise_for_status().json()["limit_comparison"]
+                self.assertEqual(exact["minutes_below_minimum_interval"], 0)
                 api.post("/demo/clock", json={"time": "10:00", "sol": 16}).raise_for_status()
                 api.post(url, json={"request_id": str(uuid4()), "name": "Synthetic product",
                                     "amount": "Unverified text"}).raise_for_status()
@@ -148,6 +167,7 @@ class MedicationIntakeTest(TestCase):
                 self.assertEqual(summary, {
                     "product_id": "synthetic-product", "last_intake_at": "2026-11-14T09:00:00+00:00",
                     "minutes_since_last": 60, "recorded_units_24h": 5, "text_entries_24h": 1,
+                    "limit_comparison": {"status": "hold", "reason": "unmatched_entries"},
                 })
                 self.assertEqual(api.get(summary_url, headers={"X-Demo-Viewer": "c3"}).status_code, 403)
                 self.assertEqual(api.get(summary_url.replace("synthetic-product", "unknown")).status_code, 404)

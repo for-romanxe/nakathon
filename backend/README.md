@@ -186,6 +186,13 @@ in the preceding 24 hours. It uses the full saved history, even when the Log
 list shows only 50 entries. Text-only entries are counted separately and
 records later than the current mission time are omitted.
 
+A reviewed catalog entry with a `count_unit` may also include
+`intake_limits` with positive integer `minimum_interval_minutes` and
+`maximum_units_24h`. The summary compares recorded history against those
+values. It withholds comparison if limits are absent or any text-only
+intakes fall inside the longer of the two lookback windows. The comparison
+covers the selected product only. It does not evaluate drug interactions.
+
 ### Event follow-up
 
 - `POST /events/{id}/share` persists the event's share flag for the crew medical

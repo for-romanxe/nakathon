@@ -276,9 +276,10 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             try:
                 if not can_read_crew(connection, crew_id, member):
                     return crew_not_found()
-                if not any(row.id == product_id and row.count_unit for row in medication_references):
+                reference = next((row for row in medication_references if row.id == product_id), None)
+                if reference is None or reference.count_unit is None:
                     return event_error("intake_product_unavailable", "This product has no configured count unit.", 404)
-                return intake_summary(connection, crew_id, product_id, clock)
+                return intake_summary(connection, crew_id, reference, clock)
             finally:
                 connection.rollback()
 
