@@ -35,11 +35,11 @@ let fixtureNextId = 101
 // Same phrases as backend/events.py WARNING_PHRASES + CONSCIOUSNESS_CHANGE, so rehearsed demo lines behave the same
 const FIXTURE_URGENT = /\bchest pain\b|흉통|가슴 통증|가슴이 아파|\bshortness of breath\b|\b(can't|cannot) breathe\b|호흡곤란|숨을 못 쉬|\bkill myself\b|\bwant to die\b|죽고 싶|\bloss of consciousness\b|\bunresponsive\b|의식 소실|의식이 없/i
 
-function fixtureSymptom({ text }) {
+function fixtureSymptom({ crewId, text }) {
   const urgent = FIXTURE_URGENT.test(text)
   const base = urgent ? eventWarningFixture : eventCautionFixture
   const id = fixtureNextId++
-  fixtureEvents[id] = { ...structuredClone(base), id, symptom_text: text }
+  fixtureEvents[id] = { ...structuredClone(base), id, crew: crewId, symptom_text: text } // the reporter owns it
   return urgent
     ? { event_id: id, needs_question: false }
     : { event_id: id, needs_question: true, question: 'Is it worse when you stand up?' }
@@ -104,10 +104,10 @@ export const api = {
   // ?lang=ko localises status.text (guide lines are English for now)
   getToday: (crewId, lang) =>
     request(`/crew/${crewId}/today?lang=${lang}`, () => {
-      const today = todayOthersFixture[crewId] ?? {
-        ...todayFixture,
-        events: [...todayFixture.events, ...Object.values(fixtureEvents)].sort((a, b) => b.id - a.id),
-      }
+      const base = todayOthersFixture[crewId] ?? todayFixture
+      // this session's fixture reports go only to the crew member who sent them
+      const mine = Object.values(fixtureEvents).filter((e) => e.crew === crewId)
+      const today = { ...base, events: [...base.events, ...mine].sort((a, b) => b.id - a.id) }
       // the backend localises status.text via ?lang; the fixtures are English, so swap in its Korean sentence
       const ko = lang === 'ko' && STATUS_TEXT_KO[crewId]
       return ko ? { ...today, status: { ...today.status, text: ko } } : today
@@ -118,7 +118,7 @@ export const api = {
     request(`/crew/${crewId}/checkin?lang=${lang}`, checkinFixture(body), { method: 'POST', body: JSON.stringify(body) }),
   // POST /crew/{id}/symptom {text, lang} -> { event_id, needs_question, question? } (CONTRACT §5)
   postSymptom: (crewId, text, lang) =>
-    request(`/crew/${crewId}/symptom`, () => fixtureSymptom({ text }), {
+    request(`/crew/${crewId}/symptom`, () => fixtureSymptom({ crewId, text }), {
       method: 'POST',
       body: JSON.stringify({ text, lang }),
     }),
