@@ -65,6 +65,7 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 - **즉시 경보 코드**(규칙이 모델보다 먼저 키워드로 잡음): `chest_pain, shortness_of_breath, crisis` + 의식 변화 키워드.
 
 **체크인 종류** `checkin.kind`: `morning | evening | weekly | monthly | quarterly`
+**판정 보류 이유** `metrics[].hold_reason`: `insufficient_baseline | missing_reading | zero_variance` (§5.3)
 **이벤트 상태** `event.status`: `open | closed` · **무시 이유** `override.reason`: `post_exercise | wear_fault | action_done | other`
 **전송** `tx.priority`: `warning | caution | daily` · `tx.status`: `queued | sent | acked | missing`
 **언어** `lang`: `ko | en` · **민감도** `sensitivity`: `standard(2/3σ) | sensitive(1.8/2.6) | relaxed(2.3/3.3)`
@@ -92,8 +93,9 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 | 메서드 | 경로 | 요청 | 응답 |
 |---|---|---|---|
 | GET | `/crew` | | CMO용 4명 요약 |
-| GET | `/crew/{id}/today` | | `{status:{level,text}, guide:[guide_item], metrics:[{metric,value,baseline,sd,z}], events:[event], checkin:{morning_done,evening_done}, streak}` |
-| POST | `/crew/{id}/checkin` | `{kind, answers:{}, free_text?}` | 갱신된 `/today` |
+| GET | `/mission` | | `{clock:{sol,time}, environment, one_way_delay_min, next_window}` (§5.1) |
+| GET | `/crew/{id}/today?lang=` | | `{status:{level,text}, guide:[guide_item], metrics:[{metric,value,baseline,sd,z,level,hold_reason}], events:[event], checkin:{morning_done,evening_done}, streak}` (§5.3) |
+| POST | `/crew/{id}/checkin?lang=` | `{kind, answers:{…}, free_text?}` (§5.2) | 갱신된 `/today` |
 | POST | `/crew/{id}/symptom` | `{text, lang}` | `{event_id, needs_question, question?}` |
 | POST | `/events/{id}/answer` | `{answer:"yes"\|"no"}` | 202, 이후 `GET /events/{id}/stream` (SSE, `stage`) |
 | GET | `/events/{id}` | | event 전체 (§명세 9 엔티티) |
@@ -105,9 +107,69 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 | GET | `/docs` · `/docs/{id}` | | 문서 목록 / `{id,title,org,kind,paragraphs:[{n,text}]}` |
 | GET/POST | `/tx` · `/tx/send` | `{event_id}` 또는 `{daily:true}` | tx_packet 목록 |
 | GET/PUT | `/settings` | | settings |
-| POST | `/demo/clock` · `/demo/reset` · `/demo/viewer/{id}` | `{sol,time}` 또는 `{advance:"2h"}` | |
+| POST | `/demo/clock` | `{sol,time}` 또는 `{advance:"2h"}` | `/mission`과 같은 모양 (§5.1) |
+| POST | `/demo/reset` · `/demo/viewer/{id}` | | |
 
 프론트 라우트(목업 파일명과 동일): `/today /body /trends /log /procedures /crew /settings /events/:id /warning`.
+
+`?lang=ko|en`(기본 `en`)은 `/today`와 `/checkin` 응답의 `status.text`만 현지화한다. 가이드 문장은 현재 영어.
+
+### 5.1 `/mission` — 임무 시계와 통신 상태 **[추가 11/14, PR #1·#2 구현 기준]**
+
+```json
+{ "clock": { "sol": 16, "time": "06:12" }, "environment": "mars_base", "one_way_delay_min": 12, "next_window": "08:00" }
+```
+
+| 필드 | 형식 | 뜻 |
+|---|---|---|
+| `clock.sol` | 정수 ≥ 1 | 임무 일차. 임무 시작일이 1 |
+| `clock.time` | `"HH:MM"` (24시간) | 가상 시계의 현재 시각 |
+| `environment` | 문자열 | 임무 환경. 현재 값은 `mars_base` 하나. 프론트는 i18n 키 `env.<값>`으로 표시 |
+| `one_way_delay_min` | 정수(분) | 지구까지 편도 통신 지연 |
+| `next_window` | `"HH:MM"` | 다음 통신 창이 열리는 시각. 창은 임무 시각 08:00·20:00 (명세 §16) |
+
+- `POST /demo/clock` 요청은 `{sol, time}`(둘 다 필수) 또는 `{advance}` 중 **하나만**. `advance`는 `"<1~9999>h"` 또는 `"<1~9999>m"` (예: `"2h"`, `"30m"`).
+- 응답은 바뀐 시계를 담은 `/mission`과 같은 모양이다.
+
+### 5.2 체크인 `answers` 키 **[추가 11/14, PR #1·#2 구현 기준]**
+
+```json
+{ "kind": "morning", "answers": { "sleep_quality": 4, "mood": 3, "fatigue": 2, "symptoms": "none" } }
+```
+
+| 키 | 형식 | 어느 kind | 뜻 (1 → 5) |
+|---|---|---|---|
+| `sleep_quality` | 정수 1~5 | `morning` 필수 | 매우 나쁨 → 매우 좋음 |
+| `mood` | 정수 1~5 | `morning` 필수 | 매우 낮음 → 매우 좋음 |
+| `fatigue` | 정수 1~5 | `morning` 필수 | 없음 → 탈진 |
+| `symptoms` | `"none"` \| `"yes"` | 선택 (프론트 기본 `none`) | `yes`면 프론트가 증상 대화를 열고, 문장은 `POST /crew/{id}/symptom`으로 따로 보낸다 |
+| `stress` | 정수 1~5 | `evening` | 없음 → 매우 높음 (모델 ② `MoodScore.stress`와 같은 방향) |
+| `day_rating` | 정수 1~5 | `evening` **[제안, 미구현]** | 매우 나쁨 → 매우 좋음 (명세 §8 "오늘 어땠는지") |
+| `hydration_ok` | bool | `evening` **[제안, 미구현]** | 물을 충분히 마셨는지 (명세 §8) |
+
+- 척도 키는 **정수만** 받는다. 문자열 `"3"`, 소수, 범위 밖 값은 422 `invalid_request`.
+- `free_text`는 선택, 최대 4000자.
+- 같은 승무원·같은 sol·같은 `kind`로 다시 보내면 덮어쓴다(하루 한 건).
+- 표에 없는 키도 백엔드가 막지는 않지만, **새 키를 쓰려면 먼저 이 표에 추가한다.** `weekly`·`monthly`·`quarterly`의 키는 만들 때 여기에 적는다.
+
+### 5.3 지표별 `level` — `/today`의 `metrics[]` **[추가 11/14, PR #1·#2 구현 기준]**
+
+```json
+{ "metric": "hr", "value": 73, "baseline": 68, "sd": 2, "z": 2.5, "level": "caution", "hold_reason": null }
+```
+
+`level`은 백엔드 규칙 엔진이 지표마다 낸 판정이고 값은 §3의 `level` enum이다. **프론트는 `z`로 다시 계산하지 않고 `level`만 보고 표시한다.** 기준값은 민감도 `standard`(2.0 / 3.0, `contracts/enums.json`의 `sensitivity`).
+
+| `level` | 조건 |
+|---|---|
+| `hold` | `z`가 null이라 판정할 수 없음. 이유는 `hold_reason` |
+| `warning` | \|z\| ≥ 3.0 |
+| `caution` | 2.0 ≤ \|z\| < 3.0 이고, 오늘 벗어난 지표가 2개 이상이거나 이 지표가 어제도 벗어났음 |
+| `advisory` | 2.0 ≤ \|z\| < 3.0 이고 위 조건이 아님 (지표 1개, 하루) |
+| `normal` | \|z\| < 2.0 |
+
+- `hold_reason`: `insufficient_baseline`(기준선 14일 미만) · `missing_reading`(오늘 측정값 없음) · `zero_variance`(기준선 표준편차 0). `hold`가 아니면 null. `hold`일 때 `value`·`baseline`·`sd`·`z`는 null일 수 있다.
+- 전체 판정 `status.level`은 지표별 `level`과 오늘 이벤트 `level` 중 가장 높은 것이다(`warning` > `caution` > `advisory`). 벗어난 지표가 없는데 `hold` 지표가 있으면 `hold`, 그 외는 `normal`.
 
 ## 6. 작업 분담과 넘겨주는 것 (초안, 팀 미팅에서 확정)
 
