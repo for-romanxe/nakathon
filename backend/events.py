@@ -1,11 +1,11 @@
 import json
 import re
 import sqlite3
-from datetime import timedelta
+from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from backend.seed import CONTRACT, MISSION_START
+from backend.seed import CONTRACT
 
 
 # Demo keyword rules run before model inference. The AI integration will handle
@@ -33,7 +33,8 @@ class SymptomInput(BaseModel):
 
 
 def save_event(
-    connection: sqlite3.Connection, crew_id: str, sol: int, report: SymptomInput, current: dict
+    connection: sqlite3.Connection, crew_id: str, sol: int, report: SymptomInput, current: dict,
+    timestamp: datetime,
 ) -> int:
     codes = [
         code for code in CONTRACT["immediate_warning_codes"]
@@ -45,11 +46,10 @@ def save_event(
         level = "warning"
     elif level == "advisory":
         level = "caution"
-    ts = MISSION_START + timedelta(days=sol - 1, hours=10, minutes=40)
     cursor = connection.execute(
         """INSERT INTO event (crew_id, mission_day, ts, lang, symptom_text, codes, level, findings)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-        (crew_id, sol, ts.isoformat(), report.lang, report.text, json.dumps(codes), level,
+        (crew_id, sol, timestamp.isoformat(), report.lang, report.text, json.dumps(codes), level,
          json.dumps(current["metrics"], allow_nan=False)),
     )
     return cursor.lastrowid

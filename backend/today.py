@@ -14,6 +14,13 @@ STATUS_TEXT = {
     "warning": "The demo rules flagged a reading or reported symptom.",
     "hold": "There are not enough comparable readings to assess today's status.",
 }
+STATUS_TEXT_KO = {
+    "normal": "오늘 측정값은 개인 기준 범위 안에 있어요.",
+    "advisory": "한 지표가 개인 기준 범위를 벗어났어요.",
+    "caution": "개인 기준 범위를 벗어난 지표를 확인해 주세요.",
+    "warning": "시연 규칙이 측정값 또는 보고된 증상에 경보를 표시했어요.",
+    "hold": "오늘 상태를 판단하기에 비교 가능한 기록이 부족해요.",
+}
 
 
 def metric_at(days: dict[int, float], sol: int, excluded_days: frozenset[int] = frozenset()) -> dict:
@@ -28,7 +35,7 @@ def metric_at(days: dict[int, float], sol: int, excluded_days: frozenset[int] = 
     return {"value": value, "baseline": baseline, "sd": sd, "z": z}
 
 
-def today(connection: sqlite3.Connection, crew_id: str, sol: int) -> dict:
+def today(connection: sqlite3.Connection, crew_id: str, sol: int, lang: str = "en") -> dict:
     event_rows = connection.execute(
         """SELECT * FROM event WHERE crew_id = ? AND mission_day BETWEEN ? AND ?
            ORDER BY id DESC""",
@@ -54,10 +61,23 @@ def today(connection: sqlite3.Connection, crew_id: str, sol: int) -> dict:
     advisory_limit, warning_limit = CONTRACT["sensitivity"]["standard"]
     outliers = [metric for metric in metrics if metric["z"] is not None
                 and abs(metric["z"]) >= advisory_limit]
-    repeated = any(
-        abs(metric_at(readings[metric["metric"]], sol - 1, excluded_days)["z"] or 0) >= advisory_limit
-        for metric in outliers
-    )
+    repeated = set()
+    for metric in outliers:
+        previous = metric_at(readings[metric["metric"]], sol - 1, excluded_days)["z"]
+        if previous is not None and abs(previous) >= advisory_limit:
+            repeated.add(metric["metric"])
+    for metric in metrics:
+        z = metric["z"]
+        if z is None:
+            metric["level"] = "hold"
+        elif abs(z) >= warning_limit:
+            metric["level"] = "warning"
+        elif abs(z) < advisory_limit:
+            metric["level"] = "normal"
+        elif len(outliers) >= 2 or metric["metric"] in repeated:
+            metric["level"] = "caution"
+        else:
+            metric["level"] = "advisory"
     event_levels = {event["level"] for event in events}
     if "warning" in event_levels or any(abs(metric["z"]) >= warning_limit for metric in outliers):
         level = "warning"
@@ -94,7 +114,7 @@ def today(connection: sqlite3.Connection, crew_id: str, sol: int) -> dict:
         item["done"] = bool(item["done"])
         guide.append(item)
     return {
-        "status": {"level": level, "text": STATUS_TEXT[level]},
+        "status": {"level": level, "text": (STATUS_TEXT_KO if lang == "ko" else STATUS_TEXT)[level]},
         "guide": guide,
         "metrics": metrics,
         "events": events,

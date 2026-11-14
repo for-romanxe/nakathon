@@ -8,7 +8,7 @@ python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 ```
 
 The server creates and seeds `data/crew-health.sqlite3` on startup. It keeps
-existing rows across restarts. The API uses a fixed demo day (Sol 16) and exposes
+existing rows across restarts. The demo clock starts at Sol 16, 06:12 and exposes
 synthetic crew data on localhost. Use only synthetic data with this demo endpoint.
 
 | Request | Expected status level |
@@ -30,13 +30,25 @@ and both spellings work in these URLs.
 Example morning request:
 
 ```json
-{"kind":"morning","answers":{"sleep_quality":4,"mood":3,"fatigue":2}}
+{"kind":"morning","answers":{"sleep_quality":4,"mood":3,"fatigue":2,"symptoms":"none"}}
 ```
 
 Morning submissions mark the sleep and mood review items complete and update
 the activity review based on the existing rule status. Submitting the same
 kind for the same sol updates the existing entry. `free_text` is optional
 and stored as entered.
+
+The three morning scores are integers from 1 to 5. Optional `symptoms`
+accepts `none` or `yes`. Symptom details are submitted to the symptom endpoint.
+
+- `GET /crew` returns the synthetic roster with `id`, `name`, `role`, and `cmo`.
+- Today metrics include `level` and the status message supports `?lang=ko`
+  or `?lang=en` on Today and check-in. Guide text is currently English.
+- `GET /mission` returns `clock`, `environment`, `one_way_delay_min`, and
+  `next_window`. The demo uses a 12-minute one-way delay and windows at
+  08:00 and 20:00 mission time.
+- `POST /demo/clock` accepts `{"sol":16,"time":"14:00"}` or
+  `{"advance":"2h"}`. The clock is process-local and resets on restart.
 
 `POST /crew/c1/symptom` accepts `{"text":"I feel dizzy","lang":"en"}` and
 returns an event ID. Read the saved symptom report and its original readings

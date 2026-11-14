@@ -1,11 +1,11 @@
 import json
 import sqlite3
-from datetime import timedelta
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from backend.seed import CONTRACT, MISSION_START
+from backend.seed import CONTRACT
 
 
 SCALES = ("sleep_quality", "mood", "fatigue", "stress")
@@ -29,6 +29,8 @@ class Checkin(BaseModel):
                 score = self.answers[key]
                 if type(score) is not int or not 1 <= score <= 5:
                     raise ValueError(f"{key} must be an integer from 1 to 5.")
+        if "symptoms" in self.answers and self.answers["symptoms"] not in ("none", "yes"):
+            raise ValueError("symptoms must be none or yes.")
         try:
             json.dumps(self.answers, allow_nan=False)
         except ValueError as error:
@@ -37,10 +39,9 @@ class Checkin(BaseModel):
 
 
 def save_checkin(
-    connection: sqlite3.Connection, crew_id: str, sol: int, checkin: Checkin, level: str
+    connection: sqlite3.Connection, crew_id: str, sol: int, checkin: Checkin, level: str,
+    timestamp: datetime,
 ) -> None:
-    hour = 6 if checkin.kind == "morning" else 20
-    timestamp = MISSION_START + timedelta(days=sol - 1, hours=hour)
     connection.execute(
         """INSERT INTO checkin (crew_id, mission_day, kind, answers, free_text, at)
            VALUES (?, ?, ?, ?, ?, ?)

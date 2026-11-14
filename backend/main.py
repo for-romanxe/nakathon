@@ -1,4 +1,6 @@
 from contextlib import asynccontextmanager, closing
+from threading import Lock
+from typing import Literal
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
@@ -8,7 +10,8 @@ from fastapi.responses import JSONResponse
 from backend.checkin import Checkin, save_checkin
 from backend.db import connect, initialize
 from backend.events import SymptomInput, event_payload, save_event
-from backend.seed import DEMO_DB, DEMO_SOL, seed
+from backend.mission import ClockUpdate, DEMO_TIME, mission_sol, mission_status
+from backend.seed import DEMO_DB, seed
 from backend.today import today
 
 
@@ -20,6 +23,9 @@ def crew_not_found() -> JSONResponse:
 
 
 def create_app(db_path=DEMO_DB) -> FastAPI:
+    clock = DEMO_TIME
+    clock_lock = Lock()
+
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         initialize(db_path)
@@ -42,26 +48,45 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             content={"error": {"code": "invalid_request", "message": error.errors()[0]["msg"]}},
         )
 
+    @app.get("/crew")
+    def list_crew():
+        with closing(connect(db_path)) as connection:
+            rows = connection.execute("SELECT id, name, role, cmo FROM crew ORDER BY id")
+            return [dict(row, cmo=bool(row["cmo"])) for row in rows]
+
+    @app.get("/mission")
+    def read_mission():
+        return mission_status(clock)
+
+    @app.post("/demo/clock")
+    def update_clock(update: ClockUpdate):
+        nonlocal clock
+        with clock_lock:
+            clock = update.apply(clock)
+            return mission_status(clock)
+
     @app.get("/crew/{crew_id}/today")
-    def read_today(crew_id: str):
+    def read_today(crew_id: str, lang: Literal["en", "ko"] = "en"):
         crew_id = crew_id.lower()
         with closing(connect(db_path)) as connection:
             crew = connection.execute("SELECT id FROM crew WHERE id = ?", (crew_id,)).fetchone()
             if crew is None:
                 return crew_not_found()
-            return today(connection, crew_id, DEMO_SOL)
+            return today(connection, crew_id, mission_sol(clock), lang)
 
     @app.post("/crew/{crew_id}/checkin")
-    def submit_checkin(crew_id: str, checkin: Checkin):
+    def submit_checkin(crew_id: str, checkin: Checkin, lang: Literal["en", "ko"] = "en"):
         crew_id = crew_id.lower()
         with closing(connect(db_path)) as connection, connection:
             connection.execute("BEGIN IMMEDIATE")
             crew = connection.execute("SELECT id FROM crew WHERE id = ?", (crew_id,)).fetchone()
             if crew is None:
                 return crew_not_found()
-            current = today(connection, crew_id, DEMO_SOL)
-            save_checkin(connection, crew_id, DEMO_SOL, checkin, current["status"]["level"])
-            return today(connection, crew_id, DEMO_SOL)
+            timestamp = clock
+            sol = mission_sol(timestamp)
+            current = today(connection, crew_id, sol, lang)
+            save_checkin(connection, crew_id, sol, checkin, current["status"]["level"], timestamp)
+            return today(connection, crew_id, sol, lang)
 
     @app.post("/crew/{crew_id}/symptom")
     def report_symptom(crew_id: str, report: SymptomInput):
@@ -71,8 +96,10 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             crew = connection.execute("SELECT id FROM crew WHERE id = ?", (crew_id,)).fetchone()
             if crew is None:
                 return crew_not_found()
-            current = today(connection, crew_id, DEMO_SOL)
-            event_id = save_event(connection, crew_id, DEMO_SOL, report, current)
+            timestamp = clock
+            sol = mission_sol(timestamp)
+            current = today(connection, crew_id, sol, report.lang)
+            event_id = save_event(connection, crew_id, sol, report, current, timestamp)
             return {"event_id": event_id, "needs_question": False}
 
     @app.get("/events/{event_id}")
