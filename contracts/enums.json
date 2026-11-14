@@ -51,6 +51,11 @@
   "warning",
   "hold"
  ],
+ "hold_reason": [
+  "insufficient_baseline",
+  "missing_reading",
+  "zero_variance"
+ ],
  "symptom_codes": [
   "chest_pain",
   "shortness_of_breath",
