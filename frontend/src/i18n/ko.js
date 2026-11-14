@@ -1,5 +1,15 @@
 // Korean dictionary (secondary). Keys must match en.js.
 export default {
+  'preflight.title': '비행 전 기준값',
+  'preflight.metric': '지표',
+  'preflight.value': '값',
+  'preflight.save': '저장',
+  'preflight.saved': '저장했습니다.',
+  'preflight.invalid': '0 이상의 숫자를 입력하세요.',
+  'preflight.fixture': '비행 전 기준값은 백엔드가 필요합니다. 불러오고 저장하려면 백엔드를 연결하세요(VITE_USE_FIXTURES=false).',
+  'trends.preflight': '비행 전',
+  'trends.preflight_synthetic': '합성',
+  'trends.preflight_manual': '직접 입력',
   'login.title': '로그인',
   'login.crew': '승무원',
   'login.code': '접근 코드',

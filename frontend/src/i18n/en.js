@@ -1,5 +1,15 @@
 // English dictionary (primary). Every key here must also exist in ko.js.
 export default {
+  'preflight.title': 'Preflight values',
+  'preflight.metric': 'Metric',
+  'preflight.value': 'Value',
+  'preflight.save': 'Save',
+  'preflight.saved': 'Saved.',
+  'preflight.invalid': 'Enter a number that is zero or greater.',
+  'preflight.fixture': 'Preflight values need the backend. Connect the backend (VITE_USE_FIXTURES=false) to load and save them.',
+  'trends.preflight': 'Preflight',
+  'trends.preflight_synthetic': 'synthetic',
+  'trends.preflight_manual': 'manually entered',
   'login.title': 'Sign in',
   'login.crew': 'Crew member',
   'login.code': 'Access code',

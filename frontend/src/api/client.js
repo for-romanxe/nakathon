@@ -85,6 +85,14 @@ export const api = {
       return { ...series, points: series.points.slice(-days) }
     },
   ),
+  // GET/PUT /crew/{id}/preflight -> { values: { metric: { value, source } } }; PUT body { values: { metric: number } }
+  // No fixture: the form shows a connect-the-backend message instead of faking storage
+  getPreflight: (crewId) => request(`/crew/${crewId}/preflight`, () => {
+    throw new ApiError('fixture_unsupported', 'Preflight values need the backend')
+  }),
+  putPreflight: (crewId, body) => request(`/crew/${crewId}/preflight`, () => {
+    throw new ApiError('fixture_unsupported', 'Preflight values need the backend')
+  }, { method: 'PUT', body: JSON.stringify(body) }),
   getSession: () => request('/session', { login_required: false, crew_id: null }),
   login: (crew_id, access_code) => request('/session/login', null, {
     method: 'POST', body: JSON.stringify({ crew_id, access_code }),

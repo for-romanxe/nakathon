@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../api/client.js'
 import { useT } from '../i18n/index.jsx'
 import { CREW_IDS, CURRENT_CREW, switchViewer } from '../session.js'
+import PreflightForm from './PreflightForm.jsx'
 
 export default function Settings({ loginRequired }) {
   const { t } = useT()
@@ -49,6 +50,7 @@ export default function Settings({ loginRequired }) {
         }} /> {t('settings.cmo_access')}
       </label>
       {error && <p role="alert" className="error">{t('common.error')}</p>}
+      <PreflightForm />
     </section>
   )
 }
