@@ -38,6 +38,46 @@ class Verify(unittest.TestCase):
         self.assertIn("schema", verify(dict(GOOD, extra=1), FIND, "caution", DOCS)["fails"])
 
 
+class FalsePositives(unittest.TestCase):
+    """평가 30문항과 연습 12문항에서 실제로 나온 오탐. 고친 뒤에도 진짜 위반은 그대로 잡혀야 한다."""
+
+    def fails(self, lines, level="caution", **kw):
+        return verify(dict(GOOD, lines=lines), FIND, level, DOCS, **kw)["fails"]
+
+    def test_verbs_ending_in_ipnida_are_not_the_copula(self):
+        # "움직입니다"는 동사(움직이다)다. "~입니다"로 단정하는 문장만 막는다.
+        self.assertEqual(self.fails(["자세를 바꿀 때는 지지대를 잡고 천천히 움직입니다."]), [])
+        self.assertEqual(self.fails(["쉬는 동안에는 운동 강도를 줄입니다."]), [])
+        self.assertIn("wording", self.fails(["기립성 저혈압입니다."]))
+        self.assertIn("wording", self.fails(["흔한 증상입니다. 천천히 움직입니다."]))      # 동사가 섞여 있어도 단정은 잡는다
+        self.assertIn("wording", self.fails(["기립성 저혈압으로 보입니다."]))              # 목록에 없는 말은 그대로 막는다
+        r = verify(dict(GOOD, lines=["기립성 저혈압입니다."]), FIND, "caution", DOCS)
+        self.assertEqual(r["detail"], {"wording": ["입니다"]})                           # 알려 주는 표현은 그대로
+
+    def test_attentiveness_is_not_a_caution_word(self):
+        # "주의력"·"alertness"는 주의 단계를 뜻하는 말이 아니다.
+        self.assertEqual(self.fails(["잠이 부족하면 다음 날 주의력이 떨어질 가능성이 있어요."], "advisory"), [])
+        self.assertEqual(self.fails(["Short sleep may lower your alertness the next day."], "advisory"), [])
+        self.assertIn("level", self.fails(["주의가 필요해요."], "advisory"))
+        self.assertIn("level", self.fails(["주의력이 떨어지니 주의하세요."], "advisory"))
+        self.assertIn("level", self.fails(["Stay alert and rest."], "advisory"))
+        self.assertIn("level", self.fails(["This is an alert."], "advisory"))
+
+    def test_a_possibility_of_an_infection_is_not_a_diagnosis(self):
+        self.assertEqual(self.fails(["There is a possibility of an infection after close contact."]), [])
+        self.assertEqual(self.fails(["There is a chance of a stroke-like symptom, so rest."]), [])
+        self.assertIn("wording", self.fails(["This is a heart attack."]))
+        self.assertIn("wording", self.fails(["It is a serious infection."]))
+
+    def test_another_candidate_may_be_named_but_not_a_condition_outside_the_candidates(self):
+        # 규칙 엔진이 후보로 넘긴 상태는 문장에 나와도 된다. 후보 밖 상태 이름은 그대로 막는다.
+        line = ["어지러움이 이어지면 탈수 가능성도 함께 살펴보는 게 좋아요."]
+        self.assertIn("wording", self.fails(line))                                                      # 후보를 모르면 예전처럼 막는다
+        self.assertEqual(self.fails(line, candidates=["orthostatic_intolerance", "dehydration"]), [])
+        self.assertIn("wording", self.fails(line, candidates=["orthostatic_intolerance", "sleep_deficit"]))
+        self.assertIn("wording", self.fails(["Dehydration is possible too."], candidates=["orthostatic_intolerance"]))
+
+
 class Numbers(unittest.TestCase):
     def fails(self, line, findings):
         return verify(dict(GOOD, lines=[line]), findings, "caution", DOCS)["fails"]
