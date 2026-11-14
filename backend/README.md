@@ -42,7 +42,8 @@ The three morning scores are integers from 1 to 5. Optional `symptoms`
 accepts `none` or `yes`. Symptom details are submitted to the symptom endpoint.
 
 - `GET /crew` returns the synthetic roster with `id`, `name`, `role`, and `cmo`.
-- Today metrics include `level` and the status message supports `?lang=ko`
+- Today metrics include `level` and `hold_reason` (`insufficient_baseline`,
+  `zero_variance`, `missing_reading`, or null). Status messages support `?lang=ko`
   or `?lang=en` on Today and check-in. Guide text is currently English.
 - `GET /mission` returns `clock`, `environment`, `one_way_delay_min`, and
   `next_window`. The demo uses a 12-minute one-way delay and windows at

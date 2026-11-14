@@ -21,6 +21,11 @@ STATUS_TEXT_KO = {
     "warning": "시연 규칙이 측정값 또는 보고된 증상에 경보를 표시했어요.",
     "hold": "오늘 상태를 판단하기에 비교 가능한 기록이 부족해요.",
 }
+HOLD_TEXT = {
+    "insufficient_baseline": ("The 14-day baseline is incomplete.", "14일 기준선 기록이 부족해요."),
+    "zero_variance": ("The baseline readings did not vary.", "기준선 측정값에 변화가 없어요."),
+    "missing_reading": ("Today's reading is missing.", "오늘 측정값이 없어요."),
+}
 
 
 def metric_at(days: dict[int, float], sol: int, excluded_days: frozenset[int] = frozenset()) -> dict:
@@ -32,7 +37,14 @@ def metric_at(days: dict[int, float], sol: int, excluded_days: frozenset[int] = 
     baseline = mean(history) if len(history) == BASELINE_DAYS else None
     sd = pstdev(history) if baseline is not None else None
     z = (value - baseline) / sd if value is not None and sd else None
-    return {"value": value, "baseline": baseline, "sd": sd, "z": z}
+    hold_reason = None
+    if baseline is None:
+        hold_reason = "insufficient_baseline"
+    elif value is None:
+        hold_reason = "missing_reading"
+    elif sd == 0:
+        hold_reason = "zero_variance"
+    return {"value": value, "baseline": baseline, "sd": sd, "z": z, "hold_reason": hold_reason}
 
 
 def today(connection: sqlite3.Connection, crew_id: str, sol: int, lang: str = "en") -> dict:
@@ -113,8 +125,13 @@ def today(connection: sqlite3.Connection, crew_id: str, sol: int, lang: str = "e
         item["cites"] = json.loads(item["cites"])
         item["done"] = bool(item["done"])
         guide.append(item)
+    status_text = (STATUS_TEXT_KO if lang == "ko" else STATUS_TEXT)[level]
+    if level == "hold":
+        reasons = {metric["hold_reason"] for metric in metrics}
+        language = 1 if lang == "ko" else 0
+        status_text = " ".join(messages[language] for reason, messages in HOLD_TEXT.items() if reason in reasons)
     return {
-        "status": {"level": level, "text": (STATUS_TEXT_KO if lang == "ko" else STATUS_TEXT)[level]},
+        "status": {"level": level, "text": status_text},
         "guide": guide,
         "metrics": metrics,
         "events": events,
