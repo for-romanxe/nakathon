@@ -6,6 +6,8 @@ import Topbar from './components/Topbar.jsx'
 import Today from './pages/Today.jsx'
 import Crew from './pages/Crew.jsx'
 import Placeholder from './pages/Placeholder.jsx'
+import Log from './pages/Log.jsx'
+import EventDetail from './pages/EventDetail.jsx'
 
 export default function App() {
   return (
@@ -18,11 +20,11 @@ export default function App() {
           <Route path="/today" element={<Today />} />
           <Route path="/body" element={<Placeholder titleKey="nav.body" />} />
           <Route path="/trends" element={<Placeholder titleKey="nav.trends" />} />
-          <Route path="/log" element={<Placeholder titleKey="nav.log" />} />
+          <Route path="/log" element={<Log />} />
           <Route path="/procedures" element={<Placeholder titleKey="nav.procedures" />} />
           <Route path="/crew" element={<Crew />} />
           <Route path="/settings" element={<Placeholder titleKey="nav.settings" />} />
-          <Route path="/events/:id" element={<Placeholder titleKey="page.event" />} />
+          <Route path="/events/:id" element={<EventDetail />} />
           <Route path="/warning" element={<Placeholder titleKey="page.warning" />} />
         </Routes>
       </main>

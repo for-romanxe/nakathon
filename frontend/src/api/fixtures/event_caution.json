@@ -1,0 +1,121 @@
+{
+  "_note": "Fixture for GET /events/{id} (backend/events.py event_payload). risk, explanation and runs are filled here to build the screen; the backend returns null/[] until the AI pipeline (PR #3) is wired in. Numbers are placeholders.",
+  "id": 101,
+  "crew": "c1",
+  "ts": "2026-11-14T10:40:00+00:00",
+  "title": "Symptom report",
+  "symptom_text": "I feel dizzy and a bit nauseous when I stand up",
+  "codes": [
+    "dizziness",
+    "nausea"
+  ],
+  "level": "caution",
+  "findings": [
+    {
+      "metric": "hr",
+      "value": 73,
+      "baseline": 68,
+      "sd": 2,
+      "z": 2.5,
+      "hold_reason": null,
+      "level": "caution"
+    },
+    {
+      "metric": "hrv",
+      "value": 44.5,
+      "baseline": 52,
+      "sd": 3,
+      "z": -2.5,
+      "hold_reason": null,
+      "level": "caution"
+    },
+    {
+      "metric": "eda",
+      "value": 2,
+      "baseline": 2,
+      "sd": 0.2,
+      "z": 0,
+      "hold_reason": null,
+      "level": "normal"
+    },
+    {
+      "metric": "temp",
+      "value": 33,
+      "baseline": 33,
+      "sd": 0.2,
+      "z": 0,
+      "hold_reason": null,
+      "level": "normal"
+    },
+    {
+      "metric": "sleep",
+      "value": 7.5,
+      "baseline": 7.5,
+      "sd": 0.3,
+      "z": 0,
+      "hold_reason": null,
+      "level": "normal"
+    },
+    {
+      "metric": "act",
+      "value": 150,
+      "baseline": 150,
+      "sd": 8,
+      "z": 0,
+      "hold_reason": null,
+      "level": "normal"
+    }
+  ],
+  "risk": {
+    "category": "cardiovascular",
+    "condition_id": "orthostatic_intolerance",
+    "actions": [
+      {
+        "text": "Drink 500 mL of water with electrolytes",
+        "doc": "hrp:cv-01#p3"
+      },
+      {
+        "text": "Re-measure heart rate in 30 minutes",
+        "doc": "hrp:sm-03#p5"
+      },
+      {
+        "text": "Stand-up recheck at 14:00",
+        "doc": "hrp:cv-01#p4"
+      }
+    ]
+  },
+  "explanation": {
+    "category": "cardiovascular",
+    "condition_id": "orthostatic_intolerance",
+    "lines": [
+      "Dizziness together with a higher heart rate suggests a possibility of orthostatic intolerance.",
+      "Stand up slowly and take fluids and salt first."
+    ],
+    "cites": [
+      "hrp:cv-01#p3",
+      "hrp:sm-03#p5"
+    ]
+  },
+  "runs": [
+    {
+      "n": 1,
+      "ok": false,
+      "fails": [
+        "numbers"
+      ],
+      "note": "Run 1 said heart rate 78; the reading is 73. Discarded."
+    },
+    {
+      "n": 2,
+      "ok": true,
+      "fails": [],
+      "note": ""
+    }
+  ],
+  "verified": 5,
+  "status": "open",
+  "closed_reason": null,
+  "shared": false,
+  "tx_ref": null,
+  "urgent": false
+}
