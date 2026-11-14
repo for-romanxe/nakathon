@@ -330,48 +330,55 @@ a.cite:hover { text-decoration: underline; }
 .body-legend .sw { width: 12px; height: 12px; border-radius: 2px; }
 .body-figure-panel { display: flex; flex-direction: column; }
 .body-figure { display: block; width: 100%; height: min(70vh, 600px); padding: 12px; }
-/* Hologram: a dark projection bay with a faint cyan glow and fixed scan lines over the 3D canvas */
-/* Hologram on a blueprint sheet: fine and major grid lines, a faint glow behind the figure, callouts at the sides */
+/* Body on a blueprint sheet (after redradman/artemis, MIT): cyanotype navy, a 20px / 80px grid, darker corners.
+   Line colours are the reference's blueprint pair: paper-cyan lines, sky-cyan for the selected part. */
 .body-figure.holo {
-  --grid: color-mix(in srgb, var(--accent) 7%, transparent);
-  --grid-major: color-mix(in srgb, var(--accent) 14%, transparent);
+  --bp-line: #dceafe;
+  --bp-accent: #8fd2ff;
+  --bp-navy: #0b2e55;
   position: relative; padding: 0; overflow: hidden; touch-action: none;
-  background:
-    linear-gradient(var(--grid-major) 1px, transparent 1px) 0 0 / 100px 100px,
-    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px) 0 0 / 100px 100px,
-    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 20px 20px,
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 20px 20px,
-    radial-gradient(ellipse 55% 70% at 50% 62%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%),
-    var(--well);
+  background-color: var(--bp-navy);
+  background-image:
+    radial-gradient(ellipse 130% 100% at 50% 50%, transparent 45%, rgba(0, 0, 0, 0.35) 100%),
+    linear-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 80px 80px, 80px 80px, 20px 20px, 20px 20px;
 }
 .holo-canvas { position: absolute; inset: 0; }
 .holo-canvas canvas { display: block; width: 100%; height: 100%; cursor: grab; }
-.holo-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
-.holo-lines g { color: color-mix(in srgb, var(--text-2) 60%, transparent); }
-.holo-lines g.lv-caution, .holo-lines g.lv-warning { color: var(--status); }
-.holo-lines g.on { color: var(--accent); }
-.holo-lines polyline { fill: none; stroke: currentColor; stroke-width: 1; }
-.holo-lines circle { fill: currentColor; }
-.holo-callout {
-  position: absolute; top: 0; left: 0; display: inline-flex; align-items: center; gap: 6px;
-  max-width: 30%; min-height: 26px; padding: 3px 8px; cursor: pointer;
-  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.04em; line-height: 1.25; text-align: left; color: var(--text);
-  background: color-mix(in srgb, var(--well) 82%, transparent); border: 1px solid var(--line); border-radius: 3px;
+/* Leader labels: a thin line from a dot on the part to a tick dot, then the name in spaced capitals */
+.holo-labels { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.holo-label { cursor: pointer; }
+.holo-label:focus { outline: none; }
+.holo-leader { stroke: color-mix(in srgb, var(--bp-line) 45%, transparent); stroke-width: 0.75; transition: stroke 0.25s; }
+.holo-end, .holo-tick { fill: var(--bp-line); transition: fill 0.25s; }
+.holo-text {
+  pointer-events: auto; user-select: none;
+  font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  fill: color-mix(in srgb, var(--bp-line) 95%, transparent); transition: fill 0.25s;
 }
-.holo-callout.lv-caution, .holo-callout.lv-warning { color: var(--status); border-color: color-mix(in srgb, var(--status) 55%, var(--line)); }
-.holo-callout.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.holo-callout:hover { border-color: var(--accent); }
-.holo-callout-mark {
-  flex: none; display: inline-grid; place-items: center; width: 15px; height: 15px; border-radius: 50%;
-  border: 1px solid currentColor; font-weight: 700; font-size: 0.62rem;
-}
-.holo-controls { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; }
+.holo-status, .holo-mark { font-weight: 700; }
+.holo-label.lv-caution .holo-status, .holo-label.lv-warning .holo-status { fill: var(--status); }
+.holo-mark { fill: var(--caution); }
+.holo-label:hover .holo-leader { stroke: var(--bp-line); }
+.holo-label:hover .holo-text, .holo-label:hover .holo-tick { fill: #fff; }
+.holo-label.on .holo-leader, .holo-label:focus-visible .holo-leader { stroke: var(--bp-accent); }
+.holo-label.on .holo-text, .holo-label.on .holo-end, .holo-label.on .holo-tick,
+.holo-label:focus-visible .holo-text, .holo-label:focus-visible .holo-tick { fill: var(--bp-accent); }
+@media (max-width: 1200px) { .holo-text { font-size: 10.5px; letter-spacing: 0.1em; } }
+@media (max-width: 768px) { .holo-text { font-size: 9.5px; letter-spacing: 0.06em; } .holo-leader { stroke-width: 0.6; } }
+/* HUD buttons: spaced capitals on the sheet; a pressed toggle is filled in paper colour */
+.holo-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; }
 .holo-controls button {
-  min-height: 30px; padding: 3px 10px; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.04em; cursor: pointer;
-  color: var(--text-2); background: color-mix(in srgb, var(--well) 85%, transparent); border: 1px solid var(--line); border-radius: 3px;
+  min-height: 30px; padding: 4px 10px; cursor: pointer;
+  font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--bp-line); background: rgba(10, 38, 72, 0.55); border: 1px solid color-mix(in srgb, var(--bp-line) 55%, transparent); border-radius: 0;
 }
-.holo-controls button:hover { border-color: var(--accent); color: var(--text); }
-.holo-controls button[aria-pressed="true"] { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
+.holo-controls button:hover { border-color: var(--bp-line); }
+.holo-controls button:focus-visible { outline: 1px solid var(--bp-accent); outline-offset: 2px; }
+.holo-controls button[aria-pressed="true"] { color: var(--bp-navy); background: var(--bp-line); border-color: var(--bp-line); }
 .cell-base { fill: var(--line); }
 .cell-normal, .body-legend .cell-normal { fill: color-mix(in srgb, var(--text-2) 55%, transparent); background: color-mix(in srgb, var(--text-2) 55%, transparent); }
 .cell-advisory { fill: color-mix(in srgb, var(--text-2) 55%, transparent); }
