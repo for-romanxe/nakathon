@@ -354,6 +354,16 @@ a.cite:hover { text-decoration: underline; }
 .body-detail.lv-advisory, .body-detail.lv-normal { border-top-color: var(--line); }
 .body-note { padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; color: var(--text-2); }
 .body-subhead { border-top: 1px solid var(--line); }
+.lv-none { --status: var(--muted); }
+/* "!" next to a part that a symptom report points at (same mark as on the hologram) */
+.body-mark {
+  margin-left: auto; flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px;
+  font-family: var(--mono); font-weight: 700; font-size: 0.8rem; color: var(--status, var(--accent));
+  border: 1.5px solid var(--status, var(--accent)); border-radius: 50%;
+}
+.body-mark.neutral, .body-mark.lv-normal, .body-mark.lv-hold { --status: var(--accent); }
+.body-legend .body-mark { margin-left: 0; width: 14px; height: 14px; font-size: 0.6rem; border-width: 1px; }
+.body-event { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
 /* three columns need ~1280px with the rail; step down so the page never scrolls sideways */
 @media (max-width: 1280px) {
   .body-layout { grid-template-columns: minmax(200px, 260px) minmax(0, 1fr); }

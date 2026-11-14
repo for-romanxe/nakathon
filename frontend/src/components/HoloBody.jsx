@@ -2,7 +2,8 @@
 // drawn with a glowing-edge "hologram" shader: rim light, moving scan lines, a faint wireframe and a projector
 // ring under the feet. Each part carries its region; caution and warning parts pulse. Colours come from the CSS
 // tokens and from the levels the page passes in: the figure decides nothing.
-// Click a part to select its region (the right arm has no sensor: onNoSensor). Drag to turn the figure.
+// Click a part to select its region (each arm and each leg on its own). Drag to turn the figure.
+// Parts a symptom report points at get a ringed "!" mark (marks prop); the right arm has no sensor ('none').
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 
@@ -70,17 +71,29 @@ function parts() {
     HEART_AT, { rotZ: 0.45, scale: [1, 1, 0.85], heart: true })
   for (const side of [-1, 1]) { // −1: the person's right (viewer's left), +1: the person's left
     const sx = (v) => v * side
-    const arm = side > 0 ? 'wrist' : null // only the left arm carries a sensor (EDA band); the right has none
+    const arm = side > 0 ? 'left_arm' : 'right_arm' // the EDA band is on the left wrist; the right arm has no sensor
+    const leg = side > 0 ? 'left_leg' : 'right_leg'
     add(arm, new THREE.SphereGeometry(0.05, 20, 14), V(sx(0.235), 1.44)) // shoulder
     limb(arm, V(sx(0.25), 1.41), V(sx(0.285), 1.15), 0.046, 0.038) // upper arm
     limb(arm, V(sx(0.285), 1.15), V(sx(0.31), 0.92), 0.038, 0.03) // forearm
     add(arm, new THREE.SphereGeometry(0.045, 16, 12), V(sx(0.315), 0.85, 0.01), { scale: [0.62, 1.2, 0.42] }) // hand
-    limb('legs', V(sx(0.095), 0.82), V(sx(0.09), 0.47), 0.075, 0.052) // thigh
-    limb('legs', V(sx(0.09), 0.47), V(sx(0.085), 0.08), 0.052, 0.036) // calf
-    limb('legs', V(sx(0.085), 0.045, -0.02), V(sx(0.092), 0.035, 0.12), 0.036, 0.03) // foot, toes forward
+    limb(leg, V(sx(0.095), 0.82), V(sx(0.09), 0.47), 0.075, 0.052) // thigh
+    limb(leg, V(sx(0.09), 0.47), V(sx(0.085), 0.08), 0.052, 0.036) // calf
+    limb(leg, V(sx(0.085), 0.045, -0.02), V(sx(0.092), 0.035, 0.12), 0.036, 0.03) // foot, toes forward
   }
-  add('wrist', new THREE.TorusGeometry(0.038, 0.01, 10, 32), V(0.306, 0.95), { rotX: Math.PI / 2 }) // EDA band
+  add('left_arm', new THREE.TorusGeometry(0.038, 0.01, 10, 32), V(0.306, 0.95), { rotX: Math.PI / 2 }) // EDA band
   return out
+}
+
+// Where a symptom-report mark (!) floats for each region: just in front of / beside the part
+const MARK_AT = {
+  head: V(0, 1.8, 0.05),
+  heart: V(0.115, 1.18, 0.16), // in front of the chest, just below the heart's glow and clear of the shoulder
+  core: V(0, 1.0, 0.13),
+  left_arm: V(0.4, 1.1, 0.04),
+  right_arm: V(-0.4, 1.1, 0.04),
+  left_leg: V(0.2, 0.5, 0.06),
+  right_leg: V(-0.2, 0.5, 0.06),
 }
 
 // A soft round glow (for the heart) and a letter label (L / R), drawn once on small canvases
@@ -138,15 +151,16 @@ function palette() {
   }
 }
 
-export default function HoloBody({ levels, selected, onSelect, onNoSensor, label, unavailableText, sideLabels }) {
+// marks: { [regionId]: level } — regions a symptom report points at, coloured by that report's level
+export default function HoloBody({ levels, selected, onSelect, marks, label, unavailableText, sideLabels }) {
   const hostRef = useRef(null)
-  const stateRef = useRef({ levels, selected, onSelect, onNoSensor })
+  const stateRef = useRef({ levels, selected, onSelect, marks })
   // decided in the browser after mount (never during render), so a first render without WebGL can't stick
   const [failed, setFailed] = useState(false)
   const leftLabel = sideLabels?.left || 'L'
   const rightLabel = sideLabels?.right || 'R'
   // the render loop reads the latest props from here, so the scene is built once
-  useEffect(() => { stateRef.current = { levels, selected, onSelect, onNoSensor } })
+  useEffect(() => { stateRef.current = { levels, selected, onSelect, marks } })
 
   useEffect(() => {
     const host = hostRef.current
@@ -214,6 +228,20 @@ export default function HoloBody({ levels, selected, onSelect, onNoSensor, label
       disposables.push(map, tag.material)
     }
 
+    // Symptom-report marks: a ringed "!" beside each part a report points at (hidden until there is one).
+    // A different shape from the part's own glow, so "measured" and "reported" are never confused.
+    const markMap = letterTexture('!')
+    const markSprites = Object.entries(MARK_AT).map(([region, at]) => {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: markMap, transparent: true, depthWrite: false, depthTest: false }))
+      s.position.copy(at)
+      s.visible = false
+      s.userData.region = region
+      figure.add(s)
+      disposables.push(s.material)
+      return s
+    })
+    disposables.push(markMap)
+
     // Projector under the feet: two thin rings and a faint disc
     const accent = looks.plain.color
     const base = [
@@ -277,10 +305,7 @@ export default function HoloBody({ levels, selected, onSelect, onNoSensor, label
       down = null
       if (!wasClick) return
       const part = hit(ev)
-      if (!part) return
-      const { onSelect: select, onNoSensor: noSensor } = stateRef.current
-      if (part.userData.region) select(part.userData.region)
-      else noSensor?.()
+      if (part?.userData.region) stateRef.current.onSelect(part.userData.region)
     }
     el.addEventListener('pointerdown', onDown)
     el.addEventListener('pointermove', onMove)
@@ -316,6 +341,14 @@ export default function HoloBody({ levels, selected, onSelect, onNoSensor, label
           mesh.scale.copy(baseScale).multiplyScalar(s)
           mesh.userData.lines.scale.copy(mesh.scale)
         }
+      }
+      const { marks: mk } = stateRef.current
+      for (const s of markSprites) {
+        const level = mk?.[s.userData.region]
+        s.visible = level != null
+        if (!s.visible) continue
+        s.material.color.copy((looks[level] ?? looks.plain).color)
+        s.scale.setScalar(0.12 * (1 + (reduceMotion ? 0 : 0.12 * Math.sin(t * 3))))
       }
       if (heartMesh) {
         const l = looks[lv.heart] ?? looks.plain
