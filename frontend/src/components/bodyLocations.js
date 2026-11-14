@@ -43,35 +43,54 @@ const DENIAL = new RegExp([
   '\\bno\\s+(?:\\w+\\s+)?(?:pain|ache|headaches?|migraines?|problems?|issues?|soreness|discomfort)\\b',
   "\\b(?:doesn'?t|does not|don'?t|do not|isn'?t|is not|aren'?t|are not)\\s+(?:hurt|ache|have|feel|sore|painful)",
   '\\bwithout\\s+(?:\\w+\\s+)?pain\\b',
-  '\\b(?:is|are|feels?|feel)\\s+(?:fine|okay|ok|normal)\\b',
+  "(?:\\bis|'s|\\bare|'re|\\bfeels?)\\s+(?:fine|okay|ok|normal|better)\\b",
+  '\\b(?:no longer|not anymore)\\b',
   '(?:통증|아픔|증상|문제|이상|두통|흉통|복통)(?:은|는|이|가|도)?\\s*없',
   '(?:아프|저리|쑤시)지\\s*(?:는\\s*)?않',
   '안\\s*(?:아프|아파|저리|저려|쑤시|쑤셔)',
   '괜찮',
 ].join('|'), 'i')
 
-// text -> [{ location, sideStated }] (parts named in clauses that do not deny them)
+// "It hurt, but it's fine now": a denial clause that names no part of its own takes back the clause before it,
+// when that clause is in the past ("아팠는데", "hurt earlier") or the denial says "now" ("지금은 괜찮아요",
+// "fine now", "anymore"). Without either ("왼쪽 다리가 아파요. 다른 데는 괜찮아요") the earlier part stays.
+const PAST = /(?:았|었|였|했)|\b(?:was|were|had|hurt earlier|ached|earlier|yesterday|before|used to)\b/i
+const NOW = /지금|이제|현재|더\s*이상|\b(?:now|anymore|any more|no longer)\b/i
+
+// parts named in one clause, before any denial is applied: [{ location, sideStated }]
+function partsIn(clause) {
+  const found = []
+  const sidedLimb = { arm: false, leg: false }
+  for (const re of SIDED) {
+    for (const m of clause.matchAll(re)) {
+      const limb = m[2] ? 'arm' : 'leg'
+      sidedLimb[limb] = true
+      for (const side of sideOf(m[1])) found.push({ location: `${side}_${limb}`, sideStated: true })
+    }
+  }
+  for (const { limb, re } of UNSIDED) {
+    if (!sidedLimb[limb] && re.test(clause)) {
+      found.push({ location: `left_${limb}`, sideStated: false }, { location: `right_${limb}`, sideStated: false })
+    }
+  }
+  for (const { location, re } of TRUNK) if (re.test(clause)) found.push({ location, sideStated: true })
+  return found
+}
+
+// text -> [{ location, sideStated }] (parts named in clauses that are not denied or taken back)
 export function locationsInText(text) {
   if (!text) return []
+  // curly or typographic apostrophes (’ ‘ ` ´) read as a plain one, so "doesn’t" is "doesn't"
+  const clauses = text.replace(/[’‘`´]/g, "'").split(CLAUSE).filter(Boolean)
+  const kept = clauses.map((clause) => (DENIAL.test(clause) ? [] : partsIn(clause)))
+  clauses.forEach((clause, i) => {
+    if (i === 0 || !DENIAL.test(clause) || partsIn(clause).length > 0) return
+    if (PAST.test(clauses[i - 1]) || NOW.test(clause)) kept[i - 1] = []
+  })
   const out = new Map()
-  const put = (location, sideStated) => {
+  for (const { location, sideStated } of kept.flat()) {
     const prev = out.get(location)
     if (!prev || (sideStated && !prev.sideStated)) out.set(location, { location, sideStated })
-  }
-  for (const clause of text.split(CLAUSE)) {
-    if (!clause || DENIAL.test(clause)) continue
-    const sidedLimb = { arm: false, leg: false }
-    for (const re of SIDED) {
-      for (const m of clause.matchAll(re)) {
-        const limb = m[2] ? 'arm' : 'leg'
-        sidedLimb[limb] = true
-        for (const side of sideOf(m[1])) put(`${side}_${limb}`, true)
-      }
-    }
-    for (const { limb, re } of UNSIDED) {
-      if (!sidedLimb[limb] && re.test(clause)) { put(`left_${limb}`, false); put(`right_${limb}`, false) }
-    }
-    for (const { location, re } of TRUNK) if (re.test(clause)) put(location, true)
   }
   return [...out.values()]
 }
