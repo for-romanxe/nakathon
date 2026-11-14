@@ -6,7 +6,7 @@
 // urgent transmission to Earth -> acknowledge, or close as a false alarm with a required reason.
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { api } from '../api/client.js'
+import { api, USE_FIXTURES } from '../api/client.js'
 import { METRICS, OVERRIDE_REASONS, metricLabel, formatMetric, isUrgentReport } from '../api/contract.js'
 import { ackWarning, warningKey } from '../warningAck.js'
 import { CURRENT_CREW } from '../session.js'
@@ -147,10 +147,15 @@ export default function Warning() {
 
         <section className="warning-block">
           <h2>{t('warning.first_steps')}</h2>
-          <ol className="warning-steps">
-            {stepList.map((s, i) => <li key={i}>{s}</li>)}
-          </ol>
-          {steps && <Cite id={steps.doc} />}
+          {stepList.length > 0 ? (
+            <>
+              {USE_FIXTURES && <p className="muted">{t('warning.steps_sample')}</p>}
+              <ol className="warning-steps">
+                {stepList.map((s, i) => <li key={i}>{s}</li>)}
+              </ol>
+              {steps?.doc && <Cite id={steps.doc} />}
+            </>
+          ) : <p className="muted">{t('warning.steps_unavailable')}</p>}
         </section>
 
         {/* The app cannot call anyone yet (no crew-call API), so it must not say it did */}

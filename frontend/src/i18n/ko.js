@@ -218,6 +218,8 @@ export default {
   "warning.level_line": "WARNING · 경보 · 즉시 조치",
   "warning.by_rules": "보고 내용으로 규칙이 올린 경보예요. 기기 안 모델은 건너뛰었고, 이 경보를 낮출 수 없어요.",
   "warning.first_steps": "첫 단계",
+  "warning.steps_sample": "시연용 예시 단계예요.",
+  "warning.steps_unavailable": "이 경보에 연결된 검토 완료 절차서가 없어요.",
   "warning.numbers": "기준선을 벗어난 수치",
   "warning.numbers_normal": "여섯 지표 모두 기준선 안이에요.",
   "warning.baseline": "기준선 {v}",

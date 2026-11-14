@@ -172,8 +172,17 @@ export const api = {
     if (USE_FIXTURES) return wait(150).then(fromFixture)
     return request(`/docs/${encodeURIComponent(id)}`, null)
   },
-  // Warning steps remain separate sample content until reviewed procedures are mapped to warning codes.
-  getFirstSteps: () => Promise.resolve(firstStepsFixture),
+  // A sample citation is only clickable when its exact paragraph exists.
+  getFirstSteps: () => {
+    if (!USE_FIXTURES) return Promise.resolve({})
+    return Promise.resolve(Object.fromEntries(
+      Object.entries(firstStepsFixture).filter(([key]) => key !== '_note').map(([key, item]) => {
+        const [id, paragraph] = item.doc.split('#p')
+        const exists = docsFixture.docs.find(doc => doc.id === id)?.paragraphs.some(p => p.n === Number(paragraph))
+        return [key, { ...item, doc: exists ? item.doc : null }]
+      }),
+    ))
+  },
   // GET /crew -> [{ id: "c1", name: "C1", ... }] — display names come from here
   getCrew: () => request('/crew', crewFixture),
   // GET /mission -> { clock:{sol,time}, environment, one_way_delay_min, next_window }

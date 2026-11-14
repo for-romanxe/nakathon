@@ -218,6 +218,8 @@ export default {
   "warning.level_line": "WARNING · Act now",
   "warning.by_rules": "Raised by the rules from your report. The on-device model is skipped and cannot lower this.",
   "warning.first_steps": "First steps",
+  "warning.steps_sample": "Demo steps for illustration.",
+  "warning.steps_unavailable": "No reviewed procedure is linked to this warning.",
   "warning.numbers": "Readings outside your baseline",
   "warning.numbers_normal": "All six readings are within your baseline.",
   "warning.baseline": "baseline {v}",
