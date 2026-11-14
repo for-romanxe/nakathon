@@ -154,6 +154,7 @@ export default function Body() {
           </div>
           <Suspense fallback={<p className="panel-empty muted">{t('common.loading')}</p>}>
             <HoloBody levels={levels} selected={selectedId} label={t('body.figure_label')}
+              sideLabels={{ left: t('body.side.left'), right: t('body.side.right') }}
               onSelect={(id) => { setNoSensor(false); setPicked(id) }} onNoSensor={() => setNoSensor(true)}
               unavailableText={t('body.figure_unavailable')} />
           </Suspense>
