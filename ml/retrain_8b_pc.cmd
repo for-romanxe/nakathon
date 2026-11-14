@@ -8,7 +8,9 @@ set M=Ministral-3-8B-Instruct-2512-unsloth-bnb-4bit
 set OUT=D:\adapters\%M%-symptoms-1114
 cd /d %ML%
 :wait
-tasklist /FI "IMAGENAME eq python.exe" | find /I "python.exe" >nul && (timeout /t 60 /nobreak >nul & goto wait)
+REM 우리 학습·평가 프로세스(train_cuda.py, eval_cuda.py)만 기다린다. 무관한 python.exe 는 보지 않는다.
+powershell -NoProfile -Command "if (Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'python.exe' -and $_.CommandLine -match 'train_cuda\.py|eval_cuda\.py' }) { exit 1 }"
+if errorlevel 1 (timeout /t 60 /nobreak >nul & goto wait)
 echo == 8B retrain start %DATE% %TIME% >> D:\adapters\run_all.log
 %PY% data\gen_symptoms.py >> D:\adapters\retrain-8b-1114.out 2>&1
 %PY% train_cuda.py --model D:\models\%M% --out %OUT% >> D:\adapters\retrain-8b-1114.out 2>&1

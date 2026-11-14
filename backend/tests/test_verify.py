@@ -69,6 +69,22 @@ class Numbers(unittest.TestCase):
         self.assertNotIn("numbers", self.fails("HRV가 -2.5σ예요.", hrv))
         self.assertNotIn("numbers", self.fails("HRV가 기준보다 2.5σ 낮아요.", hrv))
 
+    def test_an_explicit_sign_must_match_the_finding(self):
+        low = [{"metric": "hrv", "value": 31, "baseline": 52, "z": -2.5}]
+        for line in ("HRV가 +2.5σ예요.", "z=+2.5 정도예요."):
+            with self.subTest(line=line):
+                self.assertIn("numbers", self.fails(line, low))
+        for line in ("HRV가 -2.5σ예요.", "HRV가 \u22122.5σ예요.", "z=-2.5 정도예요.", "HRV가 기준보다 2.5σ 낮아요."):
+            with self.subTest(line=line):
+                self.assertNotIn("numbers", self.fails(line, low))
+        high = [{"metric": "hr", "value": 92, "baseline": 68, "z": 2.7}]
+        self.assertIn("numbers", self.fails("심박이 -2.7σ예요.", high))
+        self.assertNotIn("numbers", self.fails("심박이 +2.7σ예요.", high))
+
+    def test_a_hyphen_between_two_numbers_is_a_range_not_a_sign(self):
+        hr = [{"metric": "hr", "value": 92, "baseline": 68, "z": 2.7}]
+        self.assertNotIn("numbers", self.fails("심박이 68-92 사이였어요.", hr))
+
     def test_cite_ids_and_unit_names_are_not_numbers(self):
         self.assertNotIn("numbers", self.fails("CO2 영향 가능성이 있어요 (hrp:cv-01#p3).", FIND))
 

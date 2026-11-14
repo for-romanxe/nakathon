@@ -3,16 +3,21 @@
 MODEL=mock (기본)  : backend/mock/*.json 시나리오를 MOCK_DELAY초 지연으로 돌려준다.
 MODEL=live         : MODEL_URL 의 OpenAI 호환 /v1/chat/completions 를 호출한다 (mlx_lm.server 등).
 어느 모드든 출력은 contracts 스키마 검사를 통과해야 하고, 실패하면 ModelOutputError.
+모델 서버에 닿지 못한 경우는 그 하위 클래스 ModelUnavailableError. 호출 측은 ModelOutputError 하나만 잡아도 된다.
 판정·경보는 여기서 하지 않는다. 규칙 엔진이 한다.
 """
-import json, os, re, time, urllib.request, pathlib
+import http.client, json, os, re, time, urllib.request, pathlib
 from .. import contracts
 
 MOCK_DIR = pathlib.Path(__file__).resolve().parent.parent / "mock"
 
 
 class ModelOutputError(Exception):
-    pass
+    """모델 출력을 쓸 수 없다: JSON 없음, 스키마 위반, 후보 밖 상태. 파이프라인은 재생성하거나 '판단 보류'로 간다."""
+
+
+class ModelUnavailableError(ModelOutputError):
+    """모델 서버에 닿지 못했거나 응답 봉투가 깨졌다. 재생성해도 소용없는 실패를 구분하고 싶을 때 잡는다."""
 
 
 def _mode():
@@ -23,21 +28,36 @@ def _delay():
     time.sleep(float(os.environ.get("MOCK_DELAY", "1")))
 
 
+def _first_json_object(text: str) -> dict:
+    """모델 답에서 첫 번째 온전한 JSON 객체를 꺼낸다. 앞뒤 설명, 코드 펜스, 뒤따르는 두 번째 객체는 무시한다."""
+    decoder = json.JSONDecoder()
+    start = text.find("{")
+    while start != -1:
+        try:
+            obj, _ = decoder.raw_decode(text, start)
+        except json.JSONDecodeError:
+            obj = None
+        if isinstance(obj, dict):
+            return obj
+        start = text.find("{", start + 1)
+    raise ModelOutputError("no JSON object in model output")
+
+
 def _chat(system: str, user: str, max_tokens=160) -> dict:
-    """live 모드: OpenAI 호환 서버 호출 후 첫 JSON 객체를 파싱."""
+    """live 모드: OpenAI 호환 서버를 호출하고 답의 첫 JSON 객체를 돌려준다."""
     url = os.environ.get("MODEL_URL", "http://127.0.0.1:8080").rstrip("/") + "/v1/chat/completions"
     body = {"model": os.environ.get("MODEL_NAME", "default"), "temperature": 0, "max_tokens": max_tokens,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]}
     req = urllib.request.Request(url, json.dumps(body).encode(), {"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=float(os.environ.get("MODEL_TIMEOUT", "60"))) as r:
-        text = json.load(r)["choices"][0]["message"]["content"]
-    m = re.search(r"\{.*\}", text, re.S)
-    if not m:
-        raise ModelOutputError("no JSON in model output")
     try:
-        return json.loads(m.group(0))
-    except json.JSONDecodeError as e:
-        raise ModelOutputError(f"bad JSON: {e}")
+        with urllib.request.urlopen(req, timeout=float(os.environ.get("MODEL_TIMEOUT", "60"))) as r:
+            text = json.load(r)["choices"][0]["message"]["content"]
+    except (OSError, http.client.HTTPException, ValueError, LookupError, TypeError) as e:
+        # 연결 거부·시간 초과·HTTP 오류(OSError), 본문이 JSON 이 아님(ValueError), choices/message 없음(LookupError, TypeError)
+        raise ModelUnavailableError(f"model server {url}: {type(e).__name__}: {e}") from e
+    if not isinstance(text, str):
+        raise ModelUnavailableError(f"model server {url}: reply has no text content")
+    return _first_json_object(text)
 
 
 def _validated(obj, kind):
