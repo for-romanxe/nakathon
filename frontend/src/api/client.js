@@ -1,6 +1,7 @@
 // client.js — the only place the UI gets data from.
 // VITE_USE_FIXTURES=true (default) reads fixtures/*.json; false calls the FastAPI backend (CONTRACT §5).
 // API fields are snake_case and are used as-is (CONTRACT §0-4).
+import trendsFixture from './fixtures/trends.json'
 import todayFixture from './fixtures/today.json'
 import crewFixture from './fixtures/crew.json'
 import firstStepsFixture from './fixtures/first_steps.json'
@@ -74,12 +75,9 @@ export const api = {
   getTrends: (crewId, metric, days) => request(
     `/crew/${crewId}/trends?${new URLSearchParams({ metric, days })}`,
     () => {
-      const reading = todayFixture.metrics.find(row => row.metric === metric)
-      return {
-        points: reading?.value == null ? [] : [{ ts: '2026-11-14T06:12:00Z', value: reading.value }],
-        baseline: { mean: reading?.baseline ?? null, sd: reading?.sd ?? null },
-        events: [],
-      }
+      // c1's real readings copied from the backend; keep the last `days` of them
+      const series = trendsFixture[metric] ?? { points: [], baseline: { mean: null, sd: null }, events: [] }
+      return { ...series, points: series.points.slice(-days) }
     },
   ),
   getSession: () => request('/session', { login_required: false, crew_id: null }),

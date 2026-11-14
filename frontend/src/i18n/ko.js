@@ -249,4 +249,13 @@ export default {
   "proc.doc_missing": "{id}는 아직 기기 안 문서에 없어요.",
   "proc.para_missing": "{id} 문단은 이 문서에 없어요. 문서 전체를 보여 줘요.",
   "proc.korean_only": "문서 본문은 한국어로만 있어요.",
+  "trends.zone_caution": "기준선에서 ±{a}σ~±{b}σ (주의 구간)",
+  "trends.zone_warning": "±{b}σ 밖 (경보 구간)",
+  "trends.event_marker": "이벤트",
+  "trends.latest": "최근",
+  "trends.avg": "평균",
+  "trends.min": "최저",
+  "trends.max": "최고",
+  "trends.count": "측정한 날",
+  "trends.show_table": "일별 측정값 표 ({n})",
 }
