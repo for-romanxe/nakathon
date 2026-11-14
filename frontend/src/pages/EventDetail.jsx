@@ -91,7 +91,8 @@ function Guidance({ event }) {
   const { t, lang } = useT()
   const runs = event.runs ?? []
   const passed = runs.some((r) => r.ok)
-  const withheld = runs.length >= 2 && !passed // verification failed twice -> judgement withheld
+  const failedTwice = runs.length >= 2 && !passed // verification failed twice -> judgement withheld
+  const withheld = event.stage === 'hold' || failedTwice // stage "hold" is withheld whatever the run count
   const ex = event.explanation
 
   let body
@@ -103,7 +104,7 @@ function Guidance({ event }) {
       </div>
     )
   } else if (withheld) {
-    body = <p className="notice lv-hold">{t('event.withheld')}</p>
+    body = <p className="notice lv-hold">{t(failedTwice ? 'event.withheld' : 'event.withheld_hold')}</p>
   } else if (!ex) {
     body = <p className="panel-empty muted">{t('event.pending')}</p>
   } else {

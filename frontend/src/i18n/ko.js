@@ -114,6 +114,7 @@ export default {
   "event.possibility": "{name} 가능성",
   "event.urgent_skip": "보고 내용으로 규칙이 경보를 올렸어요. 급한 증상에는 모델을 쓰지 않아요.",
   "event.withheld": "판단 보류: 설명이 검증을 두 번 통과하지 못했어요. 위 수치가 규칙 판정이에요.",
+  "event.withheld_hold": "판단 보류. 위 수치가 규칙 판정이에요.",
   "event.pending": "아직 설명이 없어요. 위 규칙 판정이 그대로 유효해요.",
   "event.verify": "검증",
   "event.verified": "5개 중 {n}개 통과",

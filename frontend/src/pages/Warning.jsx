@@ -52,7 +52,7 @@ export default function Warning() {
         if (ev?.level === 'warning') return showEvent(ev)
       }
       const today = await api.getToday(CURRENT_CREW, lang)
-      const id = [...(today.events ?? [])].reverse().find((e) => e.level === 'warning')?.id
+      const id = (today.events ?? []).find((e) => e.level === 'warning')?.id
       if (id) return showEvent(await api.getEvent(id))
       if ((today.metrics ?? []).some((m) => m.level === 'warning')) {
         setWarning({ event: null, findings: today.metrics, urgent: false, codes: [] })
