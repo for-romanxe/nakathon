@@ -65,7 +65,11 @@ async function request(path, fixture, options = {}) {
 export const api = {
   // GET /crew/{id}/today -> { status:{level,text}, guide, metrics:[{metric,value,baseline,sd,z}], events, checkin, streak }
   // ?lang=ko localises status.text (guide lines are English for now)
-  getToday: (crewId, lang) => request(`/crew/${crewId}/today?lang=${lang}`, todayFixture),
+  getToday: (crewId, lang) =>
+    request(`/crew/${crewId}/today?lang=${lang}`, () => ({
+      ...todayFixture,
+      events: [...todayFixture.events, ...Object.values(fixtureEvents)], // fixture-only reports from this session
+    })),
   // POST /crew/{id}/checkin {kind, answers, free_text?} -> updated /today (CONTRACT §5)
   // answers (agreed with backend): { sleep_quality, mood, fatigue: 1-5 ints, symptoms?: "none"|"yes" }
   postCheckin: (crewId, body, lang) =>
@@ -76,11 +80,15 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ text, lang }),
     }),
-  // POST /events/{id}/answer {answer:"yes"|"no"} -> 202. Not on the backend yet: a 404 is ignored
+  // POST /events/{id}/answer {answer:"yes"|"no"} -> 202. Resolves { saved }: false when the backend has no
+  // answer endpoint yet (404), so the UI can say the answer was not saved instead of pretending it was
   postAnswer: (eventId, answer) =>
-    request(`/events/${eventId}/answer`, null, { method: 'POST', body: JSON.stringify({ answer }) }).catch((e) => {
-      if (e.code !== 'http_404' && e.code !== 'not_found') throw e
-    }),
+    request(`/events/${eventId}/answer`, null, { method: 'POST', body: JSON.stringify({ answer }) })
+      .then(() => ({ saved: true }))
+      .catch((e) => {
+        if (e.code === 'http_404' || e.code === 'not_found') return { saved: false }
+        throw e
+      }),
   // GET /events/{id} -> event (spec §9: findings, codes, risk, explanation, runs, verified, ...)
   getEvent: (eventId) =>
     request(`/events/${eventId}`, () => fixtureEvents[eventId] ?? { ...eventCautionFixture, id: Number(eventId) }),
@@ -128,7 +136,10 @@ export function runPipeline(eventId, { urgent, onStage }) {
         finish('interrupted')
       }
     }
-    // also covers the server closing the stream before done/hold (EventSource reports it as an error)
-    source.onerror = () => finish(seen === 0 ? 'unavailable' : 'interrupted')
+    // A passing network error leaves the source CONNECTING and the browser reconnects by itself, so keep
+    // waiting (the 60 s limit still applies). Stop only when it gave up for good (CLOSED, e.g. 404).
+    source.onerror = () => {
+      if (source.readyState === EventSource.CLOSED) finish(seen === 0 ? 'unavailable' : 'interrupted')
+    }
   })
 }

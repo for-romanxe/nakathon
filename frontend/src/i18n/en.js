@@ -169,4 +169,5 @@ export default {
   "event.condition_unlisted": "No condition from the on-device list.",
   "event.local_only": "Saved on this screen only for now; it will be logged for the medical officer once the backend supports it.",
   "log.answer_first": "Answer the question above first.",
+  "log.answer_not_saved": "Your answer could not be saved yet (the server does not take answers). The result below is what the rules decided without it.",
 }
