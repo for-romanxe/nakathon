@@ -91,7 +91,11 @@ export default function Crew() {
   const { mission } = useMission()
   const sol = mission?.clock.sol
   const [crew, setCrew] = useState(null)
-  const [todays, setTodays] = useState({}) // id -> /today, or null when that fetch failed
+  // Each /today result is tagged with the lang + sol it was fetched for; results from an earlier lang/sol are
+  // never shown, so stale cards (or a failure hidden behind old data) cannot appear while reloading
+  const loadKey = `${lang}:${sol}`
+  const [loaded, setLoaded] = useState({ key: null, todays: {} }) // todays: id -> /today, or null when that fetch failed
+  const todays = loaded.key === loadKey ? loaded.todays : {}
   const [error, setError] = useState(false)
   const [queue, setQueue] = useState(null)
   const [queueError, setQueueError] = useState(false)
@@ -101,6 +105,8 @@ export default function Crew() {
   // Refetch when the demo clock moves to a new sol, like Today
   useEffect(() => {
     let alive = true
+    const put = (id, value) =>
+      setLoaded((prev) => ({ key: loadKey, todays: { ...(prev.key === loadKey ? prev.todays : {}), [id]: value } }))
     api.getCrew()
       .then((list) => {
         if (!alive) return
@@ -108,8 +114,8 @@ export default function Crew() {
         // One failing /today must not hide the other three cards
         list.forEach((c) =>
           api.getToday(c.id, lang)
-            .then((d) => alive && setTodays((m) => ({ ...m, [c.id]: d })))
-            .catch(() => alive && setTodays((m) => ({ ...m, [c.id]: null }))),
+            .then((d) => alive && put(c.id, d))
+            .catch(() => alive && put(c.id, null)),
         )
       })
       .catch(() => alive && setError(true))
@@ -121,7 +127,7 @@ export default function Crew() {
       })
       .catch(() => alive && setQueueError(true))
     return () => { alive = false }
-  }, [lang, sol])
+  }, [lang, sol, loadKey])
 
   async function run(action) {
     setBusy(true)

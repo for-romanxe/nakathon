@@ -1,5 +1,11 @@
 {
-  "_note": "Frontend fixture for GET /crew/{id}/today of c2-c4 (copied from the live backend, main 33b783d). c1 uses today.json.",
+  "_note": "Frontend fixture for GET /crew/{id}/today of c2-c4 (copied from the live backend, main 33b783d). c1 uses today.json. status_text_ko: what the backend sends as status.text with ?lang=ko (backend/today.py STATUS_TEXT_KO / HOLD_TEXT), for c1-c4.",
+  "status_text_ko": {
+    "c1": "개인 기준 범위를 벗어난 지표를 확인해 주세요.",
+    "c2": "오늘 측정값은 개인 기준 범위 안에 있어요.",
+    "c3": "14일 기준선 기록이 부족해요.",
+    "c4": "한 지표가 개인 기준 범위를 벗어났어요."
+  },
   "c2": {
     "status": {
       "level": "normal",

@@ -69,11 +69,15 @@ export const api = {
   // GET /crew/{id}/today -> { status:{level,text}, guide, metrics:[{metric,value,baseline,sd,z}], events, checkin, streak }
   // ?lang=ko localises status.text (guide lines are English for now)
   getToday: (crewId, lang) =>
-    request(`/crew/${crewId}/today?lang=${lang}`, () =>
-      todayOthersFixture[crewId] ?? {
+    request(`/crew/${crewId}/today?lang=${lang}`, () => {
+      const today = todayOthersFixture[crewId] ?? {
         ...todayFixture,
         events: [...todayFixture.events, ...Object.values(fixtureEvents)], // fixture-only reports from this session
-      }),
+      }
+      // the backend localises status.text via ?lang; the fixtures are English, so swap in its Korean sentence
+      const ko = lang === 'ko' && todayOthersFixture.status_text_ko[crewId]
+      return ko ? { ...today, status: { ...today.status, text: ko } } : today
+    }),
   // POST /crew/{id}/checkin {kind, answers, free_text?} -> updated /today (CONTRACT §5)
   // answers (agreed with backend): { sleep_quality, mood, fatigue: 1-5 ints, symptoms?: "none"|"yes" }
   postCheckin: (crewId, body, lang) =>
