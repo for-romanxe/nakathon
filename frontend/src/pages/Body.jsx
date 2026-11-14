@@ -110,9 +110,10 @@ export default function Body() {
   const selectedId = regions.some((r) => r.id === picked) ? picked : defaultRegionId(regions)
   // 3) the selected region stays selected even when it has no readings; its table shows an empty state
   const sel = regions.find((r) => r.id === selectedId)
-  // Events carry all six readings, so match only the region's readings that were off baseline (not normal/hold)
+  // Events carry all six readings, so match only the region's readings that were at caution or warning
+  // (advisory is reference level, not a deviation worth linking)
   const related = (today.events ?? []).filter((e) => (e.findings ?? []).some(
-    (f) => sel.metrics.includes(f.metric) && f.level && f.level !== 'normal' && f.level !== 'hold'))
+    (f) => sel.metrics.includes(f.metric) && RANK[f.level] >= RANK.caution))
   const counts = { caution: regions.filter((r) => r.level === 'caution').length, warning: regions.filter((r) => r.level === 'warning').length }
 
   return (
