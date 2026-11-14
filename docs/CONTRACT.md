@@ -169,7 +169,7 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 | `normal` | \|z\| < 2.0 |
 
 - `hold_reason`: `insufficient_baseline`(기준선 14일 미만) · `missing_reading`(오늘 측정값 없음) · `zero_variance`(기준선 표준편차 0). `hold`가 아니면 null. `hold`일 때 `value`·`baseline`·`sd`·`z`는 null일 수 있다.
-- 전체 판정 `status.level`은 지표별 `level`과 오늘 이벤트 `level` 중 가장 높은 것이다(`warning` > `caution` > `advisory`). 벗어난 지표가 없는데 `hold` 지표가 있으면 `hold`, 그 외는 `normal`.
+- 전체 판정 `status.level`도 §3의 `level` enum(`normal | advisory | caution | warning | hold`) 값 중 하나다. 지표별 `level`과 오늘 이벤트 `level` 중 가장 높은 것을 쓰며 순서는 `warning` > `caution` > `advisory`. 벗어난 지표가 없는데 `hold` 지표가 있으면 `hold`, 그 외는 `normal`.
 
 ## 6. 작업 분담과 넘겨주는 것 (초안, 팀 미팅에서 확정)
 
