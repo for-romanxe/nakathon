@@ -1,6 +1,6 @@
 // App.jsx — left rail + screens. One screen = one route (spec §7).
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import Rail from './components/Rail.jsx'
 import Footer from './components/Footer.jsx'
 import Topbar from './components/Topbar.jsx'
@@ -10,10 +10,13 @@ import Placeholder from './pages/Placeholder.jsx'
 import Log from './pages/Log.jsx'
 import EventDetail from './pages/EventDetail.jsx'
 import Warning from './pages/Warning.jsx'
+import Procedures from './pages/Procedures.jsx'
 import Settings from './pages/Settings.jsx'
 import { CURRENT_CREW, setSignedInCrew, CREW_IDS } from './session.js'
 import { api } from './api/client.js'
 import { useT } from './i18n/index.jsx'
+
+const Trends = lazy(() => import('./pages/Trends.jsx'))
 
 export default function App() {
   const { t } = useT()
@@ -71,9 +74,9 @@ export default function App() {
           <Route path="/" element={<Navigate to="/today" replace />} />
           <Route path="/today" element={<Today />} />
           <Route path="/body" element={<Placeholder titleKey="nav.body" />} />
-          <Route path="/trends" element={<Placeholder titleKey="nav.trends" />} />
+          <Route path="/trends" element={<Suspense fallback={<p role="status">{t('common.loading')}</p>}><Trends /></Suspense>} />
           <Route path="/log" element={<Log />} />
-          <Route path="/procedures" element={<Placeholder titleKey="nav.procedures" />} />
+          <Route path="/procedures" element={<Procedures />} />
           <Route path="/crew" element={CURRENT_CREW === 'c2' ? <Crew /> : <Navigate to="/today" replace />} />
           <Route path="/settings" element={<Settings loginRequired={session.login_required} />} />
           <Route path="/events/:id" element={<EventDetail />} />

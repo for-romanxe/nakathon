@@ -290,3 +290,24 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
 .crew-chips .badge { justify-self: auto; white-space: normal; }
 .crew-event { text-decoration: none; }
 .crew-event:hover { border-color: var(--accent); }
+
+/* ---- Procedures ---- */
+.proc-page { max-width: 1280px; }
+.proc-layout { display: grid; grid-template-columns: minmax(240px, 320px) 1fr; gap: 16px; align-items: start; }
+.proc-search { padding: 12px; border-bottom: 1px solid var(--line); }
+.proc-search input { width: 100%; min-height: 44px; padding: 0 12px; font: inherit; color: var(--text); background: var(--well); border: 1px solid var(--line); border-radius: var(--radius); }
+.proc-search input:focus { outline: none; border-color: var(--accent); }
+.proc-list ul { list-style: none; margin: 0; padding: 0; }
+.proc-list a { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; color: var(--text); text-decoration: none; border-bottom: 1px solid var(--line); border-left: 3px solid transparent; }
+.proc-list a:hover { background: var(--bezel-2); }
+.proc-list a.on { background: var(--bezel-2); border-left-color: var(--accent); }
+.proc-title { font-weight: 500; }
+.proc-doc .panel-head h2 { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.proc-paras { list-style: none; margin: 0; padding: 8px 0; }
+.proc-paras li { display: grid; grid-template-columns: 44px 1fr; gap: 10px; padding: 10px 16px; border-left: 3px solid transparent; scroll-margin: 80px; }
+.proc-paras li.hl { border-left-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.proc-paras p { margin: 0; line-height: 1.7; }
+.proc-pid { padding-top: 3px; }
+a.cite { text-decoration: none; }
+a.cite:hover { text-decoration: underline; }
+@media (max-width: 760px) { .proc-layout { grid-template-columns: 1fr; } }

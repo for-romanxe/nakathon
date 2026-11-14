@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api/client.js'
 import { METRICS, VERIFY_CHECKS, OVERRIDE_REASONS, metricLabel, formatMetric, conditionLabel, isUrgentReport, formatTs } from '../api/contract.js'
+import Cite from '../components/Cite.jsx'
 import { useT } from '../i18n/index.jsx'
 import { CURRENT_CREW } from '../session.js'
 
@@ -128,7 +129,7 @@ function Guidance({ event }) {
                 : t('event.condition_unlisted')}
             </b>
             {(Array.isArray(ex.lines) ? ex.lines : []).map((line, i) => <p key={i}>{line}</p>)}
-            <div className="cites">{(Array.isArray(ex.cites) ? ex.cites : []).map((c) => <span key={c} className="cite">{c}</span>)}</div>
+            <div className="cites">{(Array.isArray(ex.cites) ? ex.cites : []).map((c) => <Cite key={c} id={c} />)}</div>
           </div>
         </li>
         <li>
@@ -140,7 +141,7 @@ function Guidance({ event }) {
                   <input type="checkbox" /> {/* TODO: POST /events/{id}/action/{i}/done when the backend has it */}
                   <span>{a.text}</span>
                 </label>
-                <span className="cite">{a.doc}</span>
+                {a.doc && <Cite id={a.doc} />}
               </li>
             ))}
           </ul>
