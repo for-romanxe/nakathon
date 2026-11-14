@@ -1,6 +1,7 @@
 // Rail.jsx — left rail: 6 screens + settings (spec §7), language toggle.
 import { NavLink } from 'react-router-dom'
 import { useT } from '../i18n/index.jsx'
+import { CURRENT_CREW } from '../session.js'
 
 const ITEMS = ['today', 'body', 'trends', 'log', 'procedures', 'crew']
 
@@ -15,7 +16,7 @@ export default function Rail() {
         {t('app.name')}
       </div>
       <ul className="rail-list">
-        {ITEMS.map((key) => (
+        {ITEMS.filter((key) => key !== 'crew' || CURRENT_CREW === 'c2').map((key) => (
           <li key={key}>
             <NavLink to={`/${key}`} className="rail-link">{t(`nav.${key}`)}</NavLink>
           </li>

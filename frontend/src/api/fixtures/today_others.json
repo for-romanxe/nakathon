@@ -1,0 +1,216 @@
+{
+  "_note": "Frontend fixture for GET /crew/{id}/today of c2-c4 (copied from the live backend, main 33b783d). c1 uses today.json. status_text_ko: what the backend sends as status.text with ?lang=ko (backend/today.py STATUS_TEXT_KO / HOLD_TEXT), for c1-c4.",
+  "status_text_ko": {
+    "c1": "개인 기준 범위를 벗어난 지표를 확인해 주세요.",
+    "c2": "오늘 측정값은 개인 기준 범위 안에 있어요.",
+    "c3": "14일 기준선 기록이 부족해요.",
+    "c4": "한 지표가 개인 기준 범위를 벗어났어요."
+  },
+  "c2": {
+    "status": {
+      "level": "normal",
+      "text": "Today's readings are within your baseline."
+    },
+    "guide": [],
+    "metrics": [
+      {
+        "metric": "hr",
+        "value": 70.0,
+        "baseline": 70.0,
+        "sd": 2.0,
+        "z": 0.0,
+        "hold_reason": null,
+        "level": "normal"
+      },
+      {
+        "metric": "hrv",
+        "value": 55.0,
+        "baseline": 55.0,
+        "sd": 3.0,
+        "z": 0.0,
+        "hold_reason": null,
+        "level": "normal"
+      },
+      {
+        "metric": "eda",
+        "value": 2.2,
+        "baseline": 2.2,
+        "sd": 0.2,
+        "z": 0.0,
+        "hold_reason": null,
+        "level": "normal"
+      },
+      {
+        "metric": "temp",
+        "value": 33.2,
+        "baseline": 33.2,
+        "sd": 0.2,
+        "z": 0.0,
+        "hold_reason": null,
+        "level": "normal"
+      },
+      {
+        "metric": "sleep",
+        "value": 7.8,
+        "baseline": 7.8,
+        "sd": 0.3,
+        "z": 0.0,
+        "hold_reason": null,
+        "level": "normal"
+      },
+      {
+        "metric": "act",
+        "value": 158.0,
+        "baseline": 158.0,
+        "sd": 8.0,
+        "z": 0.0,
+        "hold_reason": null,
+        "level": "normal"
+      }
+    ],
+    "events": [],
+    "checkin": {
+      "morning_done": false,
+      "evening_done": false
+    },
+    "streak": 0
+  },
+  "c3": {
+    "status": {
+      "level": "hold",
+      "text": "The 14-day baseline is incomplete."
+    },
+    "guide": [],
+    "metrics": [
+      {
+        "metric": "hr",
+        "value": 72.0,
+        "baseline": null,
+        "sd": null,
+        "z": null,
+        "hold_reason": "insufficient_baseline",
+        "level": "hold"
+      },
+      {
+        "metric": "hrv",
+        "value": 58.0,
+        "baseline": null,
+        "sd": null,
+        "z": null,
+        "hold_reason": "insufficient_baseline",
+        "level": "hold"
+      },
+      {
+        "metric": "eda",
+        "value": 2.4,
+        "baseline": null,
+        "sd": null,
+        "z": null,
+        "hold_reason": "insufficient_baseline",
+        "level": "hold"
+      },
+      {
+        "metric": "temp",
+        "value": 33.4,
+        "baseline": null,
+        "sd": null,
+        "z": null,
+        "hold_reason": "insufficient_baseline",
+        "level": "hold"
+      },
+      {
+        "metric": "sleep",
+        "value": 8.1,
+        "baseline": null,
+        "sd": null,
+        "z": null,
+        "hold_reason": "insufficient_baseline",
+        "level": "hold"
+      },
+      {
+        "metric": "act",
+        "value": 166.0,
+        "baseline": null,
+        "sd": null,
+        "z": null,
+        "hold_reason": "insufficient_baseline",
+        "level": "hold"
+      }
+    ],
+    "events": [],
+    "checkin": {
+      "morning_done": false,
+      "evening_done": false
+    },
+    "streak": 0
+  },
+  "c4": {
+    "status": {
+      "level": "advisory",
+      "text": "One reading is outside your baseline."
+    },
+    "guide": [],
+    "metrics": [
+      {
+        "metric": "hr",
+        "value": 79.0,
+        "baseline": 74.0,
+        "sd": 2.0,
+        "z": 2.5,
+        "hold_reason": null,
+        "level": "advisory"
+      },
+      {
+        "metric": "hrv",
+        "value": 61.0,
+        "baseline": 61.0,
+        "sd": 3.0,
+        "z": 0.0,
+        "hold_reason": null,
+        "level": "normal"
+      },
+      {
+        "metric": "eda",
+        "value": 2.6,
+        "baseline": 2.6,
+        "sd": 0.2,
+        "z": 0.0,
+        "hold_reason": null,
+        "level": "normal"
+      },
+      {
+        "metric": "temp",
+        "value": 33.6,
+        "baseline": 33.6,
+        "sd": 0.2,
+        "z": 0.0,
+        "hold_reason": null,
+        "level": "normal"
+      },
+      {
+        "metric": "sleep",
+        "value": 8.4,
+        "baseline": 8.4,
+        "sd": 0.3,
+        "z": 0.0,
+        "hold_reason": null,
+        "level": "normal"
+      },
+      {
+        "metric": "act",
+        "value": 174.0,
+        "baseline": 174.0,
+        "sd": 8.0,
+        "z": 0.0,
+        "hold_reason": null,
+        "level": "normal"
+      }
+    ],
+    "events": [],
+    "checkin": {
+      "morning_done": false,
+      "evening_done": false
+    },
+    "streak": 0
+  }
+}

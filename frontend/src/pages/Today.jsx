@@ -3,9 +3,13 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client.js'
 import CheckinSheet from '../components/CheckinSheet.jsx'
+import GuideWhy from '../components/GuideWhy.jsx'
 import { useMission } from '../mission.jsx'
+import { isWarningAcked, warningKey } from '../warningAck.js'
 import { METRICS, metricLabel, formatMetric } from '../api/contract.js'
 import { CURRENT_CREW } from '../session.js'
+import Cite from '../components/Cite.jsx'
+import DeviationScale from '../components/DeviationScale.jsx'
 import { useT } from '../i18n/index.jsx'
 
 // Status is never shown by color alone: icon + word + color
@@ -39,11 +43,17 @@ export default function Today() {
   const sheetClosed = sheetDismissedFor === sheetKey
 
   useEffect(() => {
-    // Crew names are an extra: if /crew fails, Today still renders. Refetch when the demo clock moves to a new sol
-    Promise.all([api.getToday(CURRENT_CREW, lang), api.getCrew().catch(() => [])])
-      .then(([today, crew]) => setData({ today, crew: crew.find((c) => c.id === CURRENT_CREW) }))
+    api.getToday(CURRENT_CREW, lang)
+      .then(setData)
       .catch(setError)
   }, [lang, sol])
+
+  // CONTRACT §5.4: a metric at warning opens the full-screen warning even without a symptom report
+  useEffect(() => {
+    if (sol == null || !data) return
+    const hit = data.metrics.some((m) => m.level === 'warning')
+    if (hit && !isWarningAcked(warningKey(CURRENT_CREW, sol))) navigate('/warning')
+  }, [data, sol, navigate])
 
   function closeSheet(closed) {
     sheetDismissedFor = closed ? sheetKey : null
@@ -53,14 +63,14 @@ export default function Today() {
   if (error) return <section className="page"><p className="error">{t('common.error')}</p></section>
   if (!data) return <section className="page"><p className="muted">{t('common.loading')}</p></section>
 
-  const { today, crew } = data
+  const today = data
   const level = today.status.level
   const statusText = today.status.text || t(`today.status.${level}`) // backend localises via ?lang
   const showSheet = !today.checkin.morning_done && !sheetClosed
 
   async function submitCheckin(body) {
     const updated = await api.postCheckin(CURRENT_CREW, body, lang) // backend recomputes the guide and returns /today
-    setData((d) => ({ ...d, today: updated }))
+    setData(updated)
   }
 
   return (
@@ -78,14 +88,15 @@ export default function Today() {
         </button>
       )}
       <h1>
-        {crew
-          ? t(mission ? greetingKey(mission.clock.time) : 'today.greeting.day', { name: crew.name })
-          : t('today.greeting.generic')}
+        {t(mission ? greetingKey(mission.clock.time) : 'today.greeting.day', { name: CURRENT_CREW.toUpperCase() })}
       </h1>
-      <p className={`status lv-${level}`}>
-        <span aria-hidden="true">{LEVEL_ICONS[level]}</span>
-        {statusText}
-      </p>
+      {/* Annunciator: a lit lamp with the level word, then the sentence */}
+      <div className={`annunciator lv-${level}`}>
+        <span className="annunciator-lamp">
+          <span aria-hidden="true">{LEVEL_ICONS[level]}</span> {t(`level.${level}`)}
+        </span>
+        <p className="annunciator-text">{statusText}</p>
+      </div>
 
       <section className="panel">
         <div className="panel-head"><h2>{t('today.guide')}</h2></div>
@@ -101,9 +112,10 @@ export default function Today() {
               {g.why && (
                 <div className="guide-why">
                   <span>{t('today.why')}: <span className="num">{g.why}</span></span>
-                  {g.cites.map((c) => <span key={c} className="cite">{c}</span>)}
+                  {g.cites.map((c) => <Cite key={c} id={c} />)}
                 </div>
               )}
+              {!g.done && <GuideWhy cites={g.cites} />}
             </li>
           ))}
         </ul>
@@ -127,6 +139,7 @@ export default function Today() {
                   {metricLabel(m.metric, lang)}
                   {lv === 'hold' && m.hold_reason && <span className="readout-note">{t(`hold.${m.hold_reason}`)}</span>}
                 </span>
+                <DeviationScale z={lv === 'hold' ? null : m.z} level={lv} />
                 <span className="readout-value">{formatMetric(m.metric, m.value)}</span>
                 <span className="readout-unit">{METRICS[m.metric]?.unit}</span>
                 <span className={`badge ${badgeClass}`}>
