@@ -60,8 +60,9 @@ export default function Body() {
   })
   const levels = Object.fromEntries(regions.map((r) => [r.id, r.level]))
   // Open the first off region by default, otherwise the heart
-  const selectedId = picked ?? regions.find((r) => RANK[r.level] >= RANK.caution)?.id ?? 'heart'
-  const sel = regions.find((r) => r.id === selectedId)
+  const defaultId = regions.find((r) => RANK[r.level] >= RANK.caution)?.id ?? 'heart'
+  const selectedId = regions.some((r) => r.id === picked) ? picked : defaultId
+  const sel = regions.find((r) => r.id === selectedId) ?? regions[0]
   const related = (today.events ?? []).filter((e) => (e.findings ?? []).some((f) => sel.metrics.includes(f.metric)))
   const counts = { caution: regions.filter((r) => r.level === 'caution').length, warning: regions.filter((r) => r.level === 'warning').length }
 
@@ -98,7 +99,8 @@ export default function Body() {
             <h2>{t('body.figure')}</h2>
             <span className="muted small">{t('body.figure_hint')}</span>
           </div>
-          <BodyFigure levels={levels} selected={selectedId} onSelect={setPicked} label={t('body.figure_label')} />
+          <BodyFigure levels={levels} selected={selectedId} onSelect={setPicked} label={t('body.figure_label')}
+            unavailableText={t('body.figure_unavailable')} />
         </section>
 
         <section className={`panel body-detail lv-${sel.level}`}>

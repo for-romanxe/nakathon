@@ -1,7 +1,7 @@
 // BodyFigure.jsx — the pixel body (spec §7-2): small square cells inside a body outline, coloured per region.
 // Regions at caution or warning have their cells pushed outwards ("scattered"). Outline paths come from the
 // team mockup (mockup/app/app.js). The figure only draws the levels it is given; it decides nothing.
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { REGIONS } from './bodyRegions.js'
 
 const W = 220
@@ -20,8 +20,11 @@ function regionDistance(region, nx, ny) {
 }
 
 // Which cells are inside the body, and which region each belongs to. Computed once with a canvas hit test.
+// Needs the browser canvas API; without it (no DOM, or no 2D context) it returns [] and the figure is skipped.
 function buildCells() {
-  const ctx = document.createElement('canvas').getContext('2d')
+  if (typeof document === 'undefined' || typeof Path2D === 'undefined') return []
+  const ctx = document.createElement('canvas').getContext?.('2d')
+  if (!ctx) return []
   const shapes = OUTLINE.map((d) => new Path2D(d))
   const head = new Path2D()
   head.ellipse(110, 42, 26, 32, 0, 0, Math.PI * 2)
@@ -48,13 +51,44 @@ function buildCells() {
   return cells
 }
 
+// One region per point: the nearest region centre within 1.3 × its radius (mockup rule), so overlapping
+// areas never hide each other and no element sits on top of another to steal the click.
+function regionAt(nx, ny) {
+  let best = null
+  let bd = Infinity
+  for (const r of REGIONS) {
+    const d = regionDistance(r, nx, ny)
+    if (d < r.r * 1.3 && d < bd) { bd = d; best = r }
+  }
+  return best
+}
+
 let cellCache = null
+// Cells are the same for every render; keep a good result, but never keep an empty one (try again next time)
+function getCells() {
+  if (!cellCache?.length) cellCache = buildCells()
+  return cellCache
+}
 
-export default function BodyFigure({ levels, selected, onSelect, label }) {
-  const cells = useMemo(() => (cellCache ??= buildCells()), [])
+export default function BodyFigure({ levels, selected, onSelect, label, unavailableText }) {
+  const svgRef = useRef(null)
+  const cells = useMemo(() => getCells(), [])
 
+  if (cells.length === 0) return <p className="panel-empty muted">{unavailableText}</p>
+
+  // Click anywhere on the figure: turn the screen point into figure coordinates and pick the region there
+  function handleClick(ev) {
+    const svg = svgRef.current
+    const ctm = svg?.getScreenCTM?.()
+    if (!ctm) return
+    const pt = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(ctm.inverse())
+    const region = regionAt(pt.x / W, pt.y / H)
+    if (region) onSelect(region.id)
+  }
+
+  const sel = REGIONS.find((r) => r.id === selected)
   return (
-    <svg className="body-figure" viewBox={`0 0 ${W} ${H}`} role="group" aria-label={label}>
+    <svg ref={svgRef} className="body-figure" viewBox={`0 0 ${W} ${H}`} role="group" aria-label={label} onClick={handleClick}>
       {cells.map((c, i) => {
         const level = c.region ? levels[c.region] : null
         const off = level === 'caution' || level === 'warning'
@@ -71,19 +105,17 @@ export default function BodyFigure({ levels, selected, onSelect, label }) {
           .filter(Boolean).join(' ')
         return <rect key={i} className={cls} x={x - 2.75} y={y - 2.75} width={5.5} height={5.5} rx={0.8} />
       })}
-      {/* Click targets: one per region, bigger than the cells */}
-      {REGIONS.map((r) => (
+      {/* Outline of the selected region (decoration only; the region list is the keyboard path) */}
+      {sel && (
         <ellipse
-          key={r.id}
-          className={`body-hit${r.id === selected ? ' on' : ''}`}
-          cx={r.cx * W}
-          cy={r.cy * H}
-          rx={(r.r / 0.48) * W * 1.15}
-          ry={r.r * H * 1.15}
-          tabIndex={-1}
-          onClick={() => onSelect(r.id)}
+          className="body-hit on"
+          cx={sel.cx * W}
+          cy={sel.cy * H}
+          rx={(sel.r / 0.48) * W * 1.15}
+          ry={sel.r * H * 1.15}
+          aria-hidden="true"
         />
-      ))}
+      )}
     </svg>
   )
 }

@@ -313,4 +313,5 @@ export default {
   "trends.max": "Highest",
   "trends.count": "Days with readings",
   "trends.show_table": "Daily readings table ({n})",
+  "body.figure_unavailable": "The figure cannot be drawn here. Use the region list.",
 }

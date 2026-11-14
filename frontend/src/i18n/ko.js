@@ -313,4 +313,5 @@ export default {
   "trends.max": "최고",
   "trends.count": "측정한 날",
   "trends.show_table": "일별 측정값 표 ({n})",
+  "body.figure_unavailable": "여기서는 그림을 그릴 수 없어요. 부위 목록을 이용해 주세요.",
 }
