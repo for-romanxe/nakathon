@@ -12,28 +12,31 @@ def explain_verified(level: str, findings: list, condition_candidates: list, par
     - explanation 이 None 이면 hold 가 True 다. 화면에는 수치와 절차서만 보여 준다.
     - runs 는 이벤트의 runs[] 에 그대로 넣는다. fails 는 검증기 검사 이름(numbers, cites, level, schema, wording).
     - verified 는 마지막 실행에서 통과한 검사 수. 모델 출력을 쓸 수 없어 검사를 못 돌렸으면 0.
-    - 예외를 던지지 않는다. 모델 서버에 닿지 못하거나 상태 후보가 목록 밖이면 runs[0].note 에 이유를 적고 보류로 끝낸다.
+    - 예외를 던지지 않는다. 모델 서버에 닿지 못하거나 입력이 잘못됐으면(목록 밖 상태 후보, id 없는 문단 등)
+      검사 없이 끝난 실행의 note 에 이유를 적고 보류로 끝낸다.
     """
     checks = len(contracts.enums()["verify_check"])
-    doc_ids = [p["id"] for p in paragraphs]
     runs, rejected, passed = [], {}, 0
     for n in range(1, MAX_RUNS + 1):
         try:
             out = client.explain(level, findings, condition_candidates, paragraphs, lang, rejected=rejected)
+            result = verify.verify(out, findings, level, [p["id"] for p in paragraphs], lang)
+            passed = checks - len(result["fails"])
         except client.ModelUnavailableError as error:      # 서버에 닿지 못하면 다시 불러도 같다
-            runs.append({"n": n, "ok": False, "fails": [], "note": f"model unavailable: {error}"[:200]})
-            return {"explanation": None, "hold": True, "verified": 0, "runs": runs}
-        except ValueError as error:                        # 목록 밖 상태 후보(호출 쪽 실수). 이유를 남기고 보류
-            runs.append({"n": n, "ok": False, "fails": [], "note": str(error)[:200]})
-            return {"explanation": None, "hold": True, "verified": 0, "runs": runs}
+            return _stopped(runs, n, f"model unavailable: {error}")
         except client.ModelOutputError as error:           # 스키마에 안 맞는 출력
             result = {"ok": False, "fails": ["schema"], "note": str(error)[:200], "detail": {"schema": [str(error)[:200]]}}
             out, passed = None, 0
-        else:
-            result = verify.verify(out, findings, level, doc_ids, lang)
-            passed = checks - len(result["fails"])
+        except Exception as error:                         # 호출 쪽이 잘못 넘긴 입력(목록 밖 후보, id 없는 문단 등). 다시 불러도 같다
+            return _stopped(runs, n, f"{type(error).__name__}: {error}")
         runs.append({"n": n, "ok": result["ok"], "fails": result["fails"], "note": result["note"]})
         if result["ok"]:
             return {"explanation": out, "hold": False, "verified": passed, "runs": runs}
         rejected = result["detail"]      # 다음 실행에 무엇이 걸렸는지 알려 준다
     return {"explanation": None, "hold": True, "verified": passed, "runs": runs}
+
+
+def _stopped(runs: list, n: int, note: str) -> dict:
+    """검사를 돌리지 못하고 끝난 경우: 이유를 적고 보류."""
+    runs.append({"n": n, "ok": False, "fails": [], "note": note[:200]})
+    return {"explanation": None, "hold": True, "verified": 0, "runs": runs}

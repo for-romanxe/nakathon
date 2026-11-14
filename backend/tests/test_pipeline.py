@@ -65,6 +65,24 @@ class RetryLoop(unittest.TestCase):
         self.assertEqual(result["runs"][0]["fails"], [])
         self.assertIn("unknown condition candidates ['made_up']", result["runs"][0]["note"])
 
+    def test_malformed_input_holds_instead_of_raising(self):
+        # 호출 쪽이 문단·후보·findings 를 잘못 넘겨도 이벤트 처리가 죽지 않는다. 이유는 runs[0].note 에 남는다.
+        cases = {
+            "paragraph without id": dict(paragraphs=[{"text": "no id"}]),
+            "paragraph without text": dict(paragraphs=[{"id": "eval:a#p1"}]),
+            "unhashable candidate": dict(candidates=[["x"]]),
+            "findings not serialisable": dict(findings=[{"metric": "hr", "value": {1, 2}}]),
+            "paragraphs is None": dict(paragraphs=None),
+        }
+        for name, change in cases.items():
+            args = {"findings": FINDINGS, "candidates": ["dehydration"], "paragraphs": PARAS, **change}
+            with self.subTest(name), mock.patch.dict("os.environ", {"MODEL": "live"}), \
+                    mock.patch.object(client, "_chat", return_value=dict(GOOD, cites=[1])):
+                result = pipeline.explain_verified("caution", args["findings"], args["candidates"], args["paragraphs"], "ko")
+                self.assertEqual((result["explanation"], result["hold"], result["verified"]), (None, True, 0))
+                self.assertEqual(len(result["runs"]), 1)
+                self.assertRegex(result["runs"][0]["note"], r"^(KeyError|TypeError|ValueError)")
+
 
 if __name__ == "__main__":
     unittest.main()
