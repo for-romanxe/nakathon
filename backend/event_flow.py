@@ -40,6 +40,7 @@ def extract(event: dict, lang: str) -> tuple[list[str], dict]:
         state["stages"].append("hold")
         return [], state
     codes = [code for code in report["codes"] if code != "none"] or ["none"]
+    state["locations"] = report.get("locations", ["unknown"])
     if report["needs_question"]:
         if "dizziness" in codes:
             state["question_key"] = "worse_standing"

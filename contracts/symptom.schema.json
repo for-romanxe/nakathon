@@ -44,6 +44,13 @@
     "unknown"
    ]
   },
+  "locations": {
+   "type": "array",
+   "items": {
+    "enum": ["head", "neck", "chest", "abdomen", "back", "left_arm", "right_arm", "left_leg", "right_leg", "unknown"]
+   },
+   "uniqueItems": true
+  },
   "worse_when": {
    "enum": [
     "standing",
@@ -61,21 +68,6 @@
   },
   "needs_question": {
    "type": "boolean"
-  },
-  "locations": {
-   "type": "array",
-   "items": {
-    "enum": [
-     "head",
-     "chest",
-     "abdomen",
-     "left_arm",
-     "right_arm",
-     "left_leg",
-     "right_leg"
-    ]
-   },
-   "uniqueItems": true
   }
  }
 }

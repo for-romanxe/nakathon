@@ -38,6 +38,6 @@ class SchemaCheck(unittest.TestCase):
     def test_locations_is_optional_and_holds_only_listed_body_parts(self):
         self.assertEqual(self.fails("symptom", dict(SYMPTOM, locations=[])), [])
         self.assertEqual(self.fails("symptom", dict(SYMPTOM, locations=contracts.enums()["body_location"])), [])
-        self.assertTrue(self.fails("symptom", dict(SYMPTOM, locations=["back"])))
+        self.assertTrue(self.fails("symptom", dict(SYMPTOM, locations=["knee"])))
         self.assertTrue(self.fails("symptom", dict(SYMPTOM, locations=["head", "head"])))
         self.assertTrue(self.fails("symptom", dict(SYMPTOM, locations="head")))

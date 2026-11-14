@@ -34,11 +34,37 @@ class EventFlowTest(TestCase):
                 self.assertEqual(stages(api.get(f"{url}/stream")), ["collect", "rules", "done"])
                 warning = api.get(url).json()
                 self.assertEqual((warning["level"], warning["codes"], warning["runs"]), ("warning", [], []))
+                self.assertEqual(warning["locations"], ["unknown"])
                 self.assertEqual(len(api.get("/tx").json()), 1)
             report = api.post("/crew/c2/symptom", json={"text": "I have a headache", "lang": "en"}).json()
             later = api.get(f"/events/{report['event_id']}").json()
             self.assertEqual((later["level"], later["urgent"], later["codes"]), ("normal", False, ["headache"]))
+            self.assertEqual(later["locations"], ["unknown"])
             self.assertEqual(api.get("/crew/c2/today").json()["status"]["level"], "warning")
+
+    def test_extracted_locations_persist_without_affecting_level(self):
+        headers = {"X-Demo-Viewer": "c2"}
+        base = {"codes": ["musculoskeletal_pain"], "onset": "today", "worse_when": "unknown",
+                "severity": 2, "needs_question": False}
+        with patch.dict(os.environ, {"MODEL": "live"}), TestClient(create_app(self.db), headers=headers) as api:
+            outputs = [
+                dict(base, locations=["left_leg", "left_leg", "unknown", {}, "unsupported", "right_arm"]),
+                dict(base, locations={"left_leg": True}),
+            ]
+            with patch.object(model, "_chat", side_effect=outputs):
+                ids = [
+                    api.post("/crew/c2/symptom", json={"text": "My leg hurts.", "lang": "en"})
+                    .raise_for_status().json()["event_id"] for _ in outputs
+                ]
+            self.assertEqual(stages(api.get(f"/events/{ids[0]}/stream"))[-1], "hold")
+        with TestClient(create_app(self.db), headers=headers) as api:
+            today = api.get("/crew/c2/today").raise_for_status().json()
+            by_id = {event["id"]: event for event in today["events"]}
+            for event_id, expected in zip(ids, (["left_leg", "right_arm"], ["unknown"])):
+                event = api.get(f"/events/{event_id}").raise_for_status().json()
+                self.assertEqual(event["locations"], expected)
+                self.assertEqual(by_id[event_id]["locations"], expected)
+                self.assertEqual((event["level"], event["codes"]), ("normal", ["musculoskeletal_pain"]))
 
     def test_urgent_phrase_variants_bypass_model(self):
         with TestClient(create_app(self.db), headers={"X-Demo-Viewer": "c2"}) as api:

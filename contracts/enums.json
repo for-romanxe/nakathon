@@ -94,12 +94,15 @@
  ],
  "body_location": [
   "head",
+  "neck",
   "chest",
   "abdomen",
+  "back",
   "left_arm",
   "right_arm",
   "left_leg",
-  "right_leg"
+  "right_leg",
+  "unknown"
  ],
  "checkin_kind": [
   "morning",
