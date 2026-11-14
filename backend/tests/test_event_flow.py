@@ -65,6 +65,38 @@ class EventFlowTest(TestCase):
                 report = api.post("/crew/c2/symptom", json={"text": "Headache", "lang": "en"}).raise_for_status().json()
             event = api.get(f"/events/{report['event_id']}").raise_for_status().json()
             self.assertEqual((event["urgent"], event["level"], event["title"]), (False, "warning", "Symptom report"))
+            api.post(f"/events/{event['id']}/override", json={"reason": "wear_fault"}).raise_for_status()
+            self.assertEqual(api.get("/crew/c2/today").raise_for_status().json()["status"]["level"], "warning")
+
+    def test_warning_override_preserves_history_and_queued_packet(self):
+        with TestClient(create_app(self.db)) as api:
+            report = api.post("/crew/c2/symptom", json={"text": "Chest pain", "lang": "en"}).raise_for_status().json()
+            url = f"/events/{report['event_id']}"
+            self.assertEqual(api.post(f"{url}/close").status_code, 409)
+            self.assertEqual(api.post(f"{url}/override", json={"reason": "invalid"}).status_code, 422)
+            before = api.get("/tx").raise_for_status().json()
+            self.assertTrue(api.post(f"{url}/share").raise_for_status().json()["shared"])
+            body = {"reason": "action_done", "note": "Synthetic scenario completed."}
+            closed = api.post(f"{url}/override", json=body).raise_for_status().json()
+            self.assertEqual(api.post(f"{url}/override", json=body).json(), closed)
+            self.assertEqual(api.post(f"{url}/override", json={"reason": "other"}).status_code, 409)
+            self.assertEqual(api.get("/tx").json(), before)
+        with TestClient(create_app(self.db)) as api:
+            self.assertEqual(api.get(url).raise_for_status().json(), closed)
+            self.assertEqual((closed["status"], closed["level"], closed["closed_reason"]), ("closed", "warning", "action_done"))
+            self.assertEqual(closed["override"]["note"], body["note"])
+            current = api.get("/crew/c2/today").raise_for_status().json()
+            self.assertEqual(current["status"]["level"], "normal")
+            self.assertEqual(current["events"], [closed])
+
+    def test_non_warning_can_close_without_an_override(self):
+        with TestClient(create_app(self.db)) as api:
+            report = api.post("/crew/c2/symptom", json={"text": "I feel nauseous", "lang": "en"}).raise_for_status().json()
+            url = f"/events/{report['event_id']}"
+            event = api.post(f"{url}/close").raise_for_status().json()
+            self.assertEqual((event["status"], event["closed_reason"], event["override"]), ("closed", "resolved", None))
+            self.assertEqual(api.post(f"{url}/close").json(), event)
+            self.assertEqual(api.post("/events/999/share").status_code, 404)
 
     def test_upgrade_keeps_warning_event_and_packet(self):
         with closing(connect(self.db)) as db:

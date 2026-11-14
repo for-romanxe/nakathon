@@ -87,6 +87,21 @@ does not bundle a reviewed evidence corpus.
 Crew access controls are pending. Use these localhost endpoints with synthetic
 data only.
 
+### Event follow-up
+
+- `POST /events/{id}/share` persists the event's share flag for the crew medical
+  officer. The demo does not send a notification or enforce viewer permissions.
+- `POST /events/{id}/close` closes an event that is not a warning.
+- `POST /events/{id}/override` closes an event with a reason from
+  `contracts/enums.json` and an optional note, for example
+  `{"reason":"action_done","note":"Scenario completed."}`.
+
+All three return the updated event. Repeating the same resolution is safe.
+A conflicting resolution returns 409. Closed events remain in history with
+their original readings and level. They stop contributing to the active Today
+status, which still reflects any current reading warnings. Existing transmission
+packets are retained.
+
 ## Transmission queue simulation
 
 A warning symptom event creates a summary packet with a sequence number and a

@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from backend.checkin import Checkin, save_checkin
 from backend.db import connect, initialize
 from backend import event_flow
-from backend.events import SymptomAnswer, SymptomInput, event_payload, save_event
+from backend.events import EventOverride, SymptomAnswer, SymptomInput, event_payload, save_event
 from backend.link_simulation import LinkSimulation, compare_packet
 from backend.mission import ClockUpdate, DEMO_TIME, active_window, mission_sol, mission_status
 from backend.seed import DEMO_DB, seed
@@ -265,6 +265,43 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
     def read_event(event_id: int):
         event = get_event(event_id)
         return event_error() if event is None else event_payload(event)
+
+    @app.post("/events/{event_id}/share")
+    def share_event(event_id: int):
+        with closing(connect(db_path)) as connection, connection:
+            event = connection.execute(
+                "UPDATE event SET shared = 1 WHERE id = ? RETURNING *", (event_id,),
+            ).fetchone()
+            return event_error() if event is None else event_payload(event)
+
+    def resolve_event(event_id: int, override: EventOverride | None):
+        reason = override.reason if override else "resolved"
+        note = override.note if override else None
+        with closing(connect(db_path)) as connection, connection:
+            connection.execute("BEGIN IMMEDIATE")
+            event = connection.execute("SELECT * FROM event WHERE id = ?", (event_id,)).fetchone()
+            if event is None:
+                return event_error()
+            if event["closed_at"]:
+                if event["closed_reason"] == reason and event["override_note"] == note:
+                    return event_payload(event)
+                return event_error("event_already_closed", "The event already has a recorded resolution.", 409)
+            if event["level"] == "warning" and override is None:
+                return event_error("override_required", "A warning requires an override reason to close.", 409)
+            event = connection.execute(
+                """UPDATE event SET closed_reason = ?, closed_at = ?, override_note = ?
+                   WHERE id = ? RETURNING *""",
+                (reason, clock.isoformat(), note, event_id),
+            ).fetchone()
+            return event_payload(event)
+
+    @app.post("/events/{event_id}/close")
+    def close_event(event_id: int):
+        return resolve_event(event_id, None)
+
+    @app.post("/events/{event_id}/override")
+    def override_event(event_id: int, override: EventOverride):
+        return resolve_event(event_id, override)
 
     return app
 

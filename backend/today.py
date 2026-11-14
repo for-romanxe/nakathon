@@ -90,7 +90,8 @@ def today(connection: sqlite3.Connection, crew_id: str, sol: int, lang: str = "e
             metric["level"] = "caution"
         else:
             metric["level"] = "advisory"
-    level = readings_level({item["level"] for item in metrics + events})
+    active_levels = {event["level"] for event in events if event["status"] == "open"}
+    level = readings_level(active_levels | {metric["level"] for metric in metrics})
 
     checkins = connection.execute(
         "SELECT mission_day, kind FROM checkin WHERE crew_id = ? AND mission_day <= ?",
