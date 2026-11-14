@@ -127,12 +127,15 @@ const ROW = 26
 const TOP = 56 // below the control buttons
 const EDGE = 12
 const TEXT_GAP = 9
+// When a side has more labels than rows fit between the buttons and the bottom, the ones that would land under
+// the buttons are hidden instead of overlapping (the region list still has every part).
 function spread(items, h) {
   items.sort((a, b) => a.y - b.y)
   let prev = -Infinity
   for (const it of items) { it.ly = Math.max(it.y, prev + ROW, TOP); prev = it.ly }
   let next = h - 14
   for (let i = items.length - 1; i >= 0; i--) { items[i].ly = Math.min(items[i].ly, next); next = items[i].ly - ROW }
+  for (const it of items) it.hidden = it.ly < TOP
 }
 
 // marks: { [regionId]: level } — regions a symptom report points at, coloured by that report's level
@@ -275,11 +278,15 @@ export default function HoloBody({ levels, selected, onSelect, marks, callouts =
     }
     // The canvas captures the pointer on press, so move / release / cancel reach it even outside the canvas
     function onDown(ev) {
-      down = { x: ev.clientX, y: ev.clientY, turn, moved: false }
+      if (down) return // a second finger while one is down: ignored, the first pointer keeps the gesture
+      down = { x: ev.clientX, y: ev.clientY, turn, moved: false, id: ev.pointerId }
       try { el.setPointerCapture(ev.pointerId) } catch { /* capture not possible: the cancel handlers still reset */ }
     }
-    function onCancel() { down = null }
+    // only the pointer that started the gesture may move, release or cancel it
+    const other = (ev) => down && ev.pointerId !== down.id
+    function onCancel(ev) { if (!other(ev)) down = null }
     function onMove(ev) {
+      if (other(ev)) return
       if (down) {
         const dx = ev.clientX - down.x
         // any movement past a few pixels (either direction) makes it a drag: releasing then selects nothing
@@ -290,6 +297,7 @@ export default function HoloBody({ levels, selected, onSelect, marks, callouts =
       el.style.cursor = hit(ev) ? 'pointer' : 'grab'
     }
     function onUp(ev) {
+      if (other(ev)) return
       const wasClick = down && !down.moved
       down = null
       if (!wasClick) return
@@ -334,10 +342,13 @@ export default function HoloBody({ levels, selected, onSelect, marks, callouts =
           const left = side === 'left'
           let tick = left ? Math.min(it.x - it.leader, w / 2 - clear) : Math.max(it.x + it.leader, w / 2 + clear)
           tick = left ? Math.max(tick, EDGE + it.tw + TEXT_GAP) : Math.min(tick, w - EDGE - it.tw - TEXT_GAP)
-          it.r.line.setAttribute('x1', it.x)
-          it.r.line.setAttribute('y1', it.y)
-          it.r.line.setAttribute('x2', tick)
-          it.r.line.setAttribute('y2', it.ly)
+          it.r.g.style.visibility = it.hidden ? 'hidden' : ''
+          for (const line of [it.r.line, it.r.hit]) { // the visible leader and its wider click target
+            line.setAttribute('x1', it.x)
+            line.setAttribute('y1', it.y)
+            line.setAttribute('x2', tick)
+            line.setAttribute('y2', it.ly)
+          }
           it.r.end.setAttribute('cx', it.x)
           it.r.end.setAttribute('cy', it.y)
           it.r.tick.setAttribute('cx', tick)
@@ -427,10 +438,11 @@ export default function HoloBody({ levels, selected, onSelect, marks, callouts =
             const keep = (key) => (el) => { (labelRefs.current[c.id] ??= {})[key] = el }
             const select = () => onSelect(c.id)
             return (
-              <g key={c.id} className={`holo-label lv-${c.level}${c.id === selected ? ' on' : ''}`}
+              <g key={c.id} ref={keep('g')} className={`holo-label lv-${c.level}${c.id === selected ? ' on' : ''}`}
                 role="button" tabIndex={0} aria-pressed={c.id === selected} aria-label={c.text}
                 onClick={select} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select() } }}>
                 <line ref={keep('line')} className="holo-leader" />
+                <line ref={keep('hit')} className="holo-leader-hit" />
                 <circle ref={keep('end')} className="holo-end" r="2" cx="-9" cy="-9" />
                 <circle ref={keep('tick')} className="holo-tick" r="1.6" cx="-9" cy="-9" />
                 <text ref={keep('text')} className="holo-text" x="-999" y="-999">

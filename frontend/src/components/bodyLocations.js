@@ -9,17 +9,22 @@ const LEG_EN = 'legs?|knees?|ankles?|feet|foot|thighs?|calf|calves|shins?|hips?'
 const ARM_KO = '팔꿈치|팔목|손목|어깨|팔|손'
 const LEG_KO = '허벅지|종아리|정강이|무릎|발목|다리|발|고관절'
 
+// JS \b only knows ASCII letters, so Korean words get their own edges: not right after another Hangul syllable,
+// and followed by a particle, punctuation, space or the end — "팔이", "다리가", "무릎:" match; "팔찌", "다리미",
+// "팔십", "머리카락" do not.
+const KO_START = '(?<![가-힣])'
+const KO_END = '(?=[이가은는을를도에의와과랑만:\\s.,!?~)]|$)'
 const SIDED = [
   new RegExp(`\\b(left|right|both)\\s+(?:(${ARM_EN})|(${LEG_EN}))\\b`, 'gi'),
-  new RegExp(`(왼|오른|양)\\s*(?:쪽|측)?\\s*(?:(${ARM_KO})|(${LEG_KO}))`, 'g'),
+  new RegExp(`(왼|오른|양)\\s*(?:쪽|측)?\\s*(?:(${ARM_KO})|(${LEG_KO}))${KO_END}`, 'g'),
 ]
 // a limb named without a side; single-syllable 발/손 are left out here (발열 = fever, 손님 …)
 const UNSIDED = [
-  { limb: 'arm', re: new RegExp(`\\b(?:${ARM_EN})\\b|팔꿈치|팔목|손목|어깨|팔`, 'i') },
-  { limb: 'leg', re: new RegExp(`\\b(?:${LEG_EN})\\b|허벅지|종아리|정강이|무릎|발목|다리|고관절`, 'i') },
+  { limb: 'arm', re: new RegExp(`\\b(?:${ARM_EN})\\b|${KO_START}(?:팔꿈치|팔목|손목|어깨|팔)${KO_END}`, 'i') },
+  { limb: 'leg', re: new RegExp(`\\b(?:${LEG_EN})\\b|${KO_START}(?:허벅지|종아리|정강이|무릎|발목|다리|고관절)${KO_END}`, 'i') },
 ]
 const TRUNK = [
-  { location: 'head', re: /\bhead(?:ache)?\b|\bmigraine\b|머리|두통/i },
+  { location: 'head', re: new RegExp(`\\bhead(?:ache)?\\b|\\bmigraine\\b|${KO_START}머리${KO_END}|두통`, 'i') },
   { location: 'chest', re: /\bchest\b|가슴|흉통/i },
   { location: 'abdomen', re: /\bstomach\b|\babdom\w*|\bbelly\b|복통|복부|배(?=[\s:가는이를도])/i },
 ]
