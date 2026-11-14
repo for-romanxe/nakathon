@@ -1,0 +1,40 @@
+import argparse
+import sqlite3
+from contextlib import closing
+from pathlib import Path
+
+
+INITIAL_SCHEMA = Path(__file__).with_name("migrations") / "001_initial.sql"
+CREW_HEALTH_APPLICATION_ID = 1129465160
+
+
+def connect(db_path: str | Path) -> sqlite3.Connection:
+    connection = sqlite3.connect(db_path)
+    connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA foreign_keys = ON")
+    return connection
+
+
+def initialize(db_path: str | Path) -> None:
+    with closing(connect(db_path)) as connection:
+        version = connection.execute("PRAGMA user_version").fetchone()[0]
+        application_id = connection.execute("PRAGMA application_id").fetchone()[0]
+        if application_id == CREW_HEALTH_APPLICATION_ID and version == 1:
+            return
+        populated = connection.execute(
+            "SELECT 1 FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%' LIMIT 1"
+        ).fetchone()
+        if application_id != 0 or version != 0 or populated:
+            raise ValueError("Choose a new database or an initialized Crew Health database.")
+        connection.executescript(INITIAL_SCHEMA.read_text(encoding="utf-8"))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Initialize the Crew Health SQLite database.")
+    parser.add_argument("db_path", type=Path)
+    args = parser.parse_args()
+    try:
+        initialize(args.db_path)
+    except (ValueError, sqlite3.Error) as error:
+        parser.exit(1, f"{error}\n")
+    print(f"Crew Health database ready at {args.db_path}")
