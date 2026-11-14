@@ -76,7 +76,8 @@ def _enqueue(connection, kind, sol, priority, summary, *, event_id=None, crew_id
 def dispatch(connection: sqlite3.Connection, window_id: str) -> None:
     connection.execute(
         """UPDATE tx_packet SET status = 'sent', attempts = attempts + 1, window_id = ?
-           WHERE status = 'queued' OR (status = 'missing' AND window_id < ?)""",
+           WHERE status = 'queued'
+              OR (status = 'missing' AND julianday(window_id) < julianday(?))""",
         (window_id, window_id),
     )
 

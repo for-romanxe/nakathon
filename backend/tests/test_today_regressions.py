@@ -49,6 +49,13 @@ class TodayRegressions(TestCase):
                 self.assertEqual(response.status_code, 422)
                 self.assertEqual(response.json()["error"]["code"], "invalid_request")
 
+    def test_next_window_after_sol_rollover(self):
+        self.client.post("/demo/clock", json={"sol": 16, "time": "23:59"}).raise_for_status()
+        self.assertEqual(self.client.get("/mission").json()["next_window"], "08:00")
+        mission = self.client.post("/demo/clock", json={"advance": "481m"}).raise_for_status().json()
+        self.assertEqual(mission["clock"], {"sol": 17, "time": "08:00"})
+        self.assertEqual(mission["next_window"], "20:00")
+
     def test_event_day_is_excluded_only_while_inside_baseline(self):
         self.client.post("/demo/clock", json={"sol": 2, "time": "10:00"}).raise_for_status()
         self.client.post("/crew/c2/symptom", json={"text": "Dizzy", "lang": "en"}).raise_for_status()

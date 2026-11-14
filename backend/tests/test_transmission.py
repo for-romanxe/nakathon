@@ -1,9 +1,11 @@
+from contextlib import closing
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 from fastapi.testclient import TestClient
 
+from backend.db import connect
 from backend.main import create_app
 
 
@@ -47,9 +49,19 @@ class TransmissionTest(TestCase):
             receipt_path = f"/tx/{seq}/receipt"
             missing_receipt = {"status": "missing", "attempt": 1}
             missing, = client.post(receipt_path, json=missing_receipt).raise_for_status().json()
+            self.assertEqual(client.get("/tx").json(), [missing])
             self.assertEqual(client.post(receipt_path, json=missing_receipt).status_code, 409)
             self.assertEqual(client.post("/tx/send").json(), [missing])
 
+            # A persisted offset timestamp may sort before the same UTC window.
+            with closing(connect(path)) as db, db:
+                db.execute("UPDATE tx_packet SET window_id = ? WHERE seq = ?",
+                           ("2026-11-14T07:00:00-01:00", seq))
+            same_window, = client.post("/tx/send").raise_for_status().json()
+            self.assertEqual((same_window["status"], same_window["attempts"]), ("missing", 1))
+            with closing(connect(path)) as db, db:
+                db.execute("UPDATE tx_packet SET window_id = ? WHERE seq = ?",
+                           ("2026-11-14T08:00:00Z", seq))
             client.post("/demo/clock", json={"sol": 16, "time": "20:00"}).raise_for_status()
             retry, = client.post("/tx/send").raise_for_status().json()
             self.assertEqual((retry["seq"], retry["hash"], retry["attempts"]), (seq, packet["hash"], 2))
