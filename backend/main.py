@@ -84,18 +84,25 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             if origin not in frontend_origins and origin != str(request.base_url).rstrip("/"):
                 raise HTTPException(403, "Request origin is not allowed.")
 
-    def viewer(request: Request, demo_viewer: str = Header("c1", alias="X-Demo-Viewer")):
+    def resolve_viewer(request: Request, header_id=None, query_id=None):
         check_origin(request)
         if sessions.codes is not None:
             crew_id = sessions.member_id(request.cookies.get(SESSION_COOKIE))
             if crew_id is None:
                 raise HTTPException(401, "Sign in to continue.")
         else:
-            crew_id = demo_viewer
+            if header_id is not None and query_id is not None and header_id.lower() != query_id.lower():
+                raise HTTPException(400, "Conflicting demo viewer IDs.")
+            crew_id = header_id if header_id is not None else query_id
+            if crew_id is None:
+                crew_id = "c1"
         member = get_crew_member(crew_id)
         if member is None:
             raise HTTPException(403, "Invalid demo viewer.")
         return member
+
+    def viewer(request: Request, demo_viewer: str | None = Header(None, alias="X-Demo-Viewer")):
+        return resolve_viewer(request, demo_viewer)
 
     def cmo_viewer(member=Depends(viewer)):
         if not member["cmo"]:
@@ -184,7 +191,7 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
     def update_clock(request: Request, update: ClockUpdate):
         nonlocal clock
         if sessions.codes is not None:
-            cmo_viewer(viewer(request))
+            cmo_viewer(resolve_viewer(request))
         with clock_lock:
             clock = update.apply(clock)
             return mission_status(clock)
@@ -282,9 +289,11 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             return state["stages"]
 
     @app.get("/events/{event_id}/stream")
-    def stream_event(request: Request, event_id: int, demo_viewer: str | None = None, member=Depends(viewer)):
-        if demo_viewer is not None and sessions.codes is None:
-            member = viewer(request, demo_viewer)
+    def stream_event(
+        request: Request, event_id: int, demo_viewer: str | None = None,
+        header_id: str | None = Header(None, alias="X-Demo-Viewer"),
+    ):
+        member = resolve_viewer(request, header_id, demo_viewer)
         row = get_event(event_id)
         if row is None:
             return event_error()
