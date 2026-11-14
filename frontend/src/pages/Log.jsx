@@ -171,7 +171,7 @@ function ResultCard({ event }) {
       </div>
       <p className="muted">{message}</p>
       <div className="result-actions">
-        {urgent && <Link className="btn-primary" to="/warning">{t('log.open_warning')}</Link>}
+        {urgent && <Link className="btn-primary" to={`/warning?event=${event.id}`}>{t('log.open_warning')}</Link>}
         <Link className={urgent ? 'btn-secondary' : 'btn-primary'} to={`/events/${event.id}`}>{t('log.open_event')}</Link>
       </div>
     </div>
