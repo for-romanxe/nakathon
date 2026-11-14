@@ -168,9 +168,52 @@ class MedicationIntakeTest(TestCase):
                     "product_id": "synthetic-product", "last_intake_at": "2026-11-14T09:00:00+00:00",
                     "minutes_since_last": 60, "recorded_units_24h": 5, "text_entries_24h": 1,
                     "limit_comparison": {"status": "hold", "reason": "unmatched_entries"},
+                    "product_review": {
+                        "shared_ingredients": [], "cautions": [], "unknown_product_history": True,
+                        "shared_ingredient_in_limit_window": False,
+                    },
                 })
                 self.assertEqual(api.get(summary_url, headers={"X-Demo-Viewer": "c3"}).status_code, 403)
                 self.assertEqual(api.get(summary_url.replace("synthetic-product", "unknown")).status_code, 404)
+
+    def test_product_review_reports_overlap_and_reverse_pair_caution(self):
+        root = Path(self.enterContext(TemporaryDirectory()))
+        catalog = root / "catalog.json"
+        base = {
+            "product": "Synthetic product", "strength": "Test strength", "count_unit": "unit",
+            "directions": "Synthetic text.", "warnings": "Synthetic warning.",
+            "label_revision": "Test revision", "label_url": "https://example.org/label",
+        }
+        selected = dict(base, id="selected", active_ingredients=["test-ingredient"],
+                        intake_limits={"minimum_interval_minutes": 60, "maximum_units_24h": 5},
+                        pair_cautions=[{"product_id": "recorded", "lookback_minutes": 30,
+                                        "text": "Synthetic forward caution."}])
+        recorded = dict(base, id="recorded", active_ingredients=["test-ingredient"], pair_cautions=[
+            {"product_id": "selected", "lookback_minutes": 60, "text": "Synthetic pair caution."},
+        ])
+        catalog.write_text(json.dumps([selected, recorded]), encoding="utf-8")
+        url = "/crew/c1/medication-intake-summary?product_id=selected"
+        with patch.dict("os.environ", {"CREW_HEALTH_MEDICATION_REFERENCES": str(catalog)}):
+            with TestClient(create_app(root / "db.sqlite3")) as api:
+                api.post("/crew/c1/medication-intakes", json={
+                    "request_id": str(uuid4()), "product_id": "recorded", "unit_count": 1,
+                }).raise_for_status()
+                summary = api.get(url).raise_for_status().json()
+                review = summary["product_review"]
+                self.assertEqual(review["shared_ingredients"][0]["ingredients"], ["test-ingredient"])
+                self.assertEqual({row["source_product_id"]: row["text"] for row in review["cautions"]}, {
+                    "recorded": "Synthetic pair caution.", "selected": "Synthetic forward caution.",
+                })
+                self.assertEqual(summary["limit_comparison"], {"status": "hold", "reason": "other_products"})
+                api.post("/demo/clock", json={"advance": "30m"}).raise_for_status()
+                review = api.get(url).raise_for_status().json()["product_review"]
+                self.assertEqual([row["source_product_id"] for row in review["cautions"]], ["recorded"])
+                api.post("/demo/clock", json={"advance": "30m"}).raise_for_status()
+                self.assertEqual(api.get(url).raise_for_status().json()["product_review"]["cautions"], [])
+                api.post("/demo/clock", json={"advance": "23h"}).raise_for_status()
+                result = api.get(url).raise_for_status().json()
+                self.assertEqual(result["product_review"]["shared_ingredients"], [])
+                self.assertEqual(result["limit_comparison"]["status"], "compared")
 
     def test_records_survive_upgrade_and_retry_and_respect_crew_permissions(self):
         path = Path(self.enterContext(TemporaryDirectory())) / "crew.sqlite3"

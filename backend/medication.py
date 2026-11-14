@@ -2,6 +2,7 @@ import os
 import sqlite3
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Annotated
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, TypeAdapter, field_validator, model_validator
@@ -10,6 +11,7 @@ from backend.mission import mission_sol
 
 
 PRODUCT_ID = r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
+CatalogID = Annotated[str, Field(pattern=PRODUCT_ID, max_length=80)]
 INTAKE_COLUMNS = "id, name, amount, ts, mission_day, product_id, unit_count"
 
 
@@ -18,6 +20,14 @@ class IntakeLimits(BaseModel):
 
     minimum_interval_minutes: int = Field(strict=True, gt=0, le=525600)
     maximum_units_24h: int = Field(strict=True, gt=0)
+
+
+class PairCaution(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    product_id: CatalogID
+    lookback_minutes: int = Field(strict=True, gt=0, le=525600)
+    text: str = Field(min_length=1, max_length=1000)
 
 
 class MedicationReference(BaseModel):
@@ -32,6 +42,8 @@ class MedicationReference(BaseModel):
     label_url: HttpUrl
     count_unit: str | None = Field(default=None, min_length=1, max_length=30)
     intake_limits: IntakeLimits | None = None
+    active_ingredients: set[CatalogID] | None = Field(default=None, min_length=1)
+    pair_cautions: list[PairCaution] | None = None
 
     @model_validator(mode="after")
     def require_count_unit_for_limits(self) -> "MedicationReference":
@@ -52,8 +64,13 @@ def load_medication_references() -> list[MedicationReference]:
     if not path:
         return []
     references = TypeAdapter(list[MedicationReference]).validate_json(Path(path).read_bytes())
-    if len({reference.id for reference in references}) != len(references):
+    ids = {reference.id for reference in references}
+    if len(ids) != len(references):
         raise ValueError("Duplicate medication reference ID.")
+    for reference in references:
+        targets = [caution.product_id for caution in reference.pair_cautions or []]
+        if reference.id in targets or not set(targets) <= ids or len(set(targets)) != len(targets):
+            raise ValueError(f"Invalid pair caution targets for {reference.id}.")
     return references
 
 
@@ -85,6 +102,7 @@ def read_intakes(connection: sqlite3.Connection, crew_id: str) -> list[dict]:
 
 def intake_summary(
     connection: sqlite3.Connection, crew_id: str, reference: MedicationReference, now: datetime,
+    references: list[MedicationReference],
 ) -> dict:
     limits = reference.intake_limits
     cutoff = (now - timedelta(hours=24)).isoformat()
@@ -103,10 +121,15 @@ def intake_summary(
     ).fetchone()
     last = row["last_intake_at"]
     elapsed = None if last is None else int((now - datetime.fromisoformat(last)).total_seconds() // 60)
+    review = review_other_products(connection, crew_id, reference, now, review_minutes, references)
     if limits is None:
         comparison = {"status": "hold", "reason": "no_limits"}
     elif row["unmatched_entries"]:
         comparison = {"status": "hold", "reason": "unmatched_entries"}
+    elif review["unknown_product_history"]:
+        comparison = {"status": "hold", "reason": "unknown_products"}
+    elif review["shared_ingredient_in_limit_window"] or review["cautions"]:
+        comparison = {"status": "hold", "reason": "other_products"}
     else:
         comparison = {
             "status": "compared",
@@ -118,6 +141,59 @@ def intake_summary(
         "product_id": reference.id, "last_intake_at": last, "minutes_since_last": elapsed,
         "recorded_units_24h": row["recorded_units_24h"], "text_entries_24h": row["text_entries_24h"],
         "limit_comparison": comparison,
+        "product_review": review,
+    }
+
+
+def review_other_products(
+    connection: sqlite3.Connection, crew_id: str, reference: MedicationReference,
+    now: datetime, review_minutes: int, references: list[MedicationReference],
+) -> dict:
+    catalog = {item.id: item for item in references}
+    rules_by_product = {}
+    for source in references:
+        for rule in source.pair_cautions or []:
+            if source.id == reference.id:
+                other_id = rule.product_id
+            elif rule.product_id == reference.id:
+                other_id = source.id
+            else:
+                continue
+            rules_by_product.setdefault(other_id, []).append((source, rule))
+    longest = max([review_minutes] + [
+        rule.lookback_minutes for rules in rules_by_product.values() for _, rule in rules
+    ])
+    rows = connection.execute(
+        """SELECT product_id, MAX(ts) AS latest FROM medication_intake
+           WHERE crew_id = ? AND ts > ? AND ts <= ? AND (product_id != ? OR product_id IS NULL)
+           GROUP BY product_id ORDER BY product_id""",
+        (crew_id, (now - timedelta(minutes=longest)).isoformat(), now.isoformat(), reference.id),
+    )
+    shared_ingredients = []
+    cautions = []
+    unknown_product_history = shared_in_limit_window = False
+    for row in rows:
+        product_id = row["product_id"]
+        age = now - datetime.fromisoformat(row["latest"])
+        other = catalog.get(product_id)
+        if other is None or other.active_ingredients is None or reference.active_ingredients is None:
+            unknown_product_history = True
+        elif shared := sorted(other.active_ingredients & reference.active_ingredients):
+            if age < timedelta(minutes=review_minutes):
+                shared_in_limit_window = True
+            if age < timedelta(hours=24):
+                shared_ingredients.append({"product_id": other.id, "product": other.product, "ingredients": shared})
+        for source, rule in rules_by_product.get(product_id, []):
+            if age < timedelta(minutes=rule.lookback_minutes):
+                cautions.append({
+                    "product_id": other.id, "product": other.product, "text": rule.text,
+                    "source_product_id": source.id, "label_url": str(source.label_url),
+                    "label_revision": source.label_revision,
+                })
+    return {
+        "shared_ingredients": shared_ingredients, "cautions": cautions,
+        "unknown_product_history": unknown_product_history,
+        "shared_ingredient_in_limit_window": shared_in_limit_window,
     }
 
 

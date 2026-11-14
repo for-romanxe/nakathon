@@ -279,7 +279,7 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
                 reference = next((row for row in medication_references if row.id == product_id), None)
                 if reference is None or reference.count_unit is None:
                     return event_error("intake_product_unavailable", "This product has no configured count unit.", 404)
-                return intake_summary(connection, crew_id, reference, clock)
+                return intake_summary(connection, crew_id, reference, clock, medication_references)
             finally:
                 connection.rollback()
 

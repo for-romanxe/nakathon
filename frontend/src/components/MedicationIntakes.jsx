@@ -121,6 +121,7 @@ function IntakeSummary({ crew, reference, entries }) {
             : t('intake.elapsed', { n: summary.minutes_since_last })}</p>
           {summary.text_entries_24h > 0 && <p className="muted">{t('intake.text_excluded', { n: summary.text_entries_24h })}</p>}
           <IntakeLimitComparison comparison={summary.limit_comparison} unit={reference.count_unit} />
+          <IntakeProductReview review={summary.product_review} reason={summary.limit_comparison.reason} />
         </>
       )}
     </section>
@@ -139,7 +140,29 @@ function IntakeLimitComparison({ comparison, unit }) {
             t('intake.below_limit', { n: comparison.units_below_24h_limit, unit })}</p>
         </>
       )}
-      <p className="muted">{t('intake.interactions_unassessed')} {t('medref.confirm')}</p>
+      <p className="muted">{t('medref.confirm')}</p>
+    </>
+  )
+}
+
+function IntakeProductReview({ review, reason }) {
+  const { t } = useT()
+  return (
+    <>
+      <p className="muted">{t('intake.interactions_scope')}</p>
+      {review.unknown_product_history && reason !== 'unknown_products' &&
+        <p>{t('intake.limits.unknown_products')}</p>}
+      {review.shared_ingredients.map((row) => (
+        <p key={row.product_id}>
+          {t('intake.shared_ingredients', { product: row.product, ingredients: row.ingredients.join(', ') })}
+        </p>
+      ))}
+      {review.cautions.map((row) => (
+        <p key={`${row.product_id}-${row.source_product_id}`}>
+          {row.product} · {row.text}{' '}
+          <a href={row.label_url} target="_blank" rel="noreferrer">{t('medref.source')} · {row.label_revision}</a>
+        </p>
+      ))}
     </>
   )
 }

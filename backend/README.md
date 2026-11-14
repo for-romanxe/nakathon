@@ -191,7 +191,16 @@ A reviewed catalog entry with a `count_unit` may also include
 `maximum_units_24h`. The summary compares recorded history against those
 values. It withholds comparison if limits are absent or any text-only
 intakes fall inside the longer of the two lookback windows. The comparison
-covers the selected product only. It does not evaluate drug interactions.
+covers the selected product only.
+
+An entry may declare `active_ingredients` as an array of consistent lowercase
+ingredient IDs and `pair_cautions` as reviewed rules with another catalog
+`product_id`, a positive integer `lookback_minutes`, and caution `text`.
+The summary reports shared ingredients in the last 24 hours and cautions from
+either product's label within their configured windows. It withholds limit
+comparison when recent product or ingredient data is incomplete, an active
+pair caution applies, or a shared ingredient falls within the limit lookback.
+The catalog covers only the supplied rules.
 
 ### Event follow-up
 
