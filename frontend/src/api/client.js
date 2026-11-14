@@ -6,6 +6,8 @@ import crewFixture from './fixtures/crew.json'
 import missionFixture from './fixtures/mission.json'
 import eventCautionFixture from './fixtures/event_caution.json'
 import eventWarningFixture from './fixtures/event_warning.json'
+import txFixture from './fixtures/tx.json'
+import firstStepsFixture from './fixtures/first_steps.json'
 import { PIPELINE_STAGES } from './contract.js'
 
 export const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES !== 'false'
@@ -92,6 +94,16 @@ export const api = {
   // GET /events/{id} -> event (spec §9: findings, codes, risk, explanation, runs, verified, ...)
   getEvent: (eventId) =>
     request(`/events/${eventId}`, () => fixtureEvents[eventId] ?? { ...eventCautionFixture, id: Number(eventId) }),
+  // GET /tx -> transmission packets to Earth, warning first (seq, event_id, priority, status, attempts, ...)
+  getTx: () => request('/tx', txFixture),
+  // POST /tx {event_id} -> queues an event summary for Earth (warning events are queued by the backend already)
+  queueTx: (eventId) => request('/tx', txFixture, { method: 'POST', body: JSON.stringify({ event_id: eventId }) }),
+  // POST /tx {daily:true} -> queues today's summary for every crew member (used for a metrics-only warning)
+  queueDaily: () => request('/tx', txFixture, { method: 'POST', body: JSON.stringify({ daily: true }) }),
+  // POST /tx/send -> sends queued packets if a comm window is open now; returns the queue
+  sendTx: () => request('/tx/send', txFixture, { method: 'POST' }),
+  // First steps of the emergency procedure per warning code. No /docs endpoint yet: placeholder fixture only
+  getFirstSteps: () => Promise.resolve(firstStepsFixture),
   // GET /crew -> [{ id: "c1", name: "C1", ... }] — display names come from here
   getCrew: () => request('/crew', crewFixture),
   // GET /mission -> { clock:{sol,time}, environment, one_way_delay_min, next_window }
