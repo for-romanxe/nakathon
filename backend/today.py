@@ -2,7 +2,7 @@ import json
 import sqlite3
 from statistics import mean, pstdev
 
-from backend.events import event_payload
+from backend.events import event_payload, readings_level
 from backend.seed import CONTRACT
 
 
@@ -90,17 +90,7 @@ def today(connection: sqlite3.Connection, crew_id: str, sol: int, lang: str = "e
             metric["level"] = "caution"
         else:
             metric["level"] = "advisory"
-    event_levels = {event["level"] for event in events}
-    if "warning" in event_levels or any(abs(metric["z"]) >= warning_limit for metric in outliers):
-        level = "warning"
-    elif "caution" in event_levels or len(outliers) >= 2 or repeated:
-        level = "caution"
-    elif outliers:
-        level = "advisory"
-    elif any(metric["z"] is None for metric in metrics):
-        level = "hold"
-    else:
-        level = "normal"
+    level = readings_level({item["level"] for item in metrics + events})
 
     checkins = connection.execute(
         "SELECT mission_day, kind FROM checkin WHERE crew_id = ? AND mission_day <= ?",

@@ -58,8 +58,32 @@ returns an event ID. Read the saved symptom report and its original readings
 with `GET /events/{id}`. Today's events appear in the Today response. Previous
 event days are excluded from the baseline window.
 
-The event endpoint uses demo keyword rules for urgent symptoms. Model
-interpretation, follow-up questions, and explanation verification are pending.
+The event endpoint returns `event_id`, `urgent`, and `needs_question`, with
+`question` when an answer is needed. A warning bypasses the model. `urgent`
+identifies a warning raised by the report's wording, independently of warnings
+raised by the report's measurement snapshot.
+
+1. If a question was returned, send `{"answer":"yes"}` or `{"answer":"no"}` to
+   `POST /events/{id}/answer` (202).
+2. Open `GET /events/{id}/stream` with EventSource. It emits `{"stage":"…"}` and
+   ends with `done` or `hold`. The first stream runs the explanation step;
+   later streams replay the saved stages.
+3. Read `GET /events/{id}` for the persisted answer, explanation, verification
+   runs, and hold reason. An explanation hold leaves the rule level intact.
+
+The default model mode is `mock`. Set `MODEL=live` to use the local model
+server described in [Model client](model/README.md). Without a matching local
+evidence paragraph, the backend returns `hold` without generating an
+explanation.
+
+Set `CREW_HEALTH_EVIDENCE` to the path of a UTF-8 JSON array to load the team's
+reviewed local paragraphs at startup. Each object has `id` (a unique paragraph
+ID in the form `org:slug#pN`), `text`, `codes` (a nonempty list of symptom
+codes), and `condition_id` from `contracts/enums.json`. The demo matches
+paragraphs by symptom code. Code matches and citation checks do not validate
+medical advice or guarantee that the text supports each sentence. The repo
+does not bundle a reviewed evidence corpus.
+
 Crew access controls are pending. Use these localhost endpoints with synthetic
 data only.
 
