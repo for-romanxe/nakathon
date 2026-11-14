@@ -84,8 +84,8 @@ export default function Procedures() {
           </ul>
           {found.length === 0 && <p className="panel-empty muted">{t('proc.no_results')}</p>}
           <p className="panel-empty muted small">
-            {t('proc.count', { n: list.docs.length })} {t('proc.fictional')}
-            {list.sample && ` ${t('proc.sample')}`}
+            {t('proc.count', { n: list.docs.length })}
+            {list.sample && ` ${t('proc.fictional')} ${t('proc.sample')}`}
           </p>
         </aside>
 

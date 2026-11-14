@@ -11,6 +11,8 @@ import { CURRENT_CREW } from '../session.js'
 import { useMission } from '../mission.jsx'
 
 const PERIODS = [7, 30, 90]
+// Only these sources get a label; anything else shows the value alone
+const PREFLIGHT_SOURCE = { synthetic_scenario: 'trends.preflight_synthetic', manual: 'trends.preflight_manual' }
 const DAY_MS = 86400000
 const [CAUTION_SD, WARNING_SD] = SENSITIVITY.standard // e.g. 2 and 3
 
@@ -68,7 +70,11 @@ function normalize(data) {
     ? data.baseline.sd
     : null
 
-  return { points, events, baseline: { mean, sd } }
+  // preflight is { value, source } | null; older backends and the fixtures leave it out
+  const pv = data?.preflight?.value
+  const preflight = typeof pv === 'number' && Number.isFinite(pv) ? { value: pv, source: data.preflight.source } : null
+
+  return { points, events, baseline: { mean, sd }, preflight }
 }
 
 // Chart.js draws on a canvas, so it needs real colour values: read them from the design tokens
@@ -123,7 +129,7 @@ const zonesPlugin = {
   },
 }
 
-function buildChartConfig({ points, events, baseline }, metric, lang, t) {
+function buildChartConfig({ points, events, baseline, preflight }, metric, lang, t) {
   const c = tokens()
   const firstDay = Math.min(...points.map(p => p.day), ...events.map(e => e.day ?? Infinity))
   const lastDay = Math.max(firstDay + 1, ...points.map(p => p.day), ...events.map(e => e.day ?? -Infinity))
@@ -171,6 +177,22 @@ function buildChartConfig({ points, events, baseline }, metric, lang, t) {
       pointBorderWidth: 2,
       showLine: false,
       order: 0,
+    })
+  }
+
+  // Preflight reference: a dataset, not part of the zones plugin, so it shows without a baseline and the y scale includes it
+  if (preflight) {
+    datasets.push({
+      type: 'line',
+      label: t('trends.preflight'),
+      data: [{ x: firstDay, y: preflight.value }, { x: lastDay, y: preflight.value }],
+      borderColor: c.accent,
+      borderWidth: 2,
+      borderDash: [2, 4],
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      tension: 0,
+      order: 2,
     })
   }
 
@@ -264,7 +286,7 @@ function TrendChart({ data, metric, lang, t }) {
   )
 }
 
-function Legend({ metric, lang, t, baseline, hasEvents }) {
+function Legend({ metric, lang, t, baseline, hasEvents, preflight }) {
   return (
     <ul className="trend-legend">
       <li><i className="sw sw-line" aria-hidden="true" />{metricLabel(metric, lang)}</li>
@@ -275,6 +297,7 @@ function Legend({ metric, lang, t, baseline, hasEvents }) {
           <li><i className="sw sw-warning" aria-hidden="true" />{t('trends.zone_warning', { b: WARNING_SD })}</li>
         </>
       )}
+      {preflight && <li><i className="sw" aria-hidden="true" style={{ borderTop: '2px dashed var(--accent)' }} />{t('trends.preflight')}</li>}
       {hasEvents && <li><i className="sw sw-event" aria-hidden="true">▲</i>{t('trends.event_marker')}</li>}
     </ul>
   )
@@ -304,6 +327,17 @@ function Summary({ data, metric, t }) {
           )}
         </dd>
       </div>
+      {data.preflight && (
+        <div>
+          <dt>{t('trends.preflight')}</dt>
+          <dd>
+            {cell(data.preflight.value)}
+            {Object.hasOwn(PREFLIGHT_SOURCE, data.preflight.source) && (
+              <span className="muted small"> · {t(PREFLIGHT_SOURCE[data.preflight.source])}</span>
+            )}
+          </dd>
+        </div>
+      )}
       <div><dt>{t('trends.count')}</dt><dd className="num">{values.length}</dd></div>
     </dl>
   )
@@ -359,7 +393,7 @@ export default function Trends() {
             <span className="muted small num">{data.points[0].key} – {data.points[data.points.length - 1].key}</span>
           </div>
           <TrendChart data={data} metric={metric} lang={lang} t={t} />
-          <Legend metric={metric} lang={lang} t={t} baseline={data.baseline} hasEvents={data.events.length > 0} />
+          <Legend metric={metric} lang={lang} t={t} baseline={data.baseline} hasEvents={data.events.length > 0} preflight={data.preflight} />
           <Summary data={data} metric={metric} t={t} />
           <details className="trend-table">
             <summary>{t('trends.show_table', { n: data.points.length })}</summary>

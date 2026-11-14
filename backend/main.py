@@ -12,10 +12,12 @@ from backend.auth import CrewLogin, CrewSessions, SESSION_COOKIE, SESSION_SECOND
 
 from backend.checkin import Checkin, save_checkin
 from backend.db import connect, initialize
+from backend.docs import build_docs
 from backend import event_flow
 from backend.events import EventOverride, SymptomAnswer, SymptomInput, event_payload, save_event
 from backend.link_simulation import LinkSimulation, compare_packet
 from backend.mission import ClockUpdate, DEMO_TIME, active_window, mission_sol, mission_status
+from backend.preflight import PreflightUpdate, read_preflight, save_preflight
 from backend.seed import CONTRACT, CREW, DEMO_DB, seed
 from backend.today import today
 from backend.trends import trends
@@ -45,20 +47,23 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
     clock_lock = Lock()
     event_locks = [Lock() for _ in range(32)]
     evidence = []
+    docs = []
     sessions = None
     frontend_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        nonlocal evidence, sessions
+        nonlocal evidence, sessions, docs
         sessions = CrewSessions(crew_id for crew_id, *_ in CREW)
         evidence = event_flow.load_evidence()
+        docs = build_docs(evidence)
         initialize(db_path)
         with closing(connect(db_path)) as connection:
             seed(connection)
         yield
 
-    app = FastAPI(title="Crew Health Demo API", lifespan=lifespan)
+    app = FastAPI(title="Crew Health Demo API", lifespan=lifespan, docs_url="/api/docs",
+                  swagger_ui_oauth2_redirect_url="/api/docs/oauth2-redirect")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=frontend_origins,
@@ -74,6 +79,15 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             status_code=422,
             content={"error": {"code": "invalid_request", "message": message}},
         )
+
+    @app.get("/docs")
+    def list_docs():
+        return docs
+
+    @app.get("/docs/{doc_id}")
+    def get_doc(doc_id: str):
+        found = next((doc for doc in docs if doc["id"] == doc_id), None)
+        return found if found else event_error("doc_not_found", "Document not found.")
 
     def get_crew_member(crew_id):
         with closing(connect(db_path)) as connection:
@@ -210,6 +224,23 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             if not can_read_crew(connection, crew_id, member):
                 return crew_not_found()
             return today(connection, crew_id, mission_sol(clock), lang)
+
+    @app.get("/crew/{crew_id}/preflight")
+    def get_preflight(crew_id: str, member=Depends(viewer)):
+        crew_id = crew_id.lower()
+        with closing(connect(db_path)) as connection, connection:
+            connection.execute("BEGIN")
+            if not can_read_crew(connection, crew_id, member):
+                return crew_not_found()
+            return read_preflight(connection, crew_id)
+
+    @app.put("/crew/{crew_id}/preflight")
+    def update_preflight(crew_id: str, update: PreflightUpdate, member=Depends(viewer)):
+        crew_id = crew_id.lower()
+        if member["id"] != crew_id:
+            raise HTTPException(403, "Crew record write denied.")
+        with closing(connect(db_path)) as connection, connection:
+            return save_preflight(connection, crew_id, update)
 
     @app.get("/crew/{crew_id}/trends")
     def read_trends(crew_id: str, metric: str, days: int = Query(14, ge=1, le=90), member=Depends(viewer)):

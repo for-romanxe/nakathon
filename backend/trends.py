@@ -25,9 +25,14 @@ def trends(connection: sqlite3.Connection, crew_id: str, metric: str, days: int,
         sol,
         frozenset(row["mission_day"] for row in events),
     )
+    preflight = connection.execute(
+        "SELECT value, source FROM preflight_baseline WHERE crew_id = ? AND metric = ?",
+        (crew_id, metric),
+    ).fetchone()
     return {
         "points": [{"ts": row["ts"], "value": row["value"]}
                    for row in readings if row["mission_day"] >= chart_start],
         "baseline": {"mean": current["baseline"], "sd": current["sd"]},
+        "preflight": dict(preflight) if preflight is not None else None,
         "events": [event_payload(row) for row in events if row["mission_day"] >= chart_start],
     }
