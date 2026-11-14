@@ -12,6 +12,7 @@ import { ackWarning, warningKey } from '../warningAck.js'
 import { CURRENT_CREW } from '../session.js'
 import { useMission } from '../mission.jsx'
 import Cite from '../components/Cite.jsx'
+import DeviationScale from '../components/DeviationScale.jsx'
 import { useT } from '../i18n/index.jsx'
 
 function addMinutes(hhmm, minutes) {
@@ -174,6 +175,7 @@ export default function Warning() {
             {flagged.map((f) => (
               <li key={f.metric} className={`lv-${f.level}`}>
                 <span>{metricLabel(f.metric, lang)}</span>
+                <DeviationScale z={f.z} level={f.level} />
                 <b className="num">{formatMetric(f.metric, f.value)} <span className="muted">{METRICS[f.metric]?.unit}</span></b>
                 <span className="muted num">{t('warning.baseline', { v: formatMetric(f.metric, f.baseline) })}</span>
               </li>
