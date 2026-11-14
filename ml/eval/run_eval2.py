@@ -45,6 +45,9 @@ def check(S):
         e, a, f = (set(r.get(k, [])) for k in ("expect", "allow", "forbid"))
         if not e or (e | a | f) - codes or e & f or r.get("split") not in ("test", "dev") or r.get("lang") not in ("ko", "en"):
             bad.append(f"symptom {r.get('id')}: expect/allow/forbid, split or lang not valid")
+        named, may = set(r.get("locations", [])), set(r.get("locations_allow", []))
+        if "locations" not in r or (named | may) - set(ENUMS["body_location"]) or named & may or (e == {"none"} and named | may):
+            bad.append(f"symptom {r.get('id')}: locations/locations_allow not valid")
     for r in S["mood"]:
         rng = r.get("range") or {}
         if not rng or set(rng) - {"mood", "fatigue", "stress"} or any(not (len(v) == 2 and 1 <= v[0] <= v[1] <= 5) for v in rng.values()):
@@ -84,16 +87,26 @@ def grounding(lines, texts):
     return round(len(out & src) / len(out), 2) if out else None
 
 
+def score_locations(it, out):
+    """부위(몸 화면 표시용): 말한 부위를 모두 냈고, 허용한 부위 말고는 더 내지 않았으면 ok. 칸이 없거나 ["unknown"]이면 missing(프론트가 문장에서 찾는다)."""
+    if out is None:
+        return None
+    if out.get("locations", ["unknown"]) == ["unknown"]:
+        return "missing"
+    got, named = set(out["locations"]), set(it["locations"])
+    return "ok" if named <= got <= named | set(it.get("locations_allow", [])) else "wrong"
+
+
 def run(S, split, only):
     rows = []
     for it in S["symptom"] if "symptom" in only else []:
         if it["split"] != split:
             continue
-        base = {"section": "symptom", "id": it["id"], "lang": it["lang"], "kind": it["kind"], "urgent": bool(set(it["expect"]) & URGENT)}
+        base = {"section": "symptom", "id": it["id"], "lang": it["lang"], "kind": it["kind"], "urgent": bool(set(it["expect"]) & URGENT), "names_part": bool(it["locations"])}
         out, err, _ = call(client.extract_symptoms, it["text"], it["lang"], mode="mock")
         rows.append({**base, "by": "keyword", "out": out, "error": err, **score_symptom(it, out)})
         out, err, sec = call(client.extract_symptoms, it["text"], it["lang"])
-        rows.append({**base, "by": "model", "out": out, "error": err, "sec": round(sec, 2), **score_symptom(it, out)})
+        rows.append({**base, "by": "model", "out": out, "error": err, "sec": round(sec, 2), **score_symptom(it, out), "loc": score_locations(it, out)})
     for it in S["mood"] if "mood" in only else []:
         if it["split"] != split:
             continue
@@ -145,6 +158,10 @@ def summary(rows):
         out.append("  by kind: " + "  ".join(f"{k} {frac([r for r in model if r['kind'] == k])}" for k in sorted({r["kind"] for r in model})))
         out.append(f"  urgent codes (chest pain, breathlessness, crisis) caught: model {frac([r for r in model if r['urgent']])}  keyword {frac([r for r in kw if r['urgent']])}")
         out.append(f"  schema errors: {sum(r['out'] is None for r in model)}")
+        loc = [r for r in model if r.get("loc")]
+        ok = lambda rs: f"{sum(r['loc'] == 'ok' for r in rs)}/{len(rs)}"
+        out.append(f"  body parts (display only): right {ok(loc)}  field absent {sum(r['loc'] == 'missing' for r in loc)}"
+                   f"  | report names a part {ok([r for r in loc if r['names_part']])}  names none {ok([r for r in loc if not r['names_part']])}")
     mood = [r for r in rows if r["section"] == "mood"]
     if mood:
         out.append(f"mood     in range {frac(mood, 'ok')}  schema errors {sum(r['out'] is None for r in mood)}")
@@ -173,6 +190,11 @@ def sheet(S, rows, head):
         if r["section"] == "symptom" and r["by"] == "model" and not r["hit"]:
             it = by_id[r["id"]]
             md.append(f"| {r['id']} | {r['kind']} | {it['text']} | {', '.join(it['expect'])} | {', '.join(it.get('forbid', [])) or '-'} | {', '.join(r['out']['codes']) if r['out'] else '오류: ' + str(r['error'])[:60]} |")
+    md += ["", "## 부위: 틀린 문항 (표시용, 증상 점수와 별개)", "", "| # | 문장 | 말한 부위 | 허용 | 모델이 낸 부위 |", "|---|---|---|---|---|"]
+    for r in rows:
+        if r["section"] == "symptom" and r["by"] == "model" and r.get("loc") == "wrong":
+            it = by_id[r["id"]]
+            md.append(f"| {r['id']} | {it['text']} | {', '.join(it['locations']) or '-'} | {', '.join(it.get('locations_allow', [])) or '-'} | {', '.join(r['out']['locations']) or '-'} |")
     md += ["", "## 기분: 범위 밖 문항", "", "| # | 문장 | 기대 범위 | 모델 (mood / fatigue / stress) |", "|---|---|---|---|"]
     for r in rows:
         if r["section"] == "mood" and not r["ok"]:
