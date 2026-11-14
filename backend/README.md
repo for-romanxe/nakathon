@@ -58,8 +58,32 @@ returns an event ID. Read the saved symptom report and its original readings
 with `GET /events/{id}`. Today's events appear in the Today response. Previous
 event days are excluded from the baseline window.
 
-The event endpoint uses demo keyword rules for urgent symptoms. Model
-interpretation, follow-up questions, and explanation verification are pending.
+The event endpoint returns `event_id`, `urgent`, and `needs_question`, with
+`question` when an answer is needed. A warning bypasses the model. `urgent`
+identifies a warning raised by the report's wording, independently of warnings
+raised by the report's measurement snapshot.
+
+1. If a question was returned, send `{"answer":"yes"}` or `{"answer":"no"}` to
+   `POST /events/{id}/answer` (202).
+2. Open `GET /events/{id}/stream` with EventSource. It emits `{"stage":"…"}` and
+   ends with `done` or `hold`. The first stream runs the explanation step;
+   later streams replay the saved stages.
+3. Read `GET /events/{id}` for the persisted answer, explanation, verification
+   runs, and hold reason. An explanation hold leaves the rule level intact.
+
+The default model mode is `mock`. Set `MODEL=live` to use the local model
+server described in [Model client](model/README.md). Without a matching local
+evidence paragraph, the backend returns `hold` without generating an
+explanation.
+
+Set `CREW_HEALTH_EVIDENCE` to the path of a UTF-8 JSON array to load the team's
+reviewed local paragraphs at startup. Each object has `id` (a unique paragraph
+ID in the form `org:slug#pN`), `text`, `codes` (a nonempty list of symptom
+codes), and `condition_id` from `contracts/enums.json`. The demo matches
+paragraphs by symptom code. Code matches and citation checks do not validate
+medical advice or guarantee that the text supports each sentence. The repo
+does not bundle a reviewed evidence corpus.
+
 Crew access controls are pending. Use these localhost endpoints with synthetic
 data only.
 
@@ -97,3 +121,22 @@ relative to the narrow signal at equal symbol duration.
 This experiment models additive noise while a link is available. It has no
 error correction or framing overhead and does not change packet delivery
 status. It runs independently of the mission clock and transmission window.
+
+### Frontend integration
+
+Render the queue from `GET /tx`. Each row has `seq`, `crew`, `event_id`,
+`kind`, `priority`, `status`, `attempts`, `window_id`, `hash`, and `payload`.
+Use the sequence number as the row key so a retry updates the same row.
+
+1. Submit a synthetic warning report to `POST /crew/c1/symptom` with
+   `{"text":"I have chest pain","lang":"en"}`. Find its packet by matching the
+   returned `event_id` against the queue.
+2. Set the demo clock to Sol 16 at 08:00, then call `POST /tx/send` with no
+   body. The returned queue shows the first attempt as `sent`.
+3. Post `missing` with the packet's current attempt number. Move the clock to
+   20:00 and send again. Post `acked` with the new attempt number.
+4. Compare either before or after sending by posting
+   `{"wide_amplitude":5}` to `/tx/{seq}/simulate`. Display each of `narrow`
+   and `wide` using `bit_error_rate` as a percentage, `successful_packets`
+   out of `trials`, and `relative_energy_per_bit` as a multiplier. The
+   response's `packet_bits` gives the payload size.

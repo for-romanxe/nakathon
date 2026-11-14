@@ -1,3 +1,4 @@
+import json
 from contextlib import asynccontextmanager, closing
 from threading import Lock
 from typing import Literal
@@ -5,11 +6,12 @@ from typing import Literal
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from backend.checkin import Checkin, save_checkin
 from backend.db import connect, initialize
-from backend.events import SymptomInput, event_payload, save_event
+from backend import event_flow
+from backend.events import SymptomAnswer, SymptomInput, event_payload, save_event
 from backend.link_simulation import LinkSimulation, compare_packet
 from backend.mission import ClockUpdate, DEMO_TIME, active_window, mission_sol, mission_status
 from backend.seed import DEMO_DB, seed
@@ -26,12 +28,20 @@ def crew_not_found() -> JSONResponse:
     )
 
 
+def event_error(code="event_not_found", message="Event not found.", status=404) -> JSONResponse:
+    return JSONResponse(status_code=status, content={"error": {"code": code, "message": message}})
+
+
 def create_app(db_path=DEMO_DB) -> FastAPI:
     clock = DEMO_TIME
     clock_lock = Lock()
+    event_locks = [Lock() for _ in range(32)]
+    evidence = []
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        nonlocal evidence
+        evidence = event_flow.load_evidence()
         initialize(db_path)
         with closing(connect(db_path)) as connection:
             seed(connection)
@@ -107,7 +117,81 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             event = connection.execute("SELECT * FROM event WHERE id = ?", (event_id,)).fetchone()
             if event["level"] == "warning":
                 enqueue_event(connection, event)
-            return {"event_id": event_id, "needs_question": False}
+                return {"event_id": event_id, "needs_question": False, "urgent": bool(event["urgent"])}
+        # Do not hold a SQLite write lock during inference.
+        codes, state = event_flow.extract(event_payload(event), report.lang)
+        with closing(connect(db_path)) as connection, connection:
+            connection.execute("UPDATE event SET codes = ?, pipeline = ? WHERE id = ?",
+                               (json.dumps(codes), json.dumps(state), event_id))
+        response = {"event_id": event_id, "needs_question": "question" in state, "urgent": False}
+        if response["needs_question"]:
+            response["question"] = state["question"]
+        return response
+
+    def get_event(event_id):
+        with closing(connect(db_path)) as connection:
+            return connection.execute("SELECT * FROM event WHERE id = ?", (event_id,)).fetchone()
+
+    @app.post("/events/{event_id}/answer", status_code=202)
+    def answer_symptom(event_id: int, answer: SymptomAnswer):
+        with closing(connect(db_path)) as connection, connection:
+            connection.execute("BEGIN IMMEDIATE")
+            event = connection.execute("SELECT * FROM event WHERE id = ?", (event_id,)).fetchone()
+            if event is None:
+                return event_error()
+            state = json.loads(event["pipeline"] or "{}")
+            if "question" not in state or (state.get("answer") and state["answer"] != answer.answer):
+                return event_error("answer_not_expected", "No matching question is awaiting this answer.", 409)
+            if "answer" not in state:
+                state["answer"] = answer.answer
+                connection.execute("UPDATE event SET pipeline = ? WHERE id = ?", (json.dumps(state), event_id))
+        return {"event_id": event_id}
+
+    def finish_explanation(event_id: int, paragraphs: list[dict]):
+        with event_locks[event_id % len(event_locks)]:
+            row = get_event(event_id)
+            event = event_payload(row)
+            state = json.loads(row["pipeline"])
+            if state["stages"][-1] in ("done", "hold"):
+                return state["stages"]
+            state["stages"].append("retrieve")
+            if not paragraphs:
+                state["hold_reason"] = "no_matching_evidence"
+                state["stages"].append("hold")
+            else:
+                event_flow.explain(event, state, paragraphs, row["lang"])
+            with closing(connect(db_path)) as connection, connection:
+                connection.execute("UPDATE event SET pipeline = ? WHERE id = ?", (json.dumps(state), event_id))
+            return state["stages"]
+
+    @app.get("/events/{event_id}/stream")
+    def stream_event(event_id: int):
+        row = get_event(event_id)
+        if row is None:
+            return event_error()
+        state = json.loads(row["pipeline"] or "{}")
+        old_stages = ["collect", "rules", "done" if row["level"] == "warning" else "hold"]
+        stages = state.get("stages", old_stages)
+        if stages[-1] == "rules" or (stages[-1] == "question" and "answer" not in state):
+            return event_error("event_not_ready", "The report is still processing or awaiting an answer.", 409)
+
+        def stream():
+            def emit(stage):
+                return f"data: {json.dumps({'stage': stage})}\n\n"
+
+            for stage in stages:
+                yield emit(stage)
+            if stages[-1] not in ("done", "hold"):
+                yield emit("retrieve")
+                paragraphs = event_flow.relevant_evidence(evidence, json.loads(row["codes"]), state)
+                emitted = len(stages) + 1
+                if paragraphs:
+                    yield emit("generate")
+                    emitted += 1
+                for stage in finish_explanation(event_id, paragraphs)[emitted:]:
+                    yield emit(stage)
+
+        return StreamingResponse(stream(), media_type="text/event-stream", headers={"Cache-Control": "no-cache"})
 
     @app.get("/tx")
     def read_queue():
@@ -179,14 +263,8 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
 
     @app.get("/events/{event_id}")
     def read_event(event_id: int):
-        with closing(connect(db_path)) as connection:
-            event = connection.execute("SELECT * FROM event WHERE id = ?", (event_id,)).fetchone()
-            if event is None:
-                return JSONResponse(
-                    status_code=404,
-                    content={"error": {"code": "event_not_found", "message": "Event not found."}},
-                )
-            return event_payload(event)
+        event = get_event(event_id)
+        return event_error() if event is None else event_payload(event)
 
     return app
 
