@@ -150,18 +150,27 @@ def _cite_id(cite, paragraphs: list):
     return cite
 
 
+# 지시문은 한 곳에만 둔다. 학습 데이터(ml/data/build_v2.py)도 이 글을 그대로 가져다 쓴다.
+def _symptom_system() -> str:
+    e = contracts.enums()
+    return ("You extract symptom codes from a crew member's free-text report. Answer with JSON only. "
+            f"codes: array from {json.dumps(e['symptom_codes'])}. onset: one of {json.dumps(e['onset'])}. "
+            f"worse_when: one of {json.dumps(e['worse_when'])}. severity: integer 1-5. "
+            "needs_question: true when a single follow-up question would change the codes. Never invent codes outside the list.")
+
+
+MOOD_SYSTEM = ("Convert the crew member's free-text mood report into scales. Answer with JSON only: "
+               "{\"mood\": 1-5 (5=best), \"fatigue\": 1-5 (5=most tired), \"stress\": 1-5 (5=most stressed), \"confidence\": 0-1}.")
+
+
 def extract_symptoms(text: str, lang: str, recent_summary: str = "") -> dict:
     """① 증상 문장 → SymptomReport (codes[], onset, worse_when, severity, needs_question)."""
     if _mode() == "mock":
         _delay()
         return _validated(_mock_pick("symptom", text), "symptom")
     e = contracts.enums()
-    system = ("You extract symptom codes from a crew member's free-text report. Answer with JSON only. "
-              f"codes: array from {json.dumps(e['symptom_codes'])}. onset: one of {json.dumps(e['onset'])}. "
-              f"worse_when: one of {json.dumps(e['worse_when'])}. severity: integer 1-5. "
-              "needs_question: true when a single follow-up question would change the codes. Never invent codes outside the list.")
     user = text if not recent_summary else f"{text}\n\n[recent metrics] {recent_summary}"
-    out = _chat(system, user)
+    out = _chat(_symptom_system(), user)
     for key in ("onset", "worse_when"):      # 보조 필드를 지어내면 unknown 으로 둔다. codes 는 건드리지 않는다(목록 밖이면 거부).
         if key in out and out[key] not in e[key]:
             out[key] = "unknown"
@@ -173,9 +182,7 @@ def score_mood(text: str, lang: str) -> dict:
     if _mode() == "mock":
         _delay()
         return _validated(_mock_pick("mood", text), "mood")
-    system = ("Convert the crew member's free-text mood report into scales. Answer with JSON only: "
-              "{\"mood\": 1-5 (5=best), \"fatigue\": 1-5 (5=most tired), \"stress\": 1-5 (5=most stressed), \"confidence\": 0-1}.")
-    return _validated(_chat(system, text, 60), "mood")
+    return _validated(_chat(MOOD_SYSTEM, text, 60), "mood")
 
 
 # 재생성 때 모델에게 알려 주는 말: 검증기 검사 이름 → 고칠 점. 걸린 표현(verify 의 detail)이 있으면 뒤에 붙인다.
