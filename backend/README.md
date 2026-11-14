@@ -59,3 +59,21 @@ The event endpoint uses demo keyword rules for urgent symptoms. Model
 interpretation, follow-up questions, and explanation verification are pending.
 Crew access controls are pending. Use these localhost endpoints with synthetic
 data only.
+
+## AI components
+
+- `contracts.py` loads the shared JSON contracts and validates model output.
+- `model/client.py` provides `extract_symptoms`, `score_mood`, and `explain`. Set
+  `MODEL=mock` (default) or `MODEL=live`.
+- `mock/*.json` contains keyword-based scenario fixtures. The last row is the fallback.
+- `verify.py` implements the five explanation checks: numbers, citations, level,
+  schema, and wording.
+
+Run the AI unit tests from the repository root:
+
+```sh
+python -m unittest discover -s backend/tests -t .
+```
+
+Set `MOCK_DELAY=0` to skip mock latency. For live mode, configure
+`MODEL_URL=http://127.0.0.1:8080` and set `MODEL_NAME` to the served model name.

@@ -1,0 +1,7 @@
+[
+ {"match": ["꿀꿀", "우울", "가라앉", "down", "low"], "out": {"mood": 2, "fatigue": 3, "stress": 3, "confidence": 0.8}},
+ {"match": ["불안", "스트레스", "anxious", "stress"], "out": {"mood": 2, "fatigue": 3, "stress": 4, "confidence": 0.8}},
+ {"match": ["피곤", "졸", "tired", "exhausted"], "out": {"mood": 3, "fatigue": 4, "stress": 2, "confidence": 0.8}},
+ {"match": ["좋", "괜찬", "괜찮", "good", "fine", "great"], "out": {"mood": 4, "fatigue": 2, "stress": 2, "confidence": 0.85}},
+ {"match": [], "out": {"mood": 3, "fatigue": 3, "stress": 3, "confidence": 0.5}}
+]
