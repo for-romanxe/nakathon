@@ -181,7 +181,10 @@ export default function Crew() {
   async function sendNow() {
     const q = await runQueue(() => api.sendTx())
     // POST /tx/send only sends inside a comm window; anything still queued waits for the next one
-    if (q?.some((p) => p.status === 'queued')) setNote(t('crew.tx.no_window', { time: mission?.next_window ?? '–' }))
+    if (!q?.some((p) => p.status === 'queued')) return
+    // Ask for the window now: the shared mission state may still hold the old one right after "next window"
+    const latest = await api.getMission().catch(() => mission)
+    setNote(t('crew.tx.no_window', { time: latest?.next_window ?? '–' }))
   }
 
   // Demo: move the clock to the next comm window (tomorrow if today's has passed)
