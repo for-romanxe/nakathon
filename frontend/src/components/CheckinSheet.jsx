@@ -29,14 +29,20 @@ const FORMS = {
 export default function CheckinSheet({ kind = 'morning', onSubmit, onSymptoms, onClose }) {
   const { t } = useT()
   const form = FORMS[kind] ?? FORMS.morning
-  const [answers, setAnswers] = useState(form.defaults)
+  // answers belong to the kind they were given for: if kind changes on the same sheet, the old answers are dropped
+  // and the new kind starts from its own defaults (never submitting morning answers as an evening check-out)
+  const [state, setState] = useState({ kind, answers: form.defaults })
+  const answers = state.kind === kind ? state.answers : form.defaults
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(false)
   const firstButton = useRef(null)
 
   useEffect(() => { firstButton.current?.focus() }, [])
 
-  const set = (key, value) => setAnswers((a) => ({ ...a, [key]: value }))
+  const set = (key, value) => setState((s) => ({
+    kind,
+    answers: { ...(s.kind === kind ? s.answers : form.defaults), [key]: value },
+  }))
 
   async function submit() {
     setSaving(true)
