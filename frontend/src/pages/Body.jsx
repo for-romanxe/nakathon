@@ -75,9 +75,11 @@ export default function Body() {
         for (const r of REGIONS) {
           if (!r.doc) continue
           const [docId, para] = r.doc.split('#p')
-          let doc = docs.find((d) => d.id === docId)
-          if (doc && !Array.isArray(doc.paragraphs)) doc = await api.getDoc(docId).catch(() => null)
-          found[r.doc] = !!doc?.paragraphs?.some((p) => String(p.n) === para)
+          const has = (doc) => !!doc?.paragraphs?.some((p) => String(p.n) === para)
+          const listed = docs.find((d) => d.id === docId)
+          // The list may carry no paragraphs, an empty array, or only some: if the paragraph is not there,
+          // ask for the full document before deciding there is no link
+          found[r.doc] = has(listed) || (listed ? has(await api.getDoc(docId).catch(() => null)) : false)
         }
         if (active) setOpenable(found)
       })

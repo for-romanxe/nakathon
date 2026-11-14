@@ -51,17 +51,17 @@ function buildCells() {
   return cells
 }
 
-// One region per point, with exactly the rule buildCells uses to colour cells: the nearest region centre
-// within its radius. Clicking empty space outside every region selects nothing, overlapping areas go to
-// the nearer centre, and no element sits on top of another to steal the click.
-function regionAt(nx, ny) {
-  let best = null
+// The region under a figure point is the region of the body cell under it. Cells exist only inside the
+// body outline and already carry their region (same rule that colours them), so a click on the margin,
+// outside the body, or on an unassigned part of the body selects nothing.
+function regionAt(cells, x, y) {
+  let hit = null
   let bd = Infinity
-  for (const r of REGIONS) {
-    const d = regionDistance(r, nx, ny)
-    if (d < r.r && d < bd) { bd = d; best = r }
+  for (const c of cells) {
+    const d = Math.max(Math.abs(c.x - x), Math.abs(c.y - y))
+    if (d <= CELL / 2 && d < bd) { bd = d; hit = c }
   }
-  return best
+  return hit?.region ? REGIONS.find((r) => r.id === hit.region) : null
 }
 
 // Screen point -> figure (viewBox) point. Uses the SVG's own point API (no DOMPoint needed); if that is
@@ -99,7 +99,7 @@ export default function BodyFigure({ levels, selected, onSelect, label, unavaila
   // Click anywhere on the figure: turn the screen point into figure coordinates and pick the region there
   function handleClick(ev) {
     const pt = toFigure(svgRef.current, ev.clientX, ev.clientY)
-    const region = pt && regionAt(pt.x / W, pt.y / H)
+    const region = pt && regionAt(cells, pt.x, pt.y)
     if (region) onSelect(region.id)
   }
 
