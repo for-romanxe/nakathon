@@ -45,7 +45,7 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
     async def invalid_request(request, error: RequestValidationError):
         return JSONResponse(
             status_code=422,
-            content={"error": {"code": "invalid_request", "message": error.errors()[0]["msg"]}},
+            content={"error": {"code": "invalid_request", "message": str(error.errors()[0]["msg"])}},
         )
 
     @app.get("/crew")

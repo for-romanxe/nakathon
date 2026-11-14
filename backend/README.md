@@ -19,8 +19,10 @@ synthetic crew data on localhost. Use only synthetic data with this demo endpoin
 | `GET /crew/c4/today` | `advisory` |
 
 The baseline uses population standard deviation over daily averages for the
-previous 14 sols. A missing day or zero variance makes the corresponding
-z-score unavailable. The seeded readings are scenario fixtures and the
+previous 14 sols. An event day inside that window is excluded. A missing day
+or zero variance makes the corresponding z-score unavailable. Overall warning,
+caution, and advisory take precedence over hold, while each missing metric
+retains its own hold status. The seeded readings are scenario fixtures and the
 thresholds reproduce the team's demo rules.
 
 Display names are C1 through C4. Crew IDs remain `c1` through `c4` in storage
