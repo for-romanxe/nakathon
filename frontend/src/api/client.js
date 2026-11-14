@@ -2,6 +2,7 @@
 // VITE_USE_FIXTURES=true (default) reads fixtures/*.json; false calls the FastAPI backend (CONTRACT §5).
 // API fields are snake_case and are used as-is (CONTRACT §0-4).
 import todayFixture from './fixtures/today.json'
+import todayOthersFixture from './fixtures/today_others.json'
 import crewFixture from './fixtures/crew.json'
 import missionFixture from './fixtures/mission.json'
 import eventCautionFixture from './fixtures/event_caution.json'
@@ -68,10 +69,11 @@ export const api = {
   // GET /crew/{id}/today -> { status:{level,text}, guide, metrics:[{metric,value,baseline,sd,z}], events, checkin, streak }
   // ?lang=ko localises status.text (guide lines are English for now)
   getToday: (crewId, lang) =>
-    request(`/crew/${crewId}/today?lang=${lang}`, () => ({
-      ...todayFixture,
-      events: [...todayFixture.events, ...Object.values(fixtureEvents)], // fixture-only reports from this session
-    })),
+    request(`/crew/${crewId}/today?lang=${lang}`, () =>
+      todayOthersFixture[crewId] ?? {
+        ...todayFixture,
+        events: [...todayFixture.events, ...Object.values(fixtureEvents)], // fixture-only reports from this session
+      }),
   // POST /crew/{id}/checkin {kind, answers, free_text?} -> updated /today (CONTRACT §5)
   // answers (agreed with backend): { sleep_quality, mood, fatigue: 1-5 ints, symptoms?: "none"|"yes" }
   postCheckin: (crewId, body, lang) =>

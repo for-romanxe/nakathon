@@ -266,3 +266,18 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
 .warning-unknown { background: var(--bg); border-color: var(--hold); }
 .warning-unknown h1 { color: var(--text); }
 .warning-contact { border-color: var(--warning); }
+
+/* ---- Crew (CMO) ---- */
+.page-wide { max-width: 1280px; }
+.crew-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.crew-card { border-top: 3px solid var(--status, var(--line)); }
+.crew-card.lv-advisory { border-top-color: var(--line); }
+.crew-card h2 { display: flex; align-items: center; gap: 8px; }
+.crew-tag { padding: 1px 7px; font-size: 0.72rem; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; }
+.crew-rows { margin: 0; padding: 4px 16px 12px; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 12px; font-size: 0.9rem; }
+.crew-rows dt { color: var(--muted); font-size: 0.82rem; padding-top: 2px; white-space: nowrap; }
+.crew-rows dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.crew-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.crew-chips .badge { justify-self: auto; white-space: normal; }
+.crew-event { text-decoration: none; }
+.crew-event:hover { border-color: var(--accent); }

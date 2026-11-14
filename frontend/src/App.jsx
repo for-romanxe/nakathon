@@ -8,6 +8,7 @@ import Placeholder from './pages/Placeholder.jsx'
 import Log from './pages/Log.jsx'
 import EventDetail from './pages/EventDetail.jsx'
 import Warning from './pages/Warning.jsx'
+import Crew from './pages/Crew.jsx'
 
 export default function App() {
   return (
@@ -22,7 +23,7 @@ export default function App() {
           <Route path="/trends" element={<Placeholder titleKey="nav.trends" />} />
           <Route path="/log" element={<Log />} />
           <Route path="/procedures" element={<Placeholder titleKey="nav.procedures" />} />
-          <Route path="/crew" element={<Placeholder titleKey="nav.crew" />} />
+          <Route path="/crew" element={<Crew />} />
           <Route path="/settings" element={<Placeholder titleKey="nav.settings" />} />
           <Route path="/events/:id" element={<EventDetail />} />
           <Route path="/warning" element={<Warning />} />
