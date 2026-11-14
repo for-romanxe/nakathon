@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 
 from backend.checkin import Checkin, save_checkin
 from backend.db import connect, initialize
+from backend.events import SymptomInput, event_payload, save_event
 from backend.seed import DEMO_DB, DEMO_SOL, seed
 from backend.today import today
 
@@ -61,6 +62,29 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             current = today(connection, crew_id, DEMO_SOL)
             save_checkin(connection, crew_id, DEMO_SOL, checkin, current["status"]["level"])
             return today(connection, crew_id, DEMO_SOL)
+
+    @app.post("/crew/{crew_id}/symptom")
+    def report_symptom(crew_id: str, report: SymptomInput):
+        crew_id = crew_id.lower()
+        with closing(connect(db_path)) as connection, connection:
+            connection.execute("BEGIN IMMEDIATE")
+            crew = connection.execute("SELECT id FROM crew WHERE id = ?", (crew_id,)).fetchone()
+            if crew is None:
+                return crew_not_found()
+            current = today(connection, crew_id, DEMO_SOL)
+            event_id = save_event(connection, crew_id, DEMO_SOL, report, current)
+            return {"event_id": event_id, "needs_question": False}
+
+    @app.get("/events/{event_id}")
+    def read_event(event_id: int):
+        with closing(connect(db_path)) as connection:
+            event = connection.execute("SELECT * FROM event WHERE id = ?", (event_id,)).fetchone()
+            if event is None:
+                return JSONResponse(
+                    status_code=404,
+                    content={"error": {"code": "event_not_found", "message": "Event not found."}},
+                )
+            return event_payload(event)
 
     return app
 

@@ -38,5 +38,12 @@ the activity review based on the existing rule status. Submitting the same
 kind for the same sol updates the existing entry. `free_text` is optional
 and stored as entered.
 
-Event-day exclusions, crew access controls, and symptom handling are subsequent
-integration work. The frontend check-in form still needs to call the endpoint.
+`POST /crew/c1/symptom` accepts `{"text":"I feel dizzy","lang":"en"}` and
+returns an event ID. Read the saved symptom report and its original readings
+with `GET /events/{id}`. Today's events appear in the Today response. Previous
+event days are excluded from the baseline window.
+
+The event endpoint uses demo keyword rules for urgent symptoms. Model
+interpretation, follow-up questions, and explanation verification are pending.
+Crew access controls are pending. Use these localhost endpoints with synthetic
+data only.

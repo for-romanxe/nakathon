@@ -5,6 +5,7 @@ from pathlib import Path
 
 
 INITIAL_SCHEMA = Path(__file__).with_name("migrations") / "001_initial.sql"
+EVENT_SCHEMA = INITIAL_SCHEMA.with_name("002_events.sql")
 CREW_HEALTH_APPLICATION_ID = 1129465160
 
 
@@ -19,14 +20,18 @@ def initialize(db_path: str | Path) -> None:
     with closing(connect(db_path)) as connection:
         version = connection.execute("PRAGMA user_version").fetchone()[0]
         application_id = connection.execute("PRAGMA application_id").fetchone()[0]
-        if application_id == CREW_HEALTH_APPLICATION_ID and version == 1:
-            return
-        populated = connection.execute(
-            "SELECT 1 FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%' LIMIT 1"
-        ).fetchone()
-        if application_id != 0 or version != 0 or populated:
+        if application_id == 0 and version == 0:
+            populated = connection.execute(
+                "SELECT 1 FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%' LIMIT 1"
+            ).fetchone()
+            if populated:
+                raise ValueError("Choose a new database or an initialized Crew Health database.")
+            connection.executescript(INITIAL_SCHEMA.read_text(encoding="utf-8"))
+            version = 1
+        elif application_id != CREW_HEALTH_APPLICATION_ID or version not in (1, 2):
             raise ValueError("Choose a new database or an initialized Crew Health database.")
-        connection.executescript(INITIAL_SCHEMA.read_text(encoding="utf-8"))
+        if version == 1:
+            connection.executescript(EVENT_SCHEMA.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
