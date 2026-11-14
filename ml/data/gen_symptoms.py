@@ -1,7 +1,8 @@
 """증상 문장 → enum JSON 학습셋 생성기 (ko/en, 템플릿 조합).
 
 출력: train.jsonl / valid.jsonl (mlx-lm chat 형식), schema.json
-라벨은 템플릿에서 결정되므로 구성상 정확하다. 평가용 30문항은 사람이 따로 쓴다.
+라벨은 문장에 들어간 표현으로만 정한다(v2, 2026-11-14): 세기를 말하지 않으면 기본값, needs_question 은 규칙으로만.
+평가용 문항은 따로 쓴다.
 """
 import json, random, re, pathlib, argparse
 
@@ -56,14 +57,14 @@ NONE_PH = (["오늘은 특별한 증상 없어요", "괜찮아요", "별 일 없
 
 ONSET_PH = {
     "now": (["방금부터", "지금", "조금 전부터"], ["just now", "right now", "since a moment ago"]),
-    "hours": (["몇 시간 전부터", "점심 먹고 나서부터", "오전부터", "두세 시간째"], ["for a few hours", "since lunch", "since this morning", "for the last couple of hours"]),
-    "today": (["오늘 아침부터", "일어났을 때부터", "오늘 하루 종일"], ["since I woke up", "all day today", "since this morning when I got up"]),
+    "hours": (["몇 시간 전부터", "점심 먹고 나서부터", "두세 시간째"], ["for a few hours", "since lunch", "for the last couple of hours"]),
+    "today": (["오늘 아침부터", "일어났을 때부터", "오늘 하루 종일", "오전부터"], ["since I woke up", "all day today", "since this morning when I got up", "since this morning"]),
     "days": (["며칠째", "이틀 전부터", "지난주부터", "사흘 정도"], ["for a few days", "since two days ago", "since last week", "about three days now"]),
 }
 WORSE_PH = {
-    "standing": (["일어설 때 더 심해요", "서면 더 어지러워요", "일어나면 심해져요"], ["worse when I stand up", "it gets worse standing", "standing makes it worse"]),
+    "standing": (["일어설 때 더 심해요", "서 있으면 더 심해요", "일어나면 심해져요"], ["worse when I stand up", "it gets worse standing", "standing makes it worse"]),
     "after_meal": (["밥 먹고 나면 더해요", "식사 후에 더 심해요"], ["worse after eating", "it gets worse after meals"]),
-    "exercise": (["운동하면 더 심해요", "운동 중에 더 그래요", "ARED 하고 나서 더 아파요"], ["worse during exercise", "gets worse when I work out", "worse after the treadmill"]),
+    "exercise": (["운동하면 더 심해요", "운동 중에 더 그래요", "ARED 하고 나면 더 심해요"], ["worse during exercise", "gets worse when I work out", "worse after the treadmill"]),
     "lying": (["누우면 더 심해요", "자려고 누우면 더 그래요"], ["worse lying down", "worse when I lie down"]),
     "none": (["뭘 해도 비슷해요", "특별히 더 심해지는 건 없어요"], ["same no matter what I do", "nothing makes it worse"]),
 }
@@ -101,11 +102,9 @@ def make(lang):
         sev = max(sev, 4)
     if "chest_pain" in codes or "shortness_of_breath" in codes:
         sev = max(sev, 3)
-    # needs_question: 어지러움·두통·메스꺼움처럼 확인 질문 하나가 코드를 바꾸는 경우 + 정보가 빈약할 때
-    needs_q = (any(c in codes for c in ["dizziness", "headache", "nausea", "fatigue"]) and worse == "unknown" and onset in ("unknown",)) or random.random() < 0.15
-    if "crisis" in codes or "chest_pain" in codes:
-        needs_q = False
     sev_part = pick(SEV_PH[sev], lang) if random.random() < 0.6 else ""
+    if not sev_part:      # 세기를 말하지 않은 문장: 기본 2, 흉통·호흡곤란은 3 이상, 위기는 4 이상
+        sev = 4 if "crisis" in codes else 3 if ("chest_pain" in codes or "shortness_of_breath" in codes) else 2
     fill = pick(FILL, lang)
     parts = []
     for i, c in enumerate(codes):
@@ -125,6 +124,10 @@ def make(lang):
         text = text.rstrip(".") + ("." if lang == "en" else "")
     if random.random() < 0.1:
         text = text.lower() if lang == "en" else text.replace("요", "")  # 반말 변형
+    # needs_question: 어지러움·두통·메스꺼움·피로인데 언제부터인지도, 언제 심해지는지도 문장에 없을 때 (확인 질문 하나가 판단을 바꾼다).
+    # 문장에 실제로 남은 정보로 정한다: onset 은 위에서 문장에 안 들어갔으면 unknown 으로 바뀐 뒤다. 급한 증상은 묻지 않는다.
+    needs_q = (any(c in codes for c in ["dizziness", "headache", "nausea", "fatigue"]) and worse == "unknown" and onset == "unknown"
+               and not any(c in codes for c in ["crisis", "chest_pain", "shortness_of_breath"]))
     label = {"codes": sorted(codes), "onset": onset, "worse_when": worse, "severity": sev, "needs_question": bool(needs_q)}
     return text, label
 
