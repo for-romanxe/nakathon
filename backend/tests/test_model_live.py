@@ -134,6 +134,17 @@ class LiveModel(unittest.TestCase):
         self.assertEqual((out["codes"], out["worse_when"]), (["headache"], "unknown"))
         self.assertNotIn("worse_ when", out)
 
+    def test_keys_that_collide_after_removing_spaces_are_rejected(self):
+        # "codes" 와 "co des" 가 같이 오면 공백을 지운 뒤 같은 키가 된다. 뒤의 값이 앞의 값을 덮어쓰면 안 된다.
+        for reply in ('{"codes": ["headache"], "co des": ["congestion"], "onset": "today", "worse_when": "unknown", "severity": 2, "needs_question": false}',
+                      '{"codes": ["headache"], "onset": "today", "worse_when": "standing", "worse_ when": "unknown", "severity": 2, "needs_question": false}'):
+            with self.subTest(reply=reply[:40]):
+                Stub.reply = completion(reply)
+                with self.assertRaises(client.ModelOutputError) as caught:
+                    client.extract_symptoms("머리가 아파요", "ko")
+                self.assertNotIsInstance(caught.exception, client.ModelUnavailableError)
+                self.assertIn("same key", str(caught.exception))
+
     def test_made_up_onset_or_worse_when_becomes_unknown(self):
         # 실제 모델이 "hurts when I bend it" 에 worse_when "bending" 을 지어내 맞는 코드까지 버려졌다.
         Stub.reply = completion(json.dumps({**SYMPTOM, "codes": ["musculoskeletal_pain"], "worse_when": "bending", "onset": "yesterday"}))

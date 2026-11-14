@@ -28,17 +28,29 @@ def _delay():
     time.sleep(float(os.environ.get("MOCK_DELAY", "1")))
 
 
+def _clean_keys(pairs: list) -> dict:
+    """키 이름 안의 공백을 지운다("worse_ when" → "worse_when"). 그 결과 같은 키가 둘이 되면
+    ("codes" 와 "co des") 어느 값이 맞는지 알 수 없으니 덮어쓰지 않고 거부한다."""
+    out = {}
+    for key, value in pairs:
+        key = "".join(key.split())
+        if key in out:
+            raise ModelOutputError(f"model output has the same key twice: {key!r}")
+        out[key] = value
+    return out
+
+
 def _first_json_object(text: str) -> dict:
     """모델 답에서 첫 번째 온전한 JSON 객체를 꺼낸다. 앞뒤 설명, 코드 펜스, 뒤따르는 두 번째 객체는 무시한다."""
-    decoder = json.JSONDecoder()
+    decoder = json.JSONDecoder(object_pairs_hook=_clean_keys)
     start = text.find("{")
     while start != -1:
         try:
             obj, _ = decoder.raw_decode(text, start)
         except json.JSONDecodeError:
             obj = None
-        if isinstance(obj, dict):       # 키 이름 안의 공백은 지운다: "worse_ when" → "worse_when"
-            return {"".join(str(key).split()): value for key, value in obj.items()}
+        if isinstance(obj, dict):
+            return obj
         start = text.find("{", start + 1)
     raise ModelOutputError("no JSON object in model output")
 
