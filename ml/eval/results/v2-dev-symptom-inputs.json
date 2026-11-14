@@ -1,0 +1,734 @@
+[
+ {
+  "cond": "sentence only",
+  "id": "SD-001",
+  "text": "이상 무. 식사·수면 정상.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-002",
+  "text": "내일 선외활동 준비가 몇 시부터였죠? 몸 상태는 좋습니다.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-003",
+  "text": "Check-in, sol 212: no aches, appetite normal, slept seven and a half hours.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-004",
+  "text": "야간 근무 끝났더니 졸려 죽겠네. 얼른 자야겠다.",
+  "codes": [
+   "fatigue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-005",
+  "text": "오늘은 숨 돌릴 틈도 없이 바빴네요. 그래도 몸은 거뜬합니다.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-006",
+  "text": "선장님이 아침부터 어지럽다고 하셔서 오늘 점검은 제가 대신 합니다. 저는 허리만 좀 뻐근해요.",
+  "codes": [
+   "musculoskeletal_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "back"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-007",
+  "text": "These new freeze-dried mango slices are to die for. Nothing else from me.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-008",
+  "text": "Felt a weight lift off my chest when the leak check came back clean. I'm good.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-009",
+  "text": "Last week's neck stiffness has cleared up entirely. The only thing now is an itchy red patch behind my knee.",
+  "codes": [
+   "skin_rash"
+  ],
+  "ok": true,
+  "locations": [
+   "left_leg",
+   "right_leg"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-010",
+  "text": "잠은 잘 잤어요. 그런데 아침부터 속이 느글거려서 아무것도 못 먹겠어요.",
+  "codes": [
+   "nausea"
+  ],
+  "ok": true,
+  "locations": [
+   "abdomen"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-011",
+  "text": "No headache, no dizziness, no stomach trouble. The one thing is that small print won't come into focus.",
+  "codes": [
+   "vision_change"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-012",
+  "text": "Chest feels fine and breathing is easy. It's my lower back that's locked up after the long sit in the lander seat.",
+  "codes": [
+   "musculoskeletal_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "back"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-013",
+  "text": "콧물이 줄줄 흐르고 이마 쪽이 욱신욱신 아파요. 온몸이 노곤하기도 하고요.",
+  "codes": [
+   "congestion",
+   "fatigue",
+   "headache"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-014",
+  "text": "장비 가방 하나만 옮겨도 한참을 헐떡이게 되고, 순간순간 아찔합니다.",
+  "codes": [
+   "dizziness",
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-015",
+  "text": "Both wrists have an itchy red band where the cuffs sit, and both shoulders are sore from the suit fit check.",
+  "codes": [
+   "musculoskeletal_pain",
+   "skin_rash"
+  ],
+  "ok": true,
+  "locations": [
+   "back",
+   "left_arm",
+   "right_arm"
+  ],
+  "loc_ok": false
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-016",
+  "text": "I feel hopeless and low, I haven't slept properly in a week, and I keep thinking about ending my life.",
+  "codes": [
+   "crisis",
+   "low_mood",
+   "sleep_issue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-017",
+  "text": "무중력 이틀째. 벽이랑 천장이 헷갈릴 때마다 헛구역질이 올라와요.",
+  "codes": [
+   "nausea"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-018",
+  "text": "창밖으로 해가 하루에도 열몇 번씩 뜨고 지니까 몸이 밤낮을 헷갈려요. 침낭에 들어가도 한참을 말똥말똥합니다.",
+  "codes": [
+   "sleep_issue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-019",
+  "text": "First sol on the surface. Each time I get to my feet my head swims for a few seconds.",
+  "codes": [
+   "dizziness"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-020",
+  "text": "아침마다 nasal congestion이 있고 headache도 같이 와요.",
+  "codes": [
+   "congestion",
+   "headache"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-021",
+  "text": "Console 앞에 앉아만 있는데 short of breath 느낌이 계속 있어요.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-022",
+  "text": "요즘 mood가 계속 down이고 사소한 일에도 irritated돼요.",
+  "codes": [
+   "low_mood"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-023",
+  "text": "Workout 중간부터 chest가 tight해서 일단 stop했습니다.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-024",
+  "text": "Blurred vision in my right eye since I woke up.",
+  "codes": [
+   "vision_change"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-025",
+  "text": "침낭 안에서 가만히 있는데도 꼭 달리기를 막 끝낸 사람처럼 숨을 몰아쉬고 있어요.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-026",
+  "text": "I've started to believe the mission would go better if I no longer existed, and I can't stop wishing for that.",
+  "codes": [
+   "crisis"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-027",
+  "text": "대수롭지 않게 넘기려 했는데, 러닝머신만 뛰면 가슴 한가운데가 조여 와서 속도를 줄이게 돼요.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-028",
+  "text": "심각한 건 아닌데요, 요즘 그냥 죽어 버리면 편하겠다는 생각을 가끔 합니다.",
+  "codes": [
+   "crisis"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-029",
+  "text": "Slightly odd tonight: getting a full breath takes more effort than it should, even floating still.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "SD-030",
+  "text": "It's likely just how I slept, but my chest has felt heavy and tight since I got up.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-001",
+  "text": "이상 무. 식사·수면 정상.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-002",
+  "text": "내일 선외활동 준비가 몇 시부터였죠? 몸 상태는 좋습니다.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-003",
+  "text": "Check-in, sol 212: no aches, appetite normal, slept seven and a half hours.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-004",
+  "text": "야간 근무 끝났더니 졸려 죽겠네. 얼른 자야겠다.",
+  "codes": [
+   "fatigue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-005",
+  "text": "오늘은 숨 돌릴 틈도 없이 바빴네요. 그래도 몸은 거뜬합니다.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-006",
+  "text": "선장님이 아침부터 어지럽다고 하셔서 오늘 점검은 제가 대신 합니다. 저는 허리만 좀 뻐근해요.",
+  "codes": [
+   "musculoskeletal_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "back"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-007",
+  "text": "These new freeze-dried mango slices are to die for. Nothing else from me.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-008",
+  "text": "Felt a weight lift off my chest when the leak check came back clean. I'm good.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-009",
+  "text": "Last week's neck stiffness has cleared up entirely. The only thing now is an itchy red patch behind my knee.",
+  "codes": [
+   "skin_rash"
+  ],
+  "ok": true,
+  "locations": [
+   "left_leg",
+   "right_leg"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-010",
+  "text": "잠은 잘 잤어요. 그런데 아침부터 속이 느글거려서 아무것도 못 먹겠어요.",
+  "codes": [
+   "nausea"
+  ],
+  "ok": true,
+  "locations": [
+   "abdomen"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-011",
+  "text": "No headache, no dizziness, no stomach trouble. The one thing is that small print won't come into focus.",
+  "codes": [
+   "vision_change"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-012",
+  "text": "Chest feels fine and breathing is easy. It's my lower back that's locked up after the long sit in the lander seat.",
+  "codes": [
+   "musculoskeletal_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "back"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-013",
+  "text": "콧물이 줄줄 흐르고 이마 쪽이 욱신욱신 아파요. 온몸이 노곤하기도 하고요.",
+  "codes": [
+   "congestion",
+   "headache",
+   "fatigue"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-014",
+  "text": "장비 가방 하나만 옮겨도 한참을 헐떡이게 되고, 순간순간 아찔합니다.",
+  "codes": [
+   "dizziness",
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-015",
+  "text": "Both wrists have an itchy red band where the cuffs sit, and both shoulders are sore from the suit fit check.",
+  "codes": [
+   "musculoskeletal_pain",
+   "skin_rash"
+  ],
+  "ok": true,
+  "locations": [
+   "back",
+   "neck"
+  ],
+  "loc_ok": false
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-016",
+  "text": "I feel hopeless and low, I haven't slept properly in a week, and I keep thinking about ending my life.",
+  "codes": [
+   "crisis",
+   "low_mood",
+   "sleep_issue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-017",
+  "text": "무중력 이틀째. 벽이랑 천장이 헷갈릴 때마다 헛구역질이 올라와요.",
+  "codes": [
+   "dizziness",
+   "nausea"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-018",
+  "text": "창밖으로 해가 하루에도 열몇 번씩 뜨고 지니까 몸이 밤낮을 헷갈려요. 침낭에 들어가도 한참을 말똥말똥합니다.",
+  "codes": [
+   "sleep_issue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-019",
+  "text": "First sol on the surface. Each time I get to my feet my head swims for a few seconds.",
+  "codes": [
+   "dizziness"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-020",
+  "text": "아침마다 nasal congestion이 있고 headache도 같이 와요.",
+  "codes": [
+   "headache",
+   "congestion"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-021",
+  "text": "Console 앞에 앉아만 있는데 short of breath 느낌이 계속 있어요.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-022",
+  "text": "요즘 mood가 계속 down이고 사소한 일에도 irritated돼요.",
+  "codes": [
+   "low_mood"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-023",
+  "text": "Workout 중간부터 chest가 tight해서 일단 stop했습니다.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-024",
+  "text": "Blurred vision in my right eye since I woke up.",
+  "codes": [
+   "vision_change"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-025",
+  "text": "침낭 안에서 가만히 있는데도 꼭 달리기를 막 끝낸 사람처럼 숨을 몰아쉬고 있어요.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-026",
+  "text": "I've started to believe the mission would go better if I no longer existed, and I can't stop wishing for that.",
+  "codes": [
+   "crisis"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-027",
+  "text": "대수롭지 않게 넘기려 했는데, 러닝머신만 뛰면 가슴 한가운데가 조여 와서 속도를 줄이게 돼요.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-028",
+  "text": "심각한 건 아닌데요, 요즘 그냥 죽어 버리면 편하겠다는 생각을 가끔 합니다.",
+  "codes": [
+   "crisis"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-029",
+  "text": "Slightly odd tonight: getting a full breath takes more effort than it should, even floating still.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "SD-030",
+  "text": "It's likely just how I slept, but my chest has felt heavy and tight since I got up.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ }
+]
