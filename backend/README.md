@@ -97,3 +97,22 @@ relative to the narrow signal at equal symbol duration.
 This experiment models additive noise while a link is available. It has no
 error correction or framing overhead and does not change packet delivery
 status. It runs independently of the mission clock and transmission window.
+
+### Frontend integration
+
+Render the queue from `GET /tx`. Each row has `seq`, `crew`, `event_id`,
+`kind`, `priority`, `status`, `attempts`, `window_id`, `hash`, and `payload`.
+Use the sequence number as the row key so a retry updates the same row.
+
+1. Submit a synthetic warning report to `POST /crew/c1/symptom` with
+   `{"text":"I have chest pain","lang":"en"}`. Find its packet by matching the
+   returned `event_id` against the queue.
+2. Set the demo clock to Sol 16 at 08:00, then call `POST /tx/send` with no
+   body. The returned queue shows the first attempt as `sent`.
+3. Post `missing` with the packet's current attempt number. Move the clock to
+   20:00 and send again. Post `acked` with the new attempt number.
+4. Compare either before or after sending by posting
+   `{"wide_amplitude":5}` to `/tx/{seq}/simulate`. Display each of `narrow`
+   and `wide` using `bit_error_rate` as a percentage, `successful_packets`
+   out of `trials`, and `relative_energy_per_bit` as a multiplier. The
+   response's `packet_bits` gives the payload size.
