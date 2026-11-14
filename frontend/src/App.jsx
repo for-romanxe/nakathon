@@ -10,6 +10,7 @@ import Placeholder from './pages/Placeholder.jsx'
 import Log from './pages/Log.jsx'
 import EventDetail from './pages/EventDetail.jsx'
 import Warning from './pages/Warning.jsx'
+import Procedures from './pages/Procedures.jsx'
 import Settings from './pages/Settings.jsx'
 import { CURRENT_CREW, setSignedInCrew, CREW_IDS } from './session.js'
 import { api } from './api/client.js'
@@ -73,7 +74,7 @@ export default function App() {
           <Route path="/body" element={<Placeholder titleKey="nav.body" />} />
           <Route path="/trends" element={<Placeholder titleKey="nav.trends" />} />
           <Route path="/log" element={<Log />} />
-          <Route path="/procedures" element={<Placeholder titleKey="nav.procedures" />} />
+          <Route path="/procedures" element={<Procedures />} />
           <Route path="/crew" element={CURRENT_CREW === 'c2' ? <Crew /> : <Navigate to="/today" replace />} />
           <Route path="/settings" element={<Settings loginRequired={session.login_required} />} />
           <Route path="/events/:id" element={<EventDetail />} />

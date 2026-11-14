@@ -11,6 +11,7 @@ import { METRICS, OVERRIDE_REASONS, metricLabel, formatMetric, isUrgentReport } 
 import { ackWarning, warningKey } from '../warningAck.js'
 import { CURRENT_CREW } from '../session.js'
 import { useMission } from '../mission.jsx'
+import Cite from '../components/Cite.jsx'
 import { useT } from '../i18n/index.jsx'
 
 function addMinutes(hhmm, minutes) {
@@ -149,7 +150,7 @@ export default function Warning() {
           <ol className="warning-steps">
             {stepList.map((s, i) => <li key={i}>{s}</li>)}
           </ol>
-          {steps && <span className="cite">{steps.doc}</span>}
+          {steps && <Cite id={steps.doc} />}
         </section>
 
         {/* The app cannot call anyone yet (no crew-call API), so it must not say it did */}

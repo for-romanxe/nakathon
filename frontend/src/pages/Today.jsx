@@ -7,6 +7,7 @@ import { useMission } from '../mission.jsx'
 import { isWarningAcked, warningKey } from '../warningAck.js'
 import { METRICS, metricLabel, formatMetric } from '../api/contract.js'
 import { CURRENT_CREW } from '../session.js'
+import Cite from '../components/Cite.jsx'
 import { useT } from '../i18n/index.jsx'
 
 // Status is never shown by color alone: icon + word + color
@@ -106,7 +107,7 @@ export default function Today() {
               {g.why && (
                 <div className="guide-why">
                   <span>{t('today.why')}: <span className="num">{g.why}</span></span>
-                  {g.cites.map((c) => <span key={c} className="cite">{c}</span>)}
+                  {g.cites.map((c) => <Cite key={c} id={c} />)}
                 </div>
               )}
             </li>
