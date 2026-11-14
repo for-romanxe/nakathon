@@ -19,6 +19,7 @@ const hasWindow = (m) => HHMM.test(m?.next_window ?? '')
 const SCENES = [
   { key: 'morning', body: ({ clock }) => ({ sol: clock.sol, time: '06:10' }) }, // S1 wake-up, band synced
   { key: 'recheck', body: ({ clock }) => ({ sol: clock.sol, time: '14:00' }) }, // S4 afternoon re-check
+  { key: 'evening', body: ({ clock }) => ({ sol: clock.sol, time: '19:00' }) }, // evening check-out on Today
   { // S7 / S14: next comm window (tomorrow's first one if today's have passed)
     key: 'window',
     needsWindow: true,
