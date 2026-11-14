@@ -4,8 +4,9 @@
 
 - `contracts.py` — `contracts/*.json` 로더 + 최소 스키마 검사
 - `model/client.py` — 모델 호출 3함수 `extract_symptoms / score_mood / explain`. `MODEL=mock`(기본) 또는 `MODEL=live`
-- `mock/*.json` — mock 시나리오. 키워드 매치, 마지막 행이 기본값. 시나리오 추가는 여기에
-- `verify.py` — 설명 검증기 5검사 (`numbers cites level schema wording`)
+- `mock/symptom.json`, `mock/mood.json` — 키워드 매치. 행 순서가 우선순위(급한 코드가 위), 마지막 행이 기본값. 영문 키워드는 단어 시작에서만 맞고, 한글 키워드는 구체적으로 적는다
+- `mock/explanation.json` — `condition_id`로 고른다. `explain`은 넘겨받은 후보 순서대로 찾고, 시나리오가 없는 후보는 그 후보에 맞는 일반 문장을 돌려준다
+- `verify.py` — 설명 검증기 5검사 (`numbers cites level schema wording`). 숫자는 findings의 value·baseline·z만, 그 지표의 화면 표시 자릿수(`contracts/enums.json`의 `decimals`, z는 1자리)보다 거칠지 않게 반올림한 것만 통과. 모델 문장에는 시각·분량 같은 다른 숫자를 쓰지 않는다
 
 ```sh
 # 테스트 (표준 라이브러리만 필요)

@@ -1,5 +1,5 @@
 """contracts/*.json 로더. enum·스키마는 여기서만 읽고 코드에 하드코딩하지 않는다 (CONTRACT §0-3)."""
-import json, pathlib, functools
+import json, math, pathlib, functools
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent / "contracts"
 
@@ -51,8 +51,8 @@ def check_schema(obj, sch) -> list[str]:
         return [f"{obj!r} not in enum"]
     if t == "integer" and not (isinstance(obj, int) and not isinstance(obj, bool)):
         return ["not an integer"]
-    if t == "number" and not isinstance(obj, (int, float)):
-        return ["not a number"]
+    if t == "number" and (isinstance(obj, bool) or not isinstance(obj, (int, float)) or not math.isfinite(obj)):
+        return ["not a finite number"]          # true/false, NaN, Infinity 는 범위 검사를 빠져나가므로 여기서 막는다
     if t == "boolean" and not isinstance(obj, bool):
         return ["not a boolean"]
     if t == "string":

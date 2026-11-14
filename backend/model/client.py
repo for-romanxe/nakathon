@@ -47,14 +47,55 @@ def _validated(obj, kind):
     return obj
 
 
+def _mock_rows(kind: str) -> list:
+    return json.loads((MOCK_DIR / f"{kind}.json").read_text(encoding="utf-8"))
+
+
+def _keyword_hit(keyword: str, low: str) -> bool:
+    """영문 키워드는 단어의 시작에서만 맞춘다: 'sleep'은 'asleep'에 걸리지 않고 'nause'는 'nauseous'에 걸린다.
+    한글은 띄어쓰기로 단어가 갈리지 않으므로 부분 문자열로 찾되, 키워드 자체를 구체적으로 적는다."""
+    k = keyword.lower()
+    if k.isascii():
+        return re.search(r"(?<![a-z])" + re.escape(k), low) is not None
+    return k in low
+
+
 def _mock_pick(kind: str, text: str) -> dict:
-    """mock/<kind>.json: [{match:[키워드...], out:{...}}, ...]. 첫 매치, 없으면 마지막(default)."""
-    rows = json.loads((MOCK_DIR / f"{kind}.json").read_text(encoding="utf-8"))
+    """mock/<kind>.json: [{match:[키워드...], out:{...}}, ...]. 행 순서가 우선순위(급한 코드가 위), 없으면 마지막(default)."""
+    rows = _mock_rows(kind)
     low = text.lower()
     for row in rows:
-        if any(k.lower() in low for k in row.get("match", [])):
+        if any(_keyword_hit(k, low) for k in row.get("match", [])):
             return row["out"]
     return rows[-1]["out"]
+
+
+def _mock_explanation(candidates: list, paragraphs: list, lang: str) -> dict:
+    """후보 순서대로 시나리오를 찾는다. 시나리오가 없는 후보는 그 후보에 맞는 일반 문장을 만든다. 후보가 없으면 none."""
+    by_condition = {row["out"]["condition_id"]: row["out"] for row in _mock_rows("explanation")}
+    if not candidates:
+        return by_condition["none"]
+    for condition_id in candidates:
+        if condition_id in by_condition:
+            return by_condition[condition_id]
+    condition_id = candidates[0]
+    condition = _conditions()[condition_id]
+    line = (f"{condition['ko']} 가능성을 지켜볼 필요가 있어요." if lang == "ko"
+            else f"{condition['en']} is a possibility; keep watching it.")
+    cites = [p["id"] for p in paragraphs[:1]] or by_condition["none"]["cites"]
+    return {"category": condition["hrp"], "condition_id": condition_id, "lines": [line], "cites": cites}
+
+
+def _conditions() -> dict:
+    return {k: v for k, v in contracts.enums()["conditions"].items() if isinstance(v, dict)}
+
+
+def _among_candidates(out: dict, candidates: list) -> dict:
+    """상태 이름은 규칙 엔진이 준 후보 안에서만 고를 수 있다. 후보가 없으면 none만."""
+    allowed = candidates or ["none"]
+    if out["condition_id"] not in allowed:
+        raise ModelOutputError(f"explanation: condition_id {out['condition_id']!r} is not among the candidates {allowed}")
+    return out
 
 
 # ---- 공개 함수 3개 -------------------------------------------------------
@@ -85,13 +126,17 @@ def score_mood(text: str, lang: str) -> dict:
 
 def explain(level: str, findings: list, condition_candidates: list, paragraphs: list, lang: str) -> dict:
     """③ 규칙 판정 + findings + 검색 문단 → Explanation (category, condition_id, lines[≤3], cites[]).
-    숫자 문장은 템플릿이 쓴다. 모델은 '왜·무엇을 조심' 1~2문장만. 반드시 verify.verify() 를 거친다."""
+    숫자 문장은 템플릿이 쓴다. 모델은 '왜·무엇을 조심' 1~2문장만. 반드시 verify.verify() 를 거친다.
+    condition_id 는 condition_candidates 중 하나여야 한다(순서가 우선순위). 목록 밖 후보를 넘기면 ValueError."""
+    conds = _conditions()
+    unknown = [c for c in condition_candidates if c not in conds]
+    if unknown:
+        raise ValueError(f"unknown condition candidates {unknown}; see contracts/enums.json conditions")
     if _mode() == "mock":
         _delay()
-        key = " ".join(condition_candidates) + " " + level
-        return _validated(_mock_pick("explanation", key), "explanation")
-    conds = contracts.enums()["conditions"]
-    cand = {c: conds[c] for c in condition_candidates if c in conds}
+        out = _mock_explanation(list(condition_candidates), paragraphs, lang)
+        return _among_candidates(_validated(out, "explanation"), condition_candidates)
+    cand = {c: conds[c] for c in condition_candidates}
     paras = "\n".join(f"[{p['id']}] {p['text']}" for p in paragraphs)
     system = ("You write a short risk note for an astronaut. The rule engine already decided the level; never raise or lower it. "
               "Answer with JSON only: {\"category\": str, \"condition_id\": one of the candidate keys, "
@@ -100,4 +145,4 @@ def explain(level: str, findings: list, condition_candidates: list, paragraphs: 
               "Say 'possible' / '가능성', never 'certain' or 'diagnosis'. "
               f"Write in {'Korean' if lang == 'ko' else 'English'}.")
     user = f"level: {level}\nfindings: {json.dumps(findings, ensure_ascii=False)}\ncandidates: {json.dumps(cand, ensure_ascii=False)}\nparagraphs:\n{paras}"
-    return _validated(_chat(system, user, 220), "explanation")
+    return _among_candidates(_validated(_chat(system, user, 220), "explanation"), condition_candidates)
