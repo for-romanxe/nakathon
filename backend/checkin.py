@@ -47,9 +47,11 @@ def save_checkin(
            VALUES (?, ?, ?, ?, ?, ?)
            ON CONFLICT (crew_id, mission_day, kind) DO UPDATE
            SET answers = excluded.answers, free_text = excluded.free_text,
-               derived = NULL, at = excluded.at
-           WHERE checkin.answers <> excluded.answers
-              OR checkin.free_text IS NOT excluded.free_text""",
+               derived = CASE
+                   WHEN checkin.answers = excluded.answers
+                    AND checkin.free_text IS excluded.free_text THEN checkin.derived
+                   ELSE NULL
+               END, at = excluded.at""",
         (crew_id, sol, checkin.kind, json.dumps(checkin.answers, sort_keys=True),
          checkin.free_text, timestamp.isoformat()),
     )

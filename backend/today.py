@@ -53,7 +53,7 @@ def today(connection: sqlite3.Connection, crew_id: str, sol: int, lang: str = "e
            ORDER BY id DESC""",
         (crew_id, sol - BASELINE_DAYS - 1, sol),
     ).fetchall()
-    excluded_days = frozenset(row["mission_day"] for row in event_rows)
+    excluded_days = frozenset(row["mission_day"] for row in event_rows if row["mission_day"] < sol)
     events = [event_payload(row) for row in event_rows if row["mission_day"] == sol]
     rows = connection.execute(
         """SELECT metric, mission_day, AVG(value) AS value
