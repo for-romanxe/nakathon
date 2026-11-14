@@ -187,6 +187,16 @@ class LiveModel(unittest.TestCase):
         with self.assertRaises(client.ModelOutputError):
             client.extract_symptoms("My left knee hurts when I bend it", "en")
 
+    def test_severity_outside_the_scale_is_clamped(self):
+        # 실제 모델이 증상 없는 보고("no aches, appetite normal")에 severity 0 을 써서 none 보고가 통째로 버려졌다.
+        Stub.reply = completion(json.dumps({**SYMPTOM, "codes": ["none"], "severity": 0}))
+        self.assertEqual(client.extract_symptoms("No aches, appetite normal", "en")["severity"], 1)
+        Stub.reply = completion(json.dumps({**SYMPTOM, "severity": 7}))
+        self.assertEqual(client.extract_symptoms("My head is splitting", "en")["severity"], 5)
+        Stub.reply = completion(json.dumps({**SYMPTOM, "severity": "high"}))             # 숫자가 아니면 그대로 거부
+        with self.assertRaises(client.ModelOutputError):
+            client.extract_symptoms("My head is splitting", "en")
+
     def test_first_json_object_is_used_when_the_model_says_more(self):
         one = json.dumps(SYMPTOM, ensure_ascii=False)
         for content in (

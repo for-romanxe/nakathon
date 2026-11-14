@@ -156,7 +156,8 @@ def _symptom_system() -> str:
     return ("You extract symptom codes from a crew member's free-text report. Answer with JSON only. "
             f"codes: array from {json.dumps(e['symptom_codes'])}. onset: one of {json.dumps(e['onset'])}. "
             f"worse_when: one of {json.dumps(e['worse_when'])}. severity: integer 1-5. "
-            "needs_question: true when a single follow-up question would change the codes. Never invent codes outside the list.")
+            "needs_question: true when a single follow-up question would change the codes. Never invent codes outside the list. "
+            "Code only what the writer reports about themselves now, not another person's symptoms.")
 
 
 MOOD_SYSTEM = ("Convert the crew member's free-text mood report into scales. Answer with JSON only: "
@@ -174,6 +175,8 @@ def extract_symptoms(text: str, lang: str, recent_summary: str = "") -> dict:
     for key in ("onset", "worse_when"):      # 보조 필드를 지어내면 unknown 으로 둔다. codes 는 건드리지 않는다(목록 밖이면 거부).
         if key in out and out[key] not in e[key]:
             out[key] = "unknown"
+    if type(out.get("severity")) is int:      # 척도 밖 숫자는 끝값으로 당긴다. 증상이 없으면 모델이 0 을 쓴다.
+        out["severity"] = min(5, max(1, out["severity"]))
     return _validated(out, "symptom")
 
 
