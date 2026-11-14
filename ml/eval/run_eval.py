@@ -91,7 +91,7 @@ def run(repeat):
             outs, real = [], client.explain
 
             def spy(*args, **kwargs):                # 폐기된 문장도 결과 파일에 남긴다
-                outs.append(None)
+                outs.append(None)                    # 자리를 먼저 만든다: 호출이 예외로 끝나도 runs 와 순서가 맞는다
                 outs[-1] = real(*args, **kwargs)
                 return outs[-1]
 

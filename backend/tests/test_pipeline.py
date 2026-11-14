@@ -55,6 +55,16 @@ class RetryLoop(unittest.TestCase):
         self.assertEqual(result["runs"][0]["fails"], [])
         self.assertIn("model unavailable", result["runs"][0]["note"])
 
+    def test_unknown_candidate_holds_instead_of_raising(self):
+        # 목록 밖 상태 후보는 호출 쪽 실수지만, 이벤트 처리 전체가 죽지 않게 이유를 적고 보류로 끝낸다.
+        with mock.patch.object(client, "_chat") as chat:
+            result = pipeline.explain_verified("caution", FINDINGS, ["made_up"], PARAS, "ko")
+        chat.assert_not_called()
+        self.assertEqual((result["explanation"], result["hold"], result["verified"]), (None, True, 0))
+        self.assertEqual(len(result["runs"]), 1)         # 다시 불러도 같으니 한 번만
+        self.assertEqual(result["runs"][0]["fails"], [])
+        self.assertIn("unknown condition candidates ['made_up']", result["runs"][0]["note"])
+
 
 if __name__ == "__main__":
     unittest.main()
