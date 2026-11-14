@@ -142,18 +142,11 @@ export const api = {
   queueDaily: () => request('/tx', txFixture, { method: 'POST', body: JSON.stringify({ daily: true }) }),
   // POST /tx/send -> sends queued packets if a comm window is open now; returns the queue
   sendTx: () => request('/tx/send', txFixture, { method: 'POST' }),
-  // GET /docs -> { docs: [{id,title,org,kind,paragraphs?}], sample }. The backend has no document list yet: on 404,
-  // or when /docs is FastAPI's own HTML API page (200, not JSON), the fixture documents are used and sample is true
-  getDocs: () =>
-    request('/docs', () => docsFixture.docs)
-      .then((docs) => Array.isArray(docs)
-        ? { docs, sample: USE_FIXTURES }
-        : { docs: structuredClone(docsFixture.docs), sample: true })
-      .catch((e) => {
-        if (e.code === 'http_404' || e.code === 'not_found') return { docs: structuredClone(docsFixture.docs), sample: true }
-        throw e
-      }),
-  // GET /docs/{id} -> {id,title,org,kind,paragraphs:[{n,text}]}; same 404 fallback. Unknown id -> ApiError doc_not_found
+  getDocs: () => request('/docs', docsFixture.docs).then((docs) => {
+    if (!Array.isArray(docs)) throw new ApiError('invalid_docs', 'Invalid document list.')
+    return { docs, sample: USE_FIXTURES }
+  }),
+  // GET /docs/{id} -> {id,title,org,kind,paragraphs:[{n,text}]}; fixture only in fixture mode. Unknown id -> ApiError doc_not_found
   getDoc: (id) => {
     const fromFixture = () => {
       const doc = docsFixture.docs.find((d) => d.id === id)
@@ -161,12 +154,9 @@ export const api = {
       return structuredClone(doc)
     }
     if (USE_FIXTURES) return wait(150).then(fromFixture)
-    return request(`/docs/${encodeURIComponent(id)}`, null).catch((e) => {
-      if (e.code === 'http_404' || e.code === 'not_found') return fromFixture()
-      throw e
-    })
+    return request(`/docs/${encodeURIComponent(id)}`, null)
   },
-  // First steps of the emergency procedure per warning code. No /docs endpoint yet: placeholder fixture only
+  // Warning steps remain separate sample content until reviewed procedures are mapped to warning codes.
   getFirstSteps: () => Promise.resolve(firstStepsFixture),
   // GET /crew -> [{ id: "c1", name: "C1", ... }] — display names come from here
   getCrew: () => request('/crew', crewFixture),

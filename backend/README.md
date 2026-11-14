@@ -92,6 +92,13 @@ paragraphs by symptom code. Code matches and citation checks do not validate
 medical advice or guarantee that the text supports each sentence. The repo
 does not bundle a reviewed evidence corpus.
 
+`GET /docs` and `GET /docs/{id}` expose the same loaded evidence for the
+Procedures screen. The document ID is the portion before `#pN`, and the
+response keeps the original paragraph number. Evidence rows may include
+`title`, `org`, and `kind`. Set each value consistently within a document.
+An unconfigured corpus returns an empty document list. Swagger is at
+`/api/docs`.
+
 ### Demo crew access
 
 Use Settings to switch between C1–C4 and change whether the crew medical officer
