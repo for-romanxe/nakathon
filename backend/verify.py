@@ -1,6 +1,6 @@
 """설명(Explanation) 검증기 (CONTRACT §4, 명세 §12). 검사 5개, 이름 고정: numbers, cites, level, schema, wording.
 
-verify(expl, findings, level, doc_ids, lang) -> {"ok": bool, "fails": [검사 이름...], "note": str, "detail": {검사 이름: [걸린 표현...]}}
+verify(expl, findings, level, doc_ids, lang, candidates) -> {"ok": bool, "fails": [검사 이름...], "note": str, "detail": {검사 이름: [걸린 표현...]}}
 파이프라인은 실패 시 최대 2회 재생성, 그래도 실패면 level=hold 로 '판단 보류'.
 """
 import math, re
@@ -10,10 +10,15 @@ from . import contracts
 LEVEL_RANK = {"normal": 0, "advisory": 1, "caution": 2, "warning": 3, "hold": 0}
 STRONG = {
     "warning": [r"즉시", r"응급", r"긴급", r"지금 바로", r"emergenc", r"immediately", r"urgent", r"call .*cmo now"],
-    "caution": [r"주의", r"경고", r"caution", r"warning", r"alert"],
+    "caution": [r"주의(?!력)", r"경고", r"caution", r"warning", r"alert(?!ness)"],     # "주의력"·"alertness"는 단계 이름이 아니다
 }
 # 단정·진단 표현 금지 (ko/en 두 벌). "가능성/possible" 류만 허용.
-BANNED = [r"확실", r"틀림없", r"진단", r"분명히", r"입니다\b", r"\bcertain", r"definitely", r"diagnos", r"\bis a\b .*(infection|attack|stroke)"]
+BANNED = [r"확실", r"틀림없", r"진단", r"분명히", r"\bcertain", r"definitely", r"diagnos",
+          r"\bis a\b (?!possib|chance|risk).*(infection|attack|stroke)"]     # "there is a possibility of ... infection"은 단정이 아니다
+# "~입니다"로 단정하는 문장을 막는다. 어간이 '이'로 끝나는 동사("움직입니다")는 단정이 아니라서 뺀다.
+# 여기 없는 말("~로 보입니다" 포함)은 그대로 막는다.
+COPULA = re.compile(r"[가-힣]*입니다\b")
+VERBS_IPNIDA = {"움직입니다", "줄입니다", "높입니다", "쌓입니다", "쓰입니다", "기울입니다", "들입니다", "붙입니다", "모입니다"}
 # 숫자 토큰 = (부호, 숫자). CO2·SpO2 처럼 글자에 붙은 숫자는 수치가 아니다.
 # 부호는 숫자 바로 앞에 있고 그 앞이 글자·숫자가 아닐 때만 부호다: "z=-2.5" 는 부호, "68-92" 는 범위.
 NUM = re.compile(r"(?:(?<![\w.])([+\-\u2212]))?(?<![A-Za-z_.\d])(\d+(?:\.\d+)?)")
@@ -63,21 +68,25 @@ def _too_strong(lines, level):
     return [m.group(0) for lv, pats in STRONG.items() if rank < LEVEL_RANK[lv] for p in pats if (m := re.search(p, text))]
 
 
-def _bad_wording(expl, lines):
+def _bad_wording(expl, lines, candidates=None):
     text = " ".join(lines).lower()
     bad = [m.group(0) for p in BANNED if (m := re.search(p, text))]
+    if any(m.group(0) not in VERBS_IPNIDA for m in COPULA.finditer(text)):
+        bad.append("입니다")
     conds = {k: v for k, v in contracts.enums()["conditions"].items() if isinstance(v, dict)}
     if expl.get("condition_id") not in conds:
         return bad + [f"condition_id {expl.get('condition_id')!r}"]
-    # 목록 밖 상태 이름: 다른 condition 의 표시명이 문장에 나오면 안 됨
+    # 후보 밖 상태 이름: 고른 상태와 규칙 엔진이 넘긴 후보(candidates)가 아닌 condition 의 표시명이 문장에 나오면 안 됨.
+    # candidates 를 주지 않으면 고른 상태 이름만 허용한다.
+    allowed = {"none", expl.get("condition_id"), *(candidates or [])}
     for cid, c in conds.items():
-        if cid in ("none", expl.get("condition_id")):
+        if cid in allowed:
             continue
         bad += [name for name in (c.get("ko"), c.get("en")) if name and name.lower() in text]
     return bad
 
 
-def verify(expl: dict, findings: list, level: str, doc_ids, lang: str = "ko") -> dict:
+def verify(expl: dict, findings: list, level: str, doc_ids, lang: str = "ko", candidates=None) -> dict:
     doc_ids = set(doc_ids or [])
     lines = [str(x) for x in (expl.get("lines") or [])]
     caught = {
@@ -85,7 +94,7 @@ def verify(expl: dict, findings: list, level: str, doc_ids, lang: str = "ko") ->
         "numbers": _bad_numbers(lines, findings),
         "cites": _bad_cites(expl.get("cites") or [], doc_ids),
         "level": _too_strong(lines, level),
-        "wording": _bad_wording(expl, lines),
+        "wording": _bad_wording(expl, lines, candidates),
     }
     fails = [check for check in contracts.enums()["verify_check"] if caught[check]]
     detail = {check: caught[check] for check in fails}      # 검사 이름 → 걸린 표현들

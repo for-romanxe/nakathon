@@ -184,7 +184,7 @@ RETRY_HINTS = {
     "schema": "the JSON did not have the required shape; return exactly the keys shown above",
     "wording": "the sentences sounded certain or named another condition; say it is possible "
                "(Korean: end with '~일 수 있어요' or '가능성이 있어요', never '입니다'), never write 'certain', "
-               "'definitely' or 'diagnosis', and do not name any condition other than the one you chose",
+               "'definitely' or 'diagnosis', and do not name any condition that is not among the candidates",
 }
 ECHO = ("numbers", "level", "wording")     # 이 검사들은 걸린 표현을 그대로 알려 준다 (숫자, 금지어, 상태 이름)
 
