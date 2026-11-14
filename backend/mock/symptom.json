@@ -1,0 +1,16 @@
+[
+ {"match": ["가슴", "흉통", "심장 쪽", "chest", "near my heart"], "out": {"codes": ["chest_pain"], "onset": "now", "worse_when": "unknown", "severity": 4, "needs_question": false}},
+ {"match": ["숨이 차", "숨이 잘", "숨이 가", "숨이 막", "숨쉬", "숨 쉬", "숨을 못", "호흡", "breath", "winded"], "out": {"codes": ["shortness_of_breath"], "onset": "now", "worse_when": "unknown", "severity": 4, "needs_question": false}},
+ {"match": ["죽고 싶", "끝내고 싶", "살고 싶지 않", "사라지고 싶", "want to die", "want it all to end", "don't want to be alive", "do not want to be alive", "wish i could disappear", "kill myself"], "out": {"codes": ["crisis"], "onset": "unknown", "worse_when": "unknown", "severity": 5, "needs_question": false}},
+ {"match": ["어지", "어질", "현기증", "빙글", "핑 돌", "빙 돌", "dizzy", "spinning", "lightheaded", "woozy", "vertigo"], "out": {"codes": ["dizziness"], "onset": "today", "worse_when": "standing", "severity": 2, "needs_question": true}},
+ {"match": ["머리", "두통", "지끈", "뒷골", "headache", "my head", "throbbing"], "out": {"codes": ["headache"], "onset": "hours", "worse_when": "unknown", "severity": 2, "needs_question": true}},
+ {"match": ["메스", "울렁", "토할", "구역질", "속이 안 좋", "nause", "queasy", "throwing up", "stomach is churning"], "out": {"codes": ["nausea"], "onset": "today", "worse_when": "after_meal", "severity": 2, "needs_question": false}},
+ {"match": ["잠을", "잠이", "불면", "못 잤", "깼", "깨서", "slept", "sleep", "insomnia", "fall asleep", "waking up"], "out": {"codes": ["sleep_issue"], "onset": "today", "worse_when": "unknown", "severity": 2, "needs_question": false}},
+ {"match": ["피곤", "무기력", "기운이 없", "기운 없", "힘이 하나도", "축 처", "졸려", "tired", "exhausted", "drained", "no energy", "sluggish"], "out": {"codes": ["fatigue"], "onset": "today", "worse_when": "unknown", "severity": 2, "needs_question": true}},
+ {"match": ["발진", "가려", "두드러기", "반점", "rash", "itch", "hives", "red spots"], "out": {"codes": ["skin_rash"], "onset": "days", "worse_when": "unknown", "severity": 1, "needs_question": false}},
+ {"match": ["코가", "코 막", "콧물", "기침", "재채기", "목이 따", "칼칼", "stuffed", "stuffy", "congest", "cough", "throat", "runny nose"], "out": {"codes": ["congestion"], "onset": "days", "worse_when": "unknown", "severity": 1, "needs_question": false}},
+ {"match": ["눈이", "눈 뒤", "시야", "흐릿", "침침", "글씨가", "vision", "blurry", "fuzzy", "my eyes", "small text"], "out": {"codes": ["vision_change"], "onset": "days", "worse_when": "unknown", "severity": 2, "needs_question": false}},
+ {"match": ["허리", "어깨", "무릎", "뻐근", "뻣뻣", "결려", "쑤셔", "my back", "back pain", "back hurts", "lower back", "neck", "shoulder", "knee"], "out": {"codes": ["musculoskeletal_pain"], "onset": "days", "worse_when": "exercise", "severity": 2, "needs_question": false}},
+ {"match": ["꿀꿀", "우울", "불안", "짜증", "가라앉", "하기 싫", "마음이 무거", "feel down", "feeling down", "low mood", "anxious", "irritable", "don't feel like"], "out": {"codes": ["low_mood"], "onset": "today", "worse_when": "unknown", "severity": 2, "needs_question": false}},
+ {"match": [], "out": {"codes": ["none"], "onset": "unknown", "worse_when": "unknown", "severity": 1, "needs_question": false}}
+]

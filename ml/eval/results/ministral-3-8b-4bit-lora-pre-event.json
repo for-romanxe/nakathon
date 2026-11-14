@@ -1,0 +1,2288 @@
+{
+ "label": "ministral-3-8b-4bit-lora-pre-event",
+ "date": "2026-11-14T11:08",
+ "repeat": 3,
+ "question_set_version": 1,
+ "model_url": "http://127.0.0.1:8080",
+ "model_name": "default_model",
+ "summary": [
+  "symptom keyword hit 4/12  exact 4/12  | plain 1/2  paraphrase 1/5  negation 0/2  mixed 1/2  none 1/1",
+  "symptom model   hit 36/36  exact 36/36  | plain 6/6  paraphrase 15/15  negation 6/6  mixed 6/6  none 3/3",
+  "mood    model   in range 21/24  schema errors 0",
+  "explain model   first run rejected 6/30 (numbers 3, wording 3)  second run passed 3/6  hold 3/30",
+  "latency symptom median 1.1s  mean 1.1s  max 2.2s  (n=36)",
+  "latency mood    median 0.8s  mean 0.8s  max 1.0s  (n=24)",
+  "latency explain median 1.8s  mean 2.2s  max 4.8s  (n=30)",
+  "identical output across runs: 30/30 questions"
+ ],
+ "rows": [
+  {
+   "section": "symptom",
+   "id": "S01",
+   "kind": "plain",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "headache"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S01",
+   "kind": "plain",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "headache",
+     "nausea"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.18,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S01",
+   "kind": "plain",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "headache",
+     "nausea"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.08,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S01",
+   "kind": "plain",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "headache",
+     "nausea"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.08,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S02",
+   "kind": "plain",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "days",
+    "worse_when": "exercise",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S02",
+   "kind": "plain",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.08,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S02",
+   "kind": "plain",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.06,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S02",
+   "kind": "plain",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.05,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S03",
+   "kind": "paraphrase",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S03",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "dizziness"
+    ],
+    "onset": "unknown",
+    "worse_when": "standing",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.05,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S03",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "dizziness"
+    ],
+    "onset": "unknown",
+    "worse_when": "standing",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.98,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S03",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "dizziness"
+    ],
+    "onset": "unknown",
+    "worse_when": "standing",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.98,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S04",
+   "kind": "paraphrase",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S04",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.06,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S04",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.08,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S04",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.06,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S05",
+   "kind": "paraphrase",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S05",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.15,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S05",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.1,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S05",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.1,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S06",
+   "kind": "paraphrase",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S06",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "low_mood"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.06,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S06",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "low_mood"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.0,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S06",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "low_mood"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.0,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S07",
+   "kind": "paraphrase",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S07",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.04,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S07",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.96,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S07",
+   "kind": "paraphrase",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.0,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S08",
+   "kind": "negation",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "dizziness"
+    ],
+    "onset": "today",
+    "worse_when": "standing",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S08",
+   "kind": "negation",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.07,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S08",
+   "kind": "negation",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.02,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S08",
+   "kind": "negation",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.0,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S09",
+   "kind": "negation",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S09",
+   "kind": "negation",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "congestion"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.02,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S09",
+   "kind": "negation",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "congestion"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.97,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S09",
+   "kind": "negation",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "congestion"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.95,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S10",
+   "kind": "mixed",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "headache"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "S10",
+   "kind": "mixed",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "headache",
+     "vision_change"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.12,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S10",
+   "kind": "mixed",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "headache",
+     "vision_change"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.07,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S10",
+   "kind": "mixed",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "headache",
+     "vision_change"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.14,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S11",
+   "kind": "mixed",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "days",
+    "worse_when": "exercise",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S11",
+   "kind": "mixed",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.11,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S11",
+   "kind": "mixed",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.04,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S11",
+   "kind": "mixed",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.02,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S12",
+   "kind": "none",
+   "by": "keyword",
+   "run": 0,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S12",
+   "kind": "none",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.99,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S12",
+   "kind": "none",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.94,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "S12",
+   "kind": "none",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 0.93,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "mood",
+   "id": "M01",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 1,
+    "fatigue": 4,
+    "stress": 3,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.96,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M01",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 1,
+    "fatigue": 4,
+    "stress": 3,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.77,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M01",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 1,
+    "fatigue": 4,
+    "stress": 3,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.78,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M02",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 4,
+    "fatigue": 1,
+    "stress": 1,
+    "confidence": 0.9
+   },
+   "error": null,
+   "sec": 0.85,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M02",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 4,
+    "fatigue": 1,
+    "stress": 1,
+    "confidence": 0.9
+   },
+   "error": null,
+   "sec": 0.81,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M02",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 4,
+    "fatigue": 1,
+    "stress": 1,
+    "confidence": 0.9
+   },
+   "error": null,
+   "sec": 0.82,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M03",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 4,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.85,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M03",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 4,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.79,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M03",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 4,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.79,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M04",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 3,
+    "fatigue": 2,
+    "stress": 1,
+    "confidence": 0.8
+   },
+   "error": null,
+   "sec": 0.88,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M04",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 3,
+    "fatigue": 2,
+    "stress": 1,
+    "confidence": 0.8
+   },
+   "error": null,
+   "sec": 0.8,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M04",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 3,
+    "fatigue": 2,
+    "stress": 1,
+    "confidence": 0.8
+   },
+   "error": null,
+   "sec": 0.78,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M05",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 3,
+    "fatigue": 1,
+    "stress": 4,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 0.91,
+   "ok": false,
+   "out_of_range": [
+    "fatigue"
+   ]
+  },
+  {
+   "section": "mood",
+   "id": "M05",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 3,
+    "fatigue": 1,
+    "stress": 4,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 0.78,
+   "ok": false,
+   "out_of_range": [
+    "fatigue"
+   ]
+  },
+  {
+   "section": "mood",
+   "id": "M05",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 3,
+    "fatigue": 1,
+    "stress": 4,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 0.78,
+   "ok": false,
+   "out_of_range": [
+    "fatigue"
+   ]
+  },
+  {
+   "section": "mood",
+   "id": "M06",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 5,
+    "fatigue": 1,
+    "stress": 1,
+    "confidence": 1
+   },
+   "error": null,
+   "sec": 0.78,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M06",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 5,
+    "fatigue": 1,
+    "stress": 1,
+    "confidence": 1
+   },
+   "error": null,
+   "sec": 0.73,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M06",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 5,
+    "fatigue": 1,
+    "stress": 1,
+    "confidence": 1
+   },
+   "error": null,
+   "sec": 0.73,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M07",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 2,
+    "confidence": 0.8
+   },
+   "error": null,
+   "sec": 0.83,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M07",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 2,
+    "confidence": 0.8
+   },
+   "error": null,
+   "sec": 0.77,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M07",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 2,
+    "confidence": 0.8
+   },
+   "error": null,
+   "sec": 0.77,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M08",
+   "by": "model",
+   "run": 1,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 4,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.82,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M08",
+   "by": "model",
+   "run": 2,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 4,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.79,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "M08",
+   "by": "model",
+   "run": 3,
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 4,
+    "confidence": 0.1
+   },
+   "error": null,
+   "sec": 0.79,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "explain",
+   "id": "E01",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": {
+      "category": "cardiovascular",
+      "condition_id": "orthostatic_intolerance",
+      "lines": [
+       "급격한 기립 시 혈압이 떨어지고 현기증이 생길 수 있습니다. 천천히 일어서고 손잡이를 잡으세요.",
+       "수분 이동 후 혈압이 떨어질 가능성"
+      ],
+      "cites": [
+       "eval:orthostatic#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 2.14,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E01",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": {
+      "category": "cardiovascular",
+      "condition_id": "orthostatic_intolerance",
+      "lines": [
+       "급격한 기립 시 혈압이 떨어지고 현기증이 생길 수 있습니다. 천천히 일어서고 손잡이를 잡으세요.",
+       "수분 이동 후 혈압이 떨어질 가능성"
+      ],
+      "cites": [
+       "eval:orthostatic#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.77,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E01",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": {
+      "category": "cardiovascular",
+      "condition_id": "orthostatic_intolerance",
+      "lines": [
+       "급격한 기립 시 혈압이 떨어지고 현기증이 생길 수 있습니다. 천천히 일어서고 손잡이를 잡으세요.",
+       "수분 이동 후 혈압이 떨어질 가능성"
+      ],
+      "cites": [
+       "eval:orthostatic#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.79,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E02",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": {
+      "category": "nutrition",
+      "condition_id": "dehydration",
+      "lines": [
+       "Your heart rate is elevated, possibly due to low fluid intake.",
+       "Drink water with electrolytes and monitor your heart rate afterward."
+      ],
+      "cites": [
+       "eval:fluids#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.55,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E02",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": {
+      "category": "nutrition",
+      "condition_id": "dehydration",
+      "lines": [
+       "Your heart rate is elevated, possibly due to low fluid intake.",
+       "Drink water with electrolytes and monitor your heart rate afterward."
+      ],
+      "cites": [
+       "eval:fluids#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.38,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E02",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": {
+      "category": "nutrition",
+      "condition_id": "dehydration",
+      "lines": [
+       "Your heart rate is elevated, possibly due to low fluid intake.",
+       "Drink water with electrolytes and monitor your heart rate afterward."
+      ],
+      "cites": [
+       "eval:fluids#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.38,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E03",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": {
+      "category": "sleep",
+      "condition_id": "sleep_deficit",
+      "lines": [
+       "오늘 밤의 수면 시간이 부족할 경우, 다음 날의 경보가 낮아질 수 있습니다.",
+       "정밀한 작업은 오후로 미루고, 오후 12시 이전까지 카페인을 섭취하세요."
+      ],
+      "cites": [
+       "eval:sleep#p1"
+      ]
+     },
+     "ok": false,
+     "fails": [
+      "numbers"
+     ],
+     "note": "numbers: 12"
+    },
+    {
+     "out": {
+      "category": "sleep",
+      "condition_id": "sleep_deficit",
+      "lines": [
+       "수면 부족으로 다음 날의 경계심이 낮아질 수 있습니다. 주의가 필요한 작업은 가능한 한 아침 일찍 처리하세요.",
+       "커피 섭취를 줄여보세요."
+      ],
+      "cites": [
+       "eval:sleep#p1"
+      ]
+     },
+     "ok": false,
+     "fails": [
+      "level"
+     ],
+     "note": "level: 주의"
+    }
+   ],
+   "sec": 3.94,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E03",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": {
+      "category": "sleep",
+      "condition_id": "sleep_deficit",
+      "lines": [
+       "오늘 밤의 수면 시간이 부족할 경우, 다음 날의 경보가 낮아질 수 있습니다.",
+       "정밀한 작업은 오후로 미루고, 오후 12시 이전까지 카페인을 섭취하세요."
+      ],
+      "cites": [
+       "eval:sleep#p1"
+      ]
+     },
+     "ok": false,
+     "fails": [
+      "numbers"
+     ],
+     "note": "numbers: 12"
+    },
+    {
+     "out": {
+      "category": "sleep",
+      "condition_id": "sleep_deficit",
+      "lines": [
+       "수면 부족으로 다음 날의 경계심이 낮아질 수 있습니다. 주의가 필요한 작업은 가능한 한 아침 일찍 처리하세요.",
+       "커피 섭취를 줄여보세요."
+      ],
+      "cites": [
+       "eval:sleep#p1"
+      ]
+     },
+     "ok": false,
+     "fails": [
+      "level"
+     ],
+     "note": "level: 주의"
+    }
+   ],
+   "sec": 3.73,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E03",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": {
+      "category": "sleep",
+      "condition_id": "sleep_deficit",
+      "lines": [
+       "오늘 밤의 수면 시간이 부족할 경우, 다음 날의 경보가 낮아질 수 있습니다.",
+       "정밀한 작업은 오후로 미루고, 오후 12시 이전까지 카페인을 섭취하세요."
+      ],
+      "cites": [
+       "eval:sleep#p1"
+      ]
+     },
+     "ok": false,
+     "fails": [
+      "numbers"
+     ],
+     "note": "numbers: 12"
+    },
+    {
+     "out": {
+      "category": "sleep",
+      "condition_id": "sleep_deficit",
+      "lines": [
+       "수면 부족으로 다음 날의 경계심이 낮아질 수 있습니다. 주의가 필요한 작업은 가능한 한 아침 일찍 처리하세요.",
+       "커피 섭취를 줄여보세요."
+      ],
+      "cites": [
+       "eval:sleep#p1"
+      ]
+     },
+     "ok": false,
+     "fails": [
+      "level"
+     ],
+     "note": "level: 주의"
+    }
+   ],
+   "sec": 3.67,
+   "ok": false,
+   "hold": true
+  },
+  {
+   "section": "explain",
+   "id": "E04",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "lines": [
+       "Sleep below baseline may worsen low mood or anxiety. Maintain routine and light exposure to stabilize mood."
+      ],
+      "cites": [
+       "eval:sleep#p2",
+       "eval:mood#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.53,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E04",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "lines": [
+       "Sleep below baseline may worsen low mood or anxiety. Maintain routine and light exposure to stabilize mood."
+      ],
+      "cites": [
+       "eval:sleep#p2",
+       "eval:mood#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.32,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E04",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "lines": [
+       "Sleep below baseline may worsen low mood or anxiety. Maintain routine and light exposure to stabilize mood."
+      ],
+      "cites": [
+       "eval:sleep#p2",
+       "eval:mood#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.33,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E05",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": {
+      "category": "sensorimotor",
+      "condition_id": "space_motion_sickness",
+      "lines": [
+       "운동 감각 적응 중 멀미가 발생할 가능성이 있습니다. 급격한 머리 움직임은 피하고 가벼운 음식을 섭취하세요.",
+       "심박수가 증가한 것은 멀미와 관련이 있을 수 있습니다."
+      ],
+      "cites": [
+       "eval:motion#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 2.11,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E05",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": {
+      "category": "sensorimotor",
+      "condition_id": "space_motion_sickness",
+      "lines": [
+       "운동 감각 적응 중 멀미가 발생할 가능성이 있습니다. 급격한 머리 움직임은 피하고 가벼운 음식을 섭취하세요.",
+       "심박수가 증가한 것은 멀미와 관련이 있을 수 있습니다."
+      ],
+      "cites": [
+       "eval:motion#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.95,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E05",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": {
+      "category": "sensorimotor",
+      "condition_id": "space_motion_sickness",
+      "lines": [
+       "운동 감각 적응 중 멀미가 발생할 가능성이 있습니다. 급격한 머리 움직임은 피하고 가벼운 음식을 섭취하세요.",
+       "심박수가 증가한 것은 멀미와 관련이 있을 수 있습니다."
+      ],
+      "cites": [
+       "eval:motion#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.95,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E06",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": {
+      "category": "environment",
+      "condition_id": "co2_headache",
+      "lines": [
+       "Elevated CO2 may cause headache and concentration issues.",
+       "Move to a well-ventilated area and report your location."
+      ],
+      "cites": [
+       "eval:co2#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.49,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E06",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": {
+      "category": "environment",
+      "condition_id": "co2_headache",
+      "lines": [
+       "Elevated CO2 may cause headache and concentration issues.",
+       "Move to a well-ventilated area and report your location."
+      ],
+      "cites": [
+       "eval:co2#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.41,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E06",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": {
+      "category": "environment",
+      "condition_id": "co2_headache",
+      "lines": [
+       "Elevated CO2 may cause headache and concentration issues.",
+       "Move to a well-ventilated area and report your location."
+      ],
+      "cites": [
+       "eval:co2#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.39,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E07",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": {
+      "category": "musculoskeletal",
+      "condition_id": "musculoskeletal_strain",
+      "lines": [
+       "근골격 통증이 발생할 수 있습니다. 운동 부하를 줄이고 갑작스러운 회전 운동을 피하세요.",
+       "피해 부위를 서서히 회복시키며 운동을 재개하세요."
+      ],
+      "cites": [
+       "eval:msk#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.94,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E07",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": {
+      "category": "musculoskeletal",
+      "condition_id": "musculoskeletal_strain",
+      "lines": [
+       "근골격 통증이 발생할 수 있습니다. 운동 부하를 줄이고 갑작스러운 회전 운동을 피하세요.",
+       "피해 부위를 서서히 회복시키며 운동을 재개하세요."
+      ],
+      "cites": [
+       "eval:msk#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 2.01,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E07",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": {
+      "category": "musculoskeletal",
+      "condition_id": "musculoskeletal_strain",
+      "lines": [
+       "근골격 통증이 발생할 수 있습니다. 운동 부하를 줄이고 갑작스러운 회전 운동을 피하세요.",
+       "피해 부위를 서서히 회복시키며 운동을 재개하세요."
+      ],
+      "cites": [
+       "eval:msk#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.92,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E08",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": {
+      "category": "immune",
+      "condition_id": "upper_respiratory",
+      "lines": [
+       "Your skin temperature and heart rate are elevated, which may suggest an upper respiratory infection.",
+       "Rest, stay hydrated, and avoid close contact to prevent spreading any potential illness."
+      ],
+      "cites": [
+       "eval:uri#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.77,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E08",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": {
+      "category": "immune",
+      "condition_id": "upper_respiratory",
+      "lines": [
+       "Your skin temperature and heart rate are elevated, which may suggest an upper respiratory infection.",
+       "Rest, stay hydrated, and avoid close contact to prevent spreading any potential illness."
+      ],
+      "cites": [
+       "eval:uri#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.61,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E08",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": {
+      "category": "immune",
+      "condition_id": "upper_respiratory",
+      "lines": [
+       "Your skin temperature and heart rate are elevated, which may suggest an upper respiratory infection.",
+       "Rest, stay hydrated, and avoid close contact to prevent spreading any potential illness."
+      ],
+      "cites": [
+       "eval:uri#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.61,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E09",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "lines": [
+       "수면 부족과 우울한 기분은 장기간 고립 시 흔한 현상입니다. 일상 루틴을 유지하고 운동을 하세요.",
+       "연속된 단시간 수면은 피로와 기분 저하를 유발할 수 있습니다. 다음 수면 시간을 보호하고 잠잘 때 조명 밝기를 줄이세요."
+      ],
+      "cites": [
+       "eval:mood#p1",
+       "eval:sleep#p2"
+      ]
+     },
+     "ok": false,
+     "fails": [
+      "wording"
+     ],
+     "note": "wording: 입니다, 수면 부족"
+    },
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "lines": [
+       "수면과 기분 모두 저하된 상태가 지속될 경우, 긴격한 환경에서 흔한 현상이에요. 매일의 루틴을 유지하고 운동이나 동료와 대화하는 것이 중요할 수 있어요"
+      ],
+      "cites": [
+       "eval:mood#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 4.85,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E09",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "lines": [
+       "수면 부족과 우울한 기분은 장기간 고립 시 흔한 현상입니다. 일상 루틴을 유지하고 운동을 하세요.",
+       "연속된 단시간 수면은 피로와 기분 저하를 유발할 수 있습니다. 다음 수면 시간을 보호하고 잠잘 때 조명 밝기를 줄이세요."
+      ],
+      "cites": [
+       "eval:mood#p1",
+       "eval:sleep#p2"
+      ]
+     },
+     "ok": false,
+     "fails": [
+      "wording"
+     ],
+     "note": "wording: 입니다, 수면 부족"
+    },
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "lines": [
+       "수면과 기분 모두 저하된 상태가 지속될 경우, 긴격한 환경에서 흔한 현상이에요. 매일의 루틴을 유지하고 운동이나 동료와 대화하는 것이 중요할 수 있어요"
+      ],
+      "cites": [
+       "eval:mood#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 4.65,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E09",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "lines": [
+       "수면 부족과 우울한 기분은 장기간 고립 시 흔한 현상입니다. 일상 루틴을 유지하고 운동을 하세요.",
+       "연속된 단시간 수면은 피로와 기분 저하를 유발할 수 있습니다. 다음 수면 시간을 보호하고 잠잘 때 조명 밝기를 줄이세요."
+      ],
+      "cites": [
+       "eval:mood#p1",
+       "eval:sleep#p2"
+      ]
+     },
+     "ok": false,
+     "fails": [
+      "wording"
+     ],
+     "note": "wording: 입니다, 수면 부족"
+    },
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "lines": [
+       "수면과 기분 모두 저하된 상태가 지속될 경우, 긴격한 환경에서 흔한 현상이에요. 매일의 루틴을 유지하고 운동이나 동료와 대화하는 것이 중요할 수 있어요"
+      ],
+      "cites": [
+       "eval:mood#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 4.42,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E10",
+   "by": "model",
+   "run": 1,
+   "attempts": [
+    {
+     "out": {
+      "category": "immune",
+      "condition_id": "skin_irritation",
+      "lines": [
+       "Skin irritation may be developing under your sensor or strap. Avoid moisture buildup by keeping the area dry.",
+       "Shift the wearable to your other wrist if irritation persists."
+      ],
+      "cites": [
+       "eval:skin#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.77,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E10",
+   "by": "model",
+   "run": 2,
+   "attempts": [
+    {
+     "out": {
+      "category": "immune",
+      "condition_id": "skin_irritation",
+      "lines": [
+       "Skin irritation may be developing under your sensor or strap. Avoid moisture buildup by keeping the area dry.",
+       "Shift the wearable to your other wrist if irritation persists."
+      ],
+      "cites": [
+       "eval:skin#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.64,
+   "ok": true,
+   "hold": false
+  },
+  {
+   "section": "explain",
+   "id": "E10",
+   "by": "model",
+   "run": 3,
+   "attempts": [
+    {
+     "out": {
+      "category": "immune",
+      "condition_id": "skin_irritation",
+      "lines": [
+       "Skin irritation may be developing under your sensor or strap. Avoid moisture buildup by keeping the area dry.",
+       "Shift the wearable to your other wrist if irritation persists."
+      ],
+      "cites": [
+       "eval:skin#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 1.65,
+   "ok": true,
+   "hold": false
+  }
+ ]
+}

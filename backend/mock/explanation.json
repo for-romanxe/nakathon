@@ -1,0 +1,8 @@
+[
+ {"out": {"category": "cardiovascular", "condition_id": "orthostatic_intolerance", "lines": ["어지러움과 심박 상승이 함께 보여 기립성 저혈압 가능성이 있어요.", "일어설 때는 천천히 움직이고, 수분과 염분을 먼저 챙기는 게 좋아요."], "cites": ["hrp:cv-01#p3", "hrp:sm-03#p5"]}},
+ {"out": {"category": "sleep", "condition_id": "sleep_deficit", "lines": ["수면이 기준보다 짧아 집중력 저하 가능성이 있어요.", "정밀 작업은 오전 늦게, 카페인은 정오 전까지로 조정하는 게 좋아요."], "cites": ["hrp:sleep-02#p2"]}},
+ {"out": {"category": "nutrition", "condition_id": "dehydration", "lines": ["심박 상승과 피부온 변화로 보아 탈수 가능성이 있어요.", "오늘 수분 섭취를 늘리고 운동 강도를 낮추는 게 좋아요."], "cites": ["hrp:nut-01#p2"]}},
+ {"out": {"category": "environment", "condition_id": "co2_headache", "lines": ["두통이 특정 모듈에서 심해진다면 CO2 농도 영향 가능성이 있어요.", "환기 상태를 확인하고 잠시 뒤 다시 살펴보는 게 좋아요."], "cites": ["hrp:env-01#p4"]}},
+ {"out": {"category": "behavioral", "condition_id": "mood_low", "lines": ["기분 저하가 이어지고 있어 수면·활동과 함께 지켜볼 필요가 있어요.", "오늘 가벼운 운동과 동료와의 대화 시간을 권해요."], "cites": ["hrp:bhp-01#p2"]}},
+ {"out": {"category": "", "condition_id": "none", "lines": ["현재 수치는 기준 범위 안에 있어요."], "cites": ["hrp:routine-01#p1"]}}
+]
