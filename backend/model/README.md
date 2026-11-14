@@ -30,3 +30,19 @@ MODEL=live python3 -c "from backend.model import client; print(client.extract_sy
 어댑터는 부위(`locations`) 문단을 넣기 전의 지시문으로 학습했다. 부위 문단을 넣은 지금 지시문으로는 다시 재서 확인했다(`ml/eval/v2/README.md`). 지금 코드로 학습셋을 다시 만들면 지시문은 부위를 묻는데 정답에는 부위가 없어서 `train_v2.py`가 멈춘다. 지시문을 더 바꾸면 `ml/eval/run_eval2.py`로 다시 잰다.
 
 모델 파일은 Hugging Face `mlx-community/gemma-4-12B-it-qat-OptiQ-4bit`(디스크 8.4GB)를 `ml/models/` 아래에 받는다. 서버 프로세스는 M5 Pro 24GB에서 메모리 약 12GB(최대 13GB)를 썼다(2026-11-14 측정). 모델을 고른 근거는 `ml/eval/README.md`.
+
+## 맥 한 대에서 전부 돌리기 (2026-11-14 확인)
+
+```sh
+# 1) 모델 서버: 위의 live 명령 (포트 8080)
+# 2) 근거 파일: 없으면 설명 없이 보류로 끝난다
+python3 ml/knowledge/export_evidence.py ko > data/evidence-ko.json
+# 3) 백엔드
+MODEL=live CREW_HEALTH_EVIDENCE=data/evidence-ko.json python3 -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+# 4) 프론트 (http://localhost:5173)
+(cd frontend && npm install && printf 'VITE_USE_FIXTURES=false\n' > .env.development.local && npm run dev)
+```
+
+M5 Pro 24GB에서 이 구성으로 보고 6건을 HTTP로 끝까지 보냈다(모델은 어댑터 포함, 문단은 한국어). 급하지 않은 5건은 모두 설명이 검사 5개를 통과했고(1건은 두 번째 실행에서), 가슴 통증은 모델을 건너뛰고 경보가 됐다. 연달아 보낼 때 증상 추출은 2~3초, 설명은 6~7초였다.
+
+**쉬었다 보내면 느리다.** 맥의 메모리가 꽉 찬 상태(스왑 30GB 중 29GB 사용)에서, 연달아 보낸 요청은 2초대였지만 12초 넘게 쉰 뒤의 요청은 38~58초 걸렸다(5번). 3초 쉬면 4초, 6초 쉬면 7.5초였다. 쉬는 동안 맥이 모델 메모리를 압축하는 것으로 보인다(서버 12GB 중 8.9GB가 압축돼 있었다). 2초마다 한 토큰짜리 요청을 보내 두면 40초 쉰 뒤에도 2초에 답했지만, 다른 프로그램이 메모리를 쓸 때는 그 요청 자체가 멈췄다(26분 동안 13번, 17~53초). 시연 전에 다른 프로그램을 닫아 메모리를 비우고, 직전에 한 번 호출해 둔다. 메모리를 비운 상태에서 다시 재서 확인하지는 않았다.
