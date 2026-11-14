@@ -187,6 +187,8 @@ export default function Body() {
           </div>
           <Suspense fallback={<p className="panel-empty muted">{t('common.loading')}</p>}>
             <HoloBody levels={levels} selected={selectedId} marks={marks} label={t('body.figure_label')}
+              callouts={regions.map((r) => ({ id: r.id, text: t(`body.region.${r.id}`), level: r.level, reported: !!marks[r.id] }))}
+              texts={{ rotate: t('body.ctrl.rotate'), labels: t('body.ctrl.labels'), reset: t('body.ctrl.reset') }}
               sideLabels={{ left: t('body.side.left'), right: t('body.side.right') }}
               onSelect={setPicked} unavailableText={t('body.figure_unavailable')} />
           </Suspense>

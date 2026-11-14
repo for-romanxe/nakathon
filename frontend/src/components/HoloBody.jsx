@@ -85,6 +85,17 @@ function parts() {
   return out
 }
 
+// Where each callout line starts (a point on the part), in figure coordinates
+const ANCHOR_AT = {
+  head: V(0, 1.66, 0.1),
+  heart: HEART_AT,
+  core: V(0, 1.0, 0.1),
+  left_arm: V(0.3, 1.02, 0.03),
+  right_arm: V(-0.3, 1.02, 0.03),
+  left_leg: V(0.09, 0.47, 0.05),
+  right_leg: V(-0.09, 0.47, 0.05),
+}
+
 // Where a symptom-report mark (!) floats for each region: just in front of / beside the part
 const MARK_AT = {
   head: V(0, 1.8, 0.05),
@@ -142,16 +153,36 @@ function palette() {
   }
 }
 
+// Callout layout: labels sit in a column at each side, at the height of their part, spread apart so they never
+// overlap; a line runs from the label to a dot on the part. Recomputed every frame as the figure turns.
+const CALLOUT_GAP = 30
+const CALLOUT_EDGE = 10
+function layoutSide(items, h) {
+  items.sort((a, b) => a.y - b.y)
+  let prev = -Infinity
+  for (const it of items) { it.ly = Math.max(it.y, prev + CALLOUT_GAP, 56); prev = it.ly } // 56: below the buttons
+  let next = h - 16 // push back up if the column ran off the bottom
+  for (let i = items.length - 1; i >= 0; i--) { items[i].ly = Math.min(items[i].ly, next); next = items[i].ly - CALLOUT_GAP }
+}
+
 // marks: { [regionId]: level } — regions a symptom report points at, coloured by that report's level
-export default function HoloBody({ levels, selected, onSelect, marks, label, unavailableText, sideLabels }) {
+// callouts: [{ id, text, level, reported }] — the labels drawn beside the figure (blueprint style)
+// texts: { rotate, labels, reset } — the control button words
+export default function HoloBody({ levels, selected, onSelect, marks, callouts = [], texts = {}, label, unavailableText, sideLabels }) {
   const hostRef = useRef(null)
-  const stateRef = useRef({ levels, selected, onSelect, marks })
+  const lineRefs = useRef({})
+  const labelRefs = useRef({})
+  const resetRef = useRef(() => {})
+  const [autoRotate, setAutoRotate] = useState(false)
+  // labels start on where there is room beside the figure; on a phone they start off (the list is right below)
+  const [labelsOn, setLabelsOn] = useState(() => typeof window === 'undefined' || window.innerWidth >= 480)
+  const stateRef = useRef({ levels, selected, onSelect, marks, autoRotate, labelsOn })
   // decided in the browser after mount (never during render), so a first render without WebGL can't stick
   const [failed, setFailed] = useState(false)
   const leftLabel = sideLabels?.left || 'L'
   const rightLabel = sideLabels?.right || 'R'
   // the render loop reads the latest props from here, so the scene is built once
-  useEffect(() => { stateRef.current = { levels, selected, onSelect, marks } })
+  useEffect(() => { stateRef.current = { levels, selected, onSelect, marks, autoRotate, labelsOn } })
 
   useEffect(() => {
     const host = hostRef.current
@@ -306,16 +337,53 @@ export default function HoloBody({ levels, selected, onSelect, marks, label, una
     el.addEventListener('pointerup', onUp)
     el.addEventListener('pointercancel', onCancel)
     el.addEventListener('lostpointercapture', onCancel)
+    resetRef.current = () => { turn = 0; lastDrag = -Infinity }
+
+    // Callouts: project each part's anchor to the screen, lay the labels out per side, draw the lines
+    const projected = new THREE.Vector3()
+    function placeCallouts() {
+      const w = host.clientWidth
+      const h = host.clientHeight
+      const sides = { left: [], right: [] }
+      for (const [id, at] of Object.entries(ANCHOR_AT)) {
+        const box = labelRefs.current[id]
+        const line = lineRefs.current[id]
+        if (!box || !line) continue
+        projected.copy(at).applyMatrix4(figure.matrixWorld).project(camera)
+        const x = ((projected.x + 1) / 2) * w
+        const y = ((1 - projected.y) / 2) * h
+        // a label goes to the side of the screen its part is on right now (so it follows the figure round)
+        sides[x < w / 2 ? 'left' : 'right'].push({ id, x, y, box, line, bw: box.offsetWidth, bh: box.offsetHeight })
+      }
+      for (const [side, items] of Object.entries(sides)) {
+        layoutSide(items, h)
+        for (const it of items) {
+          const lx = side === 'left' ? CALLOUT_EDGE : w - CALLOUT_EDGE - it.bw
+          const end = side === 'left' ? lx + it.bw + 4 : lx - 4
+          it.box.style.transform = `translate(${lx}px, ${it.ly - it.bh / 2}px)`
+          it.line.setAttribute('points', `${end},${it.ly} ${(end + it.x) / 2},${it.ly} ${it.x},${it.y}`)
+          it.line.nextSibling?.setAttribute('cx', it.x)
+          it.line.nextSibling?.setAttribute('cy', it.y)
+        }
+      }
+    }
 
     // Render loop: uniforms follow the latest levels and selection without rebuilding the scene
     let frame = 0
     const clock = new THREE.Clock()
+    let last = performance.now()
     function draw() {
       const t = reduceMotion ? 0 : clock.getElapsedTime()
-      const { levels: lv, selected: sel } = stateRef.current
-      // a slow sway so the figure reads as 3D; paused for a few seconds after the user turns it
-      const idle = performance.now() - lastDrag > 3000
-      figure.rotation.y = turn + (reduceMotion || !idle ? 0 : Math.sin(t * 0.35) * 0.45)
+      const now = performance.now()
+      const dt = Math.min(0.1, (now - last) / 1000)
+      last = now
+      const { levels: lv, selected: sel, autoRotate: spin, labelsOn: showLabels } = stateRef.current
+      // auto-rotate turns the figure all the way round; otherwise a slow sway so it reads as 3D.
+      // Both pause for a few seconds after the user turns it by hand.
+      const idle = now - lastDrag > 3000
+      if (spin && idle && !reduceMotion) turn += dt * 0.4
+      figure.rotation.y = turn + (spin || reduceMotion || !idle ? 0 : Math.sin(t * 0.35) * 0.45)
+      figure.updateMatrixWorld()
       // heartbeat shape: a short swell about once a second (display only, not the measured rate)
       const beat = reduceMotion ? 0 : Math.pow(Math.max(0, Math.sin(t * Math.PI * 2 * 1.1)), 6)
       for (const mesh of meshes) {
@@ -339,7 +407,7 @@ export default function HoloBody({ levels, selected, onSelect, marks, label, una
       const { marks: mk } = stateRef.current
       for (const s of markSprites) {
         const level = mk?.[s.userData.region]
-        s.visible = level != null
+        s.visible = level != null && !showLabels // with labels on, the "!" is on the label instead
         if (!s.visible) continue
         s.material.color.copy((looks[level] ?? looks.plain).color)
         s.scale.setScalar(0.12 * (1 + (reduceMotion ? 0 : 0.12 * Math.sin(t * 3))))
@@ -352,6 +420,7 @@ export default function HoloBody({ levels, selected, onSelect, marks, label, una
         glow.scale.setScalar((heartOn ? 0.46 : 0.32) * (1 + 0.15 * beat))
       }
       renderer.render(scene, camera)
+      if (showLabels) placeCallouts()
       frame = requestAnimationFrame(draw)
     }
     draw()
@@ -371,5 +440,34 @@ export default function HoloBody({ levels, selected, onSelect, marks, label, una
   }, [leftLabel, rightLabel]) // rebuilt only when the language changes the L / R labels
 
   if (failed) return <p className="panel-empty muted">{unavailableText}</p>
-  return <div ref={hostRef} className="body-figure holo" role="img" aria-label={label} />
+  return (
+    <div className="body-figure holo" role="group" aria-label={label}>
+      <div ref={hostRef} className="holo-canvas" />
+      {labelsOn && (
+        <>
+          <svg className="holo-lines" aria-hidden="true">
+            {callouts.map((c) => (
+              <g key={c.id} className={`lv-${c.level}${c.id === selected ? ' on' : ''}`}>
+                <polyline ref={(el) => { lineRefs.current[c.id] = el }} points="" />
+                <circle r="2.5" cx="-10" cy="-10" />
+              </g>
+            ))}
+          </svg>
+          {callouts.map((c) => (
+            <button key={c.id} type="button" ref={(el) => { labelRefs.current[c.id] = el }}
+              className={`holo-callout lv-${c.level}${c.id === selected ? ' on' : ''}`}
+              aria-pressed={c.id === selected} onClick={() => onSelect(c.id)}>
+              <span className="holo-callout-name">{c.text}</span>
+              {c.reported && <span className="holo-callout-mark" aria-hidden="true">!</span>}
+            </button>
+          ))}
+        </>
+      )}
+      <div className="holo-controls">
+        <button type="button" aria-pressed={autoRotate} onClick={() => setAutoRotate((v) => !v)}>{texts.rotate ?? 'Auto-rotate'}</button>
+        <button type="button" aria-pressed={labelsOn} onClick={() => setLabelsOn((v) => !v)}>{texts.labels ?? 'Labels'}</button>
+        <button type="button" onClick={() => resetRef.current()}>{texts.reset ?? 'Reset'}</button>
+      </div>
+    </div>
+  )
 }
