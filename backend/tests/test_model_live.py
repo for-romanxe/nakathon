@@ -62,6 +62,31 @@ class LiveModel(unittest.TestCase):
         self.assertEqual([m["role"] for m in body["messages"]], ["system", "user"])
         self.assertIn("I feel dizzy when I stand up", body["messages"][1]["content"])
 
+    def test_model_url_may_end_with_v1(self):
+        # OpenAI 클라이언트 관례대로 .../v1 까지 적어도 같은 경로로 간다.
+        Stub.reply = completion(json.dumps(SYMPTOM))
+        for suffix in ("/v1", "/v1/", "/"):
+            with self.subTest(suffix=suffix):
+                Stub.seen = []
+                self.use(MODEL_URL=self.url + suffix)
+                self.assertEqual(client.extract_symptoms("어지러워요", "ko"), SYMPTOM)
+                self.assertEqual(Stub.seen[0][0], "/v1/chat/completions")
+
+    def test_default_model_name_is_the_one_mlx_lm_server_accepts(self):
+        # MODEL_NAME 을 안 주면 mlx_lm.server 가 '서버를 띄울 때 준 모델'로 읽는 이름을 보낸다.
+        Stub.reply = completion(json.dumps(SYMPTOM))
+        with mock.patch.dict(os.environ):
+            del os.environ["MODEL_NAME"]
+            client.extract_symptoms("어지러워요", "ko")
+        self.assertEqual(Stub.seen[0][1]["model"], "default_model")
+
+    def test_explain_prompt_shows_lines_as_an_array(self):
+        # 실제 모델(Ministral 8B)이 "1-2 sentences" 라는 말만 보고 lines 를 문자열로 냈다.
+        Stub.reply = completion(json.dumps({"category": "cardiovascular", "condition_id": "dehydration",
+                                            "lines": ["Fluid loss is possible."], "cites": ["hrp:oi-01#p2"]}))
+        client.explain("caution", [], ["dehydration"], [{"id": "hrp:oi-01#p2", "text": "Drink fluids."}], "en")
+        self.assertIn('"lines": [', Stub.seen[0][1]["messages"][0]["content"])
+
     def test_first_json_object_is_used_when_the_model_says_more(self):
         one = json.dumps(SYMPTOM, ensure_ascii=False)
         for content in (
