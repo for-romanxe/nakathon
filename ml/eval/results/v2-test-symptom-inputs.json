@@ -1,0 +1,1448 @@
+[
+ {
+  "cond": "sentence only",
+  "id": "ST-001",
+  "text": "오늘 운동 두 세션 다 채웠고 몸도 아주 가뿐합니다.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-002",
+  "text": "푹 잤고 밥도 잘 먹었어. 몸은 쌩쌩함.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-003",
+  "text": "러닝머신 벨트에서 끽끽 소리가 나요. 장비 문제고 저는 멀쩡합니다.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-004",
+  "text": "Slept well, ate well, both exercise blocks done. Feeling strong.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-005",
+  "text": "Can you remind me to recalibrate the wrist sensor after lunch?",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-006",
+  "text": "선장님 농담에 웃겨 죽는 줄 알았어요. 오늘은 몸도 마음도 편안합니다.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-007",
+  "text": "스쿼트를 너무 무겁게 했나, 허벅지 아파 죽겠네 ㅠㅠ",
+  "codes": [
+   "musculoskeletal_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "left_leg",
+   "right_leg"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-008",
+  "text": "창밖으로 지구가 보이는데 가슴이 벅차서 한동안 말이 안 나왔어요.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": false,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": false
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-009",
+  "text": "옆 침실 동료가 밤새 기침을 하던데 감기인가 봐요. 저는 코도 목도 멀쩡해요.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-010",
+  "text": "어제까지는 두통 때문에 고생했는데 자고 일어나니 말끔히 나았어요.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-011",
+  "text": "I'm dying to see the first rover photos. Otherwise an ordinary day, nothing wrong with me.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-012",
+  "text": "This head cold will be the death of me. My nose runs like a tap and I can't stop coughing.",
+  "codes": [
+   "congestion"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-013",
+  "text": "First sunrise over the crater rim took my breath away. No complaints at all.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-014",
+  "text": "Our pilot threw up twice this morning, so I'm covering her tasks. I feel fine myself.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-015",
+  "text": "The queasiness from my first two days up here is completely gone. All that's left is a blocked-up nose.",
+  "codes": [
+   "congestion"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": false
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-016",
+  "text": "두통은 없는데 화면 글씨가 자꾸 뿌옇게 보여요.",
+  "codes": [
+   "vision_change"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-017",
+  "text": "죽고 싶다는 생각 같은 건 전혀 없어요. 그냥 요즘 좀 울적하고 의욕이 안 날 뿐이에요.",
+  "codes": [
+   "low_mood"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-018",
+  "text": "숨은 안 참. 가슴 한복판이 묵직하게 아픔, 30분째.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-019",
+  "text": "No nausea at all, but the cabin seems to swing sideways whenever I look up from the tablet.",
+  "codes": [
+   "dizziness"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-020",
+  "text": "Chest doesn't hurt at all. It's that no breath feels deep enough, even when I'm resting.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-021",
+  "text": "Got my full eight hours, so it isn't lack of sleep, but I feel wrung out and heavy today.",
+  "codes": [
+   "fatigue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-022",
+  "text": "가슴을 누가 꽉 움켜쥔 것 같고 숨까지 차올라서 작업을 멈췄습니다.",
+  "codes": [
+   "chest_pain",
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-023",
+  "text": "며칠째 한숨도 못 잤어요. 이제는 그만 살고 싶다는 생각까지 듭니다.",
+  "codes": [
+   "crisis",
+   "sleep_issue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-024",
+  "text": "밤새 뒤척이다 세 번은 깬 것 같아요. 그래서인지 몸은 천근만근이고, 동료들 말 한마디에도 자꾸 짜증이 치밀어요.",
+  "codes": [
+   "fatigue",
+   "low_mood",
+   "sleep_issue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-025",
+  "text": "어깨랑 목덜미가 돌처럼 굳더니 이제는 머리까지 지끈거려.",
+  "codes": [
+   "headache",
+   "musculoskeletal_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "head",
+   "neck"
+  ],
+  "loc_ok": false
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-026",
+  "text": "Splitting headache since breakfast, vomited once, and the text on my display has doubled edges.",
+  "codes": [
+   "headache",
+   "nausea",
+   "vision_change"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-027",
+  "text": "Tightness across my chest and I feel faint; holding the handrail now.",
+  "codes": [
+   "chest_pain",
+   "dizziness"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-028",
+  "text": "I've felt flat and joyless for days, and I lie awake for hours before sleep comes.",
+  "codes": [
+   "low_mood",
+   "sleep_issue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-029",
+  "text": "Throat feels raw, I'm coughing, and I'm completely run-down even after an early night.",
+  "codes": [
+   "congestion",
+   "fatigue"
+  ],
+  "ok": true,
+  "locations": [
+   "neck"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-030",
+  "text": "무중력 나흘째인데 코맹맹이 소리가 나고 냄새도 잘 안 맡아져요.",
+  "codes": [
+   "congestion"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": false
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-031",
+  "text": "착륙한 지 이틀째인데, 일어설 때마다 정신이 아득해지고 속도 메슥거려요.",
+  "codes": [
+   "dizziness",
+   "nausea"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": false
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-032",
+  "text": "화물 모듈 구석에서 짐 정리를 오래 했더니 머리가 조여 오듯 아픕니다. 공기가 거의 안 도는 자리였어요.",
+  "codes": [
+   "headache"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-033",
+  "text": "Third night in orbit and there's a dull ache across the small of my back that only shows up during the sleep period.",
+  "codes": [
+   "musculoskeletal_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "back"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-034",
+  "text": "Day 140. Fine print on the food packets swims unless I squint; things far off through the window are still sharp.",
+  "codes": [
+   "vision_change"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-035",
+  "text": "Skin under the chest-strap electrode is red and stings when I sweat.",
+  "codes": [
+   "skin_rash"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-036",
+  "text": "아까부터 chest 쪽에 pressure가 계속 느껴집니다. 한 20분 됐어요.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-037",
+  "text": "조금 전부터 rest 상태에서도 breathing이 labored해요. Exercise는 안 했습니다.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-038",
+  "text": "PMC 때 말씀드리려고 했는데, 요즘 mission이고 뭐고 죽고 싶다는 생각이 자주 듭니다.",
+  "codes": [
+   "crisis"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-039",
+  "text": "Treadmill session 끝나고부터 좀 lightheaded하고 throw up할 것 같아요.",
+  "codes": [
+   "dizziness",
+   "nausea"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-040",
+  "text": "Tablet 글씨가 blurry해서 checklist 읽는 데 시간이 두 배로 걸려요.",
+  "codes": [
+   "vision_change"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-041",
+  "text": "새 hygiene wipe 쓰고 나서 forearm에 rash가 올라왔고 꽤 itchy합니다.",
+  "codes": [
+   "skin_rash"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": false
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-042",
+  "text": "오늘 energy level이 바닥이라 afternoon task는 좀 미루고 싶습니다.",
+  "codes": [
+   "fatigue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-043",
+  "text": "Observation window로 본 Mars view가 진짜 breathtaking했어요. 몸은 no issue입니다.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-044",
+  "text": "피부 발진 있음. 양쪽 겨드랑이, 사흘째.",
+  "codes": [
+   "skin_rash"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-045",
+  "text": "저녁 먹고 나서 구토를 두 번 했어요.",
+  "codes": [
+   "nausea"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-046",
+  "text": "I've been having thoughts of hurting myself since the comm blackout started.",
+  "codes": [
+   "crisis"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-047",
+  "text": "Hives across my stomach since last night, and they itch like mad.",
+  "codes": [
+   "skin_rash"
+  ],
+  "ok": true,
+  "locations": [
+   "abdomen"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-048",
+  "text": "운동한 것도 아닌데 공기가 모자란 것처럼 숨을 자꾸 크게 들이마시게 돼요.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-049",
+  "text": "이 세상에서 그냥 없어져 버렸으면 좋겠어요. 요즘 매일 그 생각이에요.",
+  "codes": [
+   "crisis"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-050",
+  "text": "뭘 해도 시큰둥하고 사람들이랑 말 섞기도 싫어.",
+  "codes": [
+   "low_mood"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-051",
+  "text": "Stopping the bike session early. It feels like someone is kneeling on my sternum.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-052",
+  "text": "Can't turn my head to the left without a sharp catch at the base of my neck.",
+  "codes": [
+   "musculoskeletal_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "neck"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-053",
+  "text": "Stared at the wall of my bunk all night until the wake alarm went off.",
+  "codes": [
+   "sleep_issue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-054",
+  "text": "별건 아닌 것 같은데, 아까부터 가슴께가 좀 뻐근해서 신경이 쓰이네요.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-055",
+  "text": "가만히 앉아서 기록만 하는데도 숨이 좀 달리네요. 뭐, 금방 괜찮아지겠죠.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-056",
+  "text": "제가 없어지는 편이 팀한테도 가족한테도 낫겠다는 생각이 떠나질 않아요.",
+  "codes": [
+   "crisis"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-057",
+  "text": "Probably nothing, but there's been a dull squeeze behind my breastbone for the last fifteen minutes or so.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-058",
+  "text": "I have to stop halfway through a sentence to get air, and all I've done is sit and read at my station.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-059",
+  "text": "Not sure how to put this. Part of me hopes I simply don't wake up tomorrow.",
+  "codes": [
+   "crisis"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence only",
+  "id": "ST-060",
+  "text": "Lab lights feel too bright and there's a throb above my left eye that keeps time with my pulse.",
+  "codes": [
+   "headache",
+   "vision_change"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-001",
+  "text": "오늘 운동 두 세션 다 채웠고 몸도 아주 가뿐합니다.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-002",
+  "text": "푹 잤고 밥도 잘 먹었어. 몸은 쌩쌩함.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-003",
+  "text": "러닝머신 벨트에서 끽끽 소리가 나요. 장비 문제고 저는 멀쩡합니다.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-004",
+  "text": "Slept well, ate well, both exercise blocks done. Feeling strong.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-005",
+  "text": "Can you remind me to recalibrate the wrist sensor after lunch?",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-006",
+  "text": "선장님 농담에 웃겨 죽는 줄 알았어요. 오늘은 몸도 마음도 편안합니다.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-007",
+  "text": "스쿼트를 너무 무겁게 했나, 허벅지 아파 죽겠네 ㅠㅠ",
+  "codes": [
+   "musculoskeletal_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "left_leg",
+   "right_leg"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-008",
+  "text": "창밖으로 지구가 보이는데 가슴이 벅차서 한동안 말이 안 나왔어요.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": false,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": false
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-009",
+  "text": "옆 침실 동료가 밤새 기침을 하던데 감기인가 봐요. 저는 코도 목도 멀쩡해요.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-010",
+  "text": "어제까지는 두통 때문에 고생했는데 자고 일어나니 말끔히 나았어요.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-011",
+  "text": "I'm dying to see the first rover photos. Otherwise an ordinary day, nothing wrong with me.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-012",
+  "text": "This head cold will be the death of me. My nose runs like a tap and I can't stop coughing.",
+  "codes": [
+   "congestion"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-013",
+  "text": "First sunrise over the crater rim took my breath away. No complaints at all.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-014",
+  "text": "Our pilot threw up twice this morning, so I'm covering her tasks. I feel fine myself.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-015",
+  "text": "The queasiness from my first two days up here is completely gone. All that's left is a blocked-up nose.",
+  "codes": [
+   "congestion"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-016",
+  "text": "두통은 없는데 화면 글씨가 자꾸 뿌옇게 보여요.",
+  "codes": [
+   "vision_change"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-017",
+  "text": "죽고 싶다는 생각 같은 건 전혀 없어요. 그냥 요즘 좀 울적하고 의욕이 안 날 뿐이에요.",
+  "codes": [
+   "low_mood"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-018",
+  "text": "숨은 안 참. 가슴 한복판이 묵직하게 아픔, 30분째.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-019",
+  "text": "No nausea at all, but the cabin seems to swing sideways whenever I look up from the tablet.",
+  "codes": [
+   "dizziness"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-020",
+  "text": "Chest doesn't hurt at all. It's that no breath feels deep enough, even when I'm resting.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-021",
+  "text": "Got my full eight hours, so it isn't lack of sleep, but I feel wrung out and heavy today.",
+  "codes": [
+   "fatigue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-022",
+  "text": "가슴을 누가 꽉 움켜쥔 것 같고 숨까지 차올라서 작업을 멈췄습니다.",
+  "codes": [
+   "chest_pain",
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-023",
+  "text": "며칠째 한숨도 못 잤어요. 이제는 그만 살고 싶다는 생각까지 듭니다.",
+  "codes": [
+   "crisis",
+   "sleep_issue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-024",
+  "text": "밤새 뒤척이다 세 번은 깬 것 같아요. 그래서인지 몸은 천근만근이고, 동료들 말 한마디에도 자꾸 짜증이 치밀어요.",
+  "codes": [
+   "fatigue",
+   "low_mood",
+   "sleep_issue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-025",
+  "text": "어깨랑 목덜미가 돌처럼 굳더니 이제는 머리까지 지끈거려.",
+  "codes": [
+   "headache",
+   "musculoskeletal_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "head",
+   "neck"
+  ],
+  "loc_ok": false
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-026",
+  "text": "Splitting headache since breakfast, vomited once, and the text on my display has doubled edges.",
+  "codes": [
+   "headache",
+   "nausea",
+   "vision_change"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-027",
+  "text": "Tightness across my chest and I feel faint; holding the handrail now.",
+  "codes": [
+   "chest_pain",
+   "dizziness"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-028",
+  "text": "I've felt flat and joyless for days, and I lie awake for hours before sleep comes.",
+  "codes": [
+   "low_mood",
+   "sleep_issue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-029",
+  "text": "Throat feels raw, I'm coughing, and I'm completely run-down even after an early night.",
+  "codes": [
+   "congestion",
+   "fatigue"
+  ],
+  "ok": true,
+  "locations": [
+   "neck"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-030",
+  "text": "무중력 나흘째인데 코맹맹이 소리가 나고 냄새도 잘 안 맡아져요.",
+  "codes": [
+   "congestion"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": false
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-031",
+  "text": "착륙한 지 이틀째인데, 일어설 때마다 정신이 아득해지고 속도 메슥거려요.",
+  "codes": [
+   "dizziness",
+   "nausea"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": false
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-032",
+  "text": "화물 모듈 구석에서 짐 정리를 오래 했더니 머리가 조여 오듯 아픕니다. 공기가 거의 안 도는 자리였어요.",
+  "codes": [
+   "headache"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-033",
+  "text": "Third night in orbit and there's a dull ache across the small of my back that only shows up during the sleep period.",
+  "codes": [
+   "musculoskeletal_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "back"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-034",
+  "text": "Day 140. Fine print on the food packets swims unless I squint; things far off through the window are still sharp.",
+  "codes": [
+   "vision_change"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-035",
+  "text": "Skin under the chest-strap electrode is red and stings when I sweat.",
+  "codes": [
+   "skin_rash"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-036",
+  "text": "아까부터 chest 쪽에 pressure가 계속 느껴집니다. 한 20분 됐어요.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-037",
+  "text": "조금 전부터 rest 상태에서도 breathing이 labored해요. Exercise는 안 했습니다.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-038",
+  "text": "PMC 때 말씀드리려고 했는데, 요즘 mission이고 뭐고 죽고 싶다는 생각이 자주 듭니다.",
+  "codes": [
+   "crisis",
+   "low_mood"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-039",
+  "text": "Treadmill session 끝나고부터 좀 lightheaded하고 throw up할 것 같아요.",
+  "codes": [
+   "dizziness",
+   "nausea"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-040",
+  "text": "Tablet 글씨가 blurry해서 checklist 읽는 데 시간이 두 배로 걸려요.",
+  "codes": [
+   "vision_change"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-041",
+  "text": "새 hygiene wipe 쓰고 나서 forearm에 rash가 올라왔고 꽤 itchy합니다.",
+  "codes": [
+   "skin_rash"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": false
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-042",
+  "text": "오늘 energy level이 바닥이라 afternoon task는 좀 미루고 싶습니다.",
+  "codes": [
+   "fatigue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-043",
+  "text": "Observation window로 본 Mars view가 진짜 breathtaking했어요. 몸은 no issue입니다.",
+  "codes": [
+   "none"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-044",
+  "text": "피부 발진 있음. 양쪽 겨드랑이, 사흘째.",
+  "codes": [
+   "skin_rash"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-045",
+  "text": "저녁 먹고 나서 구토를 두 번 했어요.",
+  "codes": [
+   "nausea"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-046",
+  "text": "I've been having thoughts of hurting myself since the comm blackout started.",
+  "codes": [
+   "crisis"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-047",
+  "text": "Hives across my stomach since last night, and they itch like mad.",
+  "codes": [
+   "skin_rash"
+  ],
+  "ok": true,
+  "locations": [
+   "abdomen"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-048",
+  "text": "운동한 것도 아닌데 공기가 모자란 것처럼 숨을 자꾸 크게 들이마시게 돼요.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-049",
+  "text": "이 세상에서 그냥 없어져 버렸으면 좋겠어요. 요즘 매일 그 생각이에요.",
+  "codes": [
+   "crisis",
+   "low_mood"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-050",
+  "text": "뭘 해도 시큰둥하고 사람들이랑 말 섞기도 싫어.",
+  "codes": [
+   "low_mood"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-051",
+  "text": "Stopping the bike session early. It feels like someone is kneeling on my sternum.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-052",
+  "text": "Can't turn my head to the left without a sharp catch at the base of my neck.",
+  "codes": [
+   "musculoskeletal_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "neck"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-053",
+  "text": "Stared at the wall of my bunk all night until the wake alarm went off.",
+  "codes": [
+   "sleep_issue"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-054",
+  "text": "별건 아닌 것 같은데, 아까부터 가슴께가 좀 뻐근해서 신경이 쓰이네요.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-055",
+  "text": "가만히 앉아서 기록만 하는데도 숨이 좀 달리네요. 뭐, 금방 괜찮아지겠죠.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-056",
+  "text": "제가 없어지는 편이 팀한테도 가족한테도 낫겠다는 생각이 떠나질 않아요.",
+  "codes": [
+   "crisis"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-057",
+  "text": "Probably nothing, but there's been a dull squeeze behind my breastbone for the last fifteen minutes or so.",
+  "codes": [
+   "chest_pain"
+  ],
+  "ok": true,
+  "locations": [
+   "chest"
+  ],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-058",
+  "text": "I have to stop halfway through a sentence to get air, and all I've done is sit and read at my station.",
+  "codes": [
+   "shortness_of_breath"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-059",
+  "text": "Not sure how to put this. Part of me hopes I simply don't wake up tomorrow.",
+  "codes": [
+   "crisis"
+  ],
+  "ok": true,
+  "locations": [],
+  "loc_ok": true
+ },
+ {
+  "cond": "sentence + metrics",
+  "id": "ST-060",
+  "text": "Lab lights feel too bright and there's a throb above my left eye that keeps time with my pulse.",
+  "codes": [
+   "headache",
+   "vision_change"
+  ],
+  "ok": true,
+  "locations": [
+   "head"
+  ],
+  "loc_ok": true
+ }
+]
