@@ -15,10 +15,10 @@ DEMO_SOL = 16
 MISSION_START = datetime(2026, 10, 30, tzinfo=UTC)
 SOURCE = "synthetic_scenario"
 CREW = (
-    ("c1", "Crew A", "Flight engineer", 0),
-    ("c2", "Crew B", "Commander", 1),
-    ("c3", "Crew C", "Scientist", 0),
-    ("c4", "Crew D", "Pilot", 0),
+    ("c1", "C1", "Flight engineer", 0),
+    ("c2", "C2", "Commander", 1),
+    ("c3", "C3", "Scientist", 0),
+    ("c4", "C4", "Pilot", 0),
 )
 METRIC_SEEDS = {
     "hr": (68, 2),
@@ -38,7 +38,11 @@ def seed(connection: sqlite3.Connection) -> None:
                ON CONFLICT (id) DO NOTHING""",
             CREW,
         )
-        for crew_index, (crew_id, _, _, _) in enumerate(CREW):
+        for crew_index, (crew_id, name, _, _) in enumerate(CREW):
+            connection.execute(
+                "UPDATE crew SET name = ? WHERE id = ? AND name = ?",
+                (name, crew_id, f"Crew {chr(ord('A') + crew_index)}"),
+            )
             first_sol = DEMO_SOL - 9 if crew_id == "c3" else 1
             for metric in CONTRACT["metrics"]:
                 center, spread = METRIC_SEEDS[metric]
