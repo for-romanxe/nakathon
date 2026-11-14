@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from backend.checkin import Checkin, save_checkin
 from backend.db import connect, initialize
 from backend.events import SymptomInput, event_payload, save_event
+from backend.link_simulation import LinkSimulation, compare_packet
 from backend.mission import ClockUpdate, DEMO_TIME, active_window, mission_sol, mission_status
 from backend.seed import DEMO_DB, seed
 from backend.today import today
@@ -164,6 +165,17 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
                     }},
                 )
             return packets(connection)
+
+    @app.post("/tx/{seq}/simulate")
+    def simulate_link(seq: int, simulation: LinkSimulation):
+        with closing(connect(db_path)) as connection:
+            packet = connection.execute("SELECT payload FROM tx_packet WHERE seq = ?", (seq,)).fetchone()
+        if packet is None:
+            return JSONResponse(
+                status_code=404,
+                content={"error": {"code": "packet_not_found", "message": "Packet not found."}},
+            )
+        return {"seq": seq, **compare_packet(packet["payload"], simulation)}
 
     @app.get("/events/{event_id}")
     def read_event(event_id: int):

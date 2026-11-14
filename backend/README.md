@@ -85,3 +85,15 @@ number are kept for retries.
 
 The send and receipt routes simulate delivery; data stays in the local SQLite
 database.
+
+`POST /tx/{seq}/simulate` compares the saved packet with two signal amplitudes.
+Send `{}` for defaults, or specify `narrow_amplitude`, `wide_amplitude`,
+`noise_sd`, `trials`, and `seed`. The default test uses amplitudes ±1 and ±3,
+unit Gaussian noise, and 100 trials. Both amplitudes receive the same noise
+sample for each bit. The response reports bit error rates, exact packet
+success rates, expected success under independent bit errors, and energy
+relative to the narrow signal at equal symbol duration.
+
+This experiment models additive noise while a link is available. It has no
+error correction or framing overhead and does not change packet delivery
+status. It runs independently of the mission clock and transmission window.

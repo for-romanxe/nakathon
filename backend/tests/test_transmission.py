@@ -8,6 +8,26 @@ from backend.main import create_app
 
 
 class TransmissionTest(TestCase):
+    def test_signal_comparison_uses_the_same_packet_and_noise(self):
+        directory = self.enterContext(TemporaryDirectory())
+        path = Path(directory) / "demo.sqlite3"
+        with TestClient(create_app(path)) as client:
+            client.post("/crew/c1/symptom", json={"text": "I have chest pain", "lang": "en"}).raise_for_status()
+            packet, = client.get("/tx").json()
+            route = f"/tx/{packet['seq']}/simulate"
+            result = client.post(route, json={}).raise_for_status().json()
+            self.assertEqual(result, client.post(route, json={}).json())
+            self.assertLess(result["wide"]["bit_errors"], result["narrow"]["bit_errors"])
+            self.assertGreater(result["wide"]["packet_success_rate"], result["narrow"]["packet_success_rate"])
+            self.assertEqual(result["wide"]["relative_energy_per_bit"], 9.0)
+
+            noiseless = client.post(route, json={"noise_sd": 0, "trials": 2}).raise_for_status().json()
+            self.assertEqual(noiseless["narrow"]["packet_success_rate"], 1.0)
+            self.assertEqual(noiseless["wide"]["bit_error_rate"], 0.0)
+            self.assertEqual(client.post(route, json={"wide_amplitude": 1}).status_code, 422)
+            self.assertEqual(client.post("/tx/999/simulate", json={}).status_code, 404)
+            self.assertEqual(client.get("/tx").json(), [packet])
+
     def test_warning_summary_retry_and_receipt(self):
         directory = self.enterContext(TemporaryDirectory())
         path = Path(directory) / "demo.sqlite3"
