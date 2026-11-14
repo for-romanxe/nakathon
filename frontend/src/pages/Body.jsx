@@ -44,11 +44,15 @@ function buildRegions(today) {
   })
 }
 
-// Worst level among the reports that point at each region (for the "!" marks)
+// Worst level among the reports that point at each region (for the "!" marks). Only reports that name this exact
+// part get a mark: a limb named without a side ("다리가 아파요") is listed under both legs but marks neither, since
+// it is not certain which one it is.
 function markLevels(reports) {
   const out = {}
   for (const [region, list] of Object.entries(reports)) {
-    out[region] = list.reduce((worst, { event }) => ((RANK[event.level] ?? -1) > (RANK[worst] ?? -1) ? event.level : worst), null) ?? 'normal'
+    const sure = list.filter((r) => r.sideStated)
+    if (sure.length === 0) continue
+    out[region] = sure.reduce((worst, { event }) => ((RANK[event.level] ?? -1) > (RANK[worst] ?? -1) ? event.level : worst), null) ?? 'normal'
   }
   return out
 }

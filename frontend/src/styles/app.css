@@ -425,7 +425,9 @@ a.cite:hover { text-decoration: underline; }
 .body-legend .sw { width: 12px; height: 12px; border-radius: 2px; }
 .body-figure-panel { display: flex; flex-direction: column; }
 .body-figure { display: block; width: 100%; height: min(70vh, 600px); padding: 12px; }
-/* Body on a blueprint sheet (after redradman/artemis, MIT): cyanotype navy, a 20px / 80px grid, darker corners.
+/*! Blueprint sheet and leader-label styles adapted from redradman/artemis — MIT License,
+    Copyright (c) 2026 Radman Rakhshandehroo. Full license text: frontend/public/THIRD_PARTY_NOTICES.md (served as /THIRD_PARTY_NOTICES.md) */
+/* Body on a blueprint sheet: cyanotype navy, a 20px / 80px grid, darker corners.
    Line colours are the reference's blueprint pair: paper-cyan lines, sky-cyan for the selected part. */
 .body-figure.holo {
   --bp-line: #dceafe;

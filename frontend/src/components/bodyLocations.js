@@ -35,7 +35,22 @@ function sideOf(word) {
   return ['left', 'right'] // both / 양
 }
 
-// text -> [{ location, sideStated }]
+// A report can deny one part while naming another ("가슴 통증은 없고 오른쪽 팔만 아파요", "no chest pain but my right
+// arm hurts"). The text is cut into clauses, and a clause that denies pain or a problem names no part. Only pain
+// / trouble denials count: "왼팔에 힘이 없어요" or "no strength in my left arm" are symptoms, not denials.
+const CLAUSE = /[,.;!?\n]|\s(?:but|and|although|though|while)\s|(?:고|는데|은데|지만|면서)(?=\s)|그리고|하지만|그런데/i
+const DENIAL = new RegExp([
+  '\\bno\\s+(?:\\w+\\s+)?(?:pain|ache|headaches?|migraines?|problems?|issues?|soreness|discomfort)\\b',
+  "\\b(?:doesn'?t|does not|don'?t|do not|isn'?t|is not|aren'?t|are not)\\s+(?:hurt|ache|have|feel|sore|painful)",
+  '\\bwithout\\s+(?:\\w+\\s+)?pain\\b',
+  '\\b(?:is|are|feels?|feel)\\s+(?:fine|okay|ok|normal)\\b',
+  '(?:통증|아픔|증상|문제|이상|두통|흉통|복통)(?:은|는|이|가|도)?\\s*없',
+  '(?:아프|저리|쑤시)지\\s*(?:는\\s*)?않',
+  '안\\s*(?:아프|아파|저리|저려|쑤시|쑤셔)',
+  '괜찮',
+].join('|'), 'i')
+
+// text -> [{ location, sideStated }] (parts named in clauses that do not deny them)
 export function locationsInText(text) {
   if (!text) return []
   const out = new Map()
@@ -43,18 +58,21 @@ export function locationsInText(text) {
     const prev = out.get(location)
     if (!prev || (sideStated && !prev.sideStated)) out.set(location, { location, sideStated })
   }
-  const sidedLimb = { arm: false, leg: false }
-  for (const re of SIDED) {
-    for (const m of text.matchAll(re)) {
-      const limb = m[2] ? 'arm' : 'leg'
-      sidedLimb[limb] = true
-      for (const side of sideOf(m[1])) put(`${side}_${limb}`, true)
+  for (const clause of text.split(CLAUSE)) {
+    if (!clause || DENIAL.test(clause)) continue
+    const sidedLimb = { arm: false, leg: false }
+    for (const re of SIDED) {
+      for (const m of clause.matchAll(re)) {
+        const limb = m[2] ? 'arm' : 'leg'
+        sidedLimb[limb] = true
+        for (const side of sideOf(m[1])) put(`${side}_${limb}`, true)
+      }
     }
+    for (const { limb, re } of UNSIDED) {
+      if (!sidedLimb[limb] && re.test(clause)) { put(`left_${limb}`, false); put(`right_${limb}`, false) }
+    }
+    for (const { location, re } of TRUNK) if (re.test(clause)) put(location, true)
   }
-  for (const { limb, re } of UNSIDED) {
-    if (!sidedLimb[limb] && re.test(text)) { put(`left_${limb}`, false); put(`right_${limb}`, false) }
-  }
-  for (const { location, re } of TRUNK) if (re.test(text)) put(location, true)
   return [...out.values()]
 }
 

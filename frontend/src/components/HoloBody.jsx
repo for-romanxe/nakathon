@@ -10,6 +10,9 @@
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 
+/*! Body wireframe and leader labels adapted from redradman/artemis — MIT License,
+ *  Copyright (c) 2026 Radman Rakhshandehroo. Full license text: frontend/public/THIRD_PARTY_NOTICES.md (served as /THIRD_PARTY_NOTICES.md) */
+
 const V = (x, y, z = 0) => new THREE.Vector3(x, y, z)
 const DOWN = V(0, -1, 0)
 const HEART_AT = V(0.035, 1.3, 0.02) // inside the chest, a little to the person's left
