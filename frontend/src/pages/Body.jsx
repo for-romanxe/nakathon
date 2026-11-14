@@ -18,7 +18,7 @@ const RANK = { normal: 0, advisory: 1, caution: 2, warning: 3 }
 // Most serious backend level among the region's metrics; a region whose metrics are all on hold is "hold"
 function regionLevel(metrics) {
   const judged = metrics.filter((m) => m.level && m.level !== 'hold')
-  if (judged.length === 0) return metrics.length ? 'hold' : 'normal'
+  if (judged.length === 0) return 'hold' // no readings, or all on hold: not judged, never shown as normal
   return judged.reduce((worst, m) => ((RANK[m.level] ?? 0) > RANK[worst] ? m.level : worst), 'normal')
 }
 
@@ -32,6 +32,19 @@ function badgeClass(level) {
   return level === 'advisory' ? 'neutral' : `lv-${level}`
 }
 
+function buildRegions(today) {
+  const byMetric = Object.fromEntries((today.metrics ?? []).map((m) => [m.metric, m]))
+  return REGIONS.map((r) => {
+    const rows = r.metrics.map((k) => byMetric[k]).filter(Boolean)
+    return { ...r, rows, level: regionLevel(rows) }
+  })
+}
+
+// First off region (caution or worse), otherwise the heart
+function defaultRegionId(regions) {
+  return regions.find((r) => RANK[r.level] >= RANK.caution)?.id ?? 'heart'
+}
+
 export default function Body() {
   const { t, lang } = useT()
   const { mission } = useMission()
@@ -43,7 +56,11 @@ export default function Body() {
   useEffect(() => {
     let active = true
     api.getToday(CURRENT_CREW, lang)
-      .then((today) => active && setResult({ key, today }))
+      .then((today) => {
+        if (!active) return
+        setResult({ key, today })
+        setPicked((p) => p ?? defaultRegionId(buildRegions(today))) // only the first time; a user's pick stays
+      })
       .catch(() => active && setResult({ key, error: true }))
     return () => { active = false }
   }, [lang, sol, key])
@@ -53,16 +70,11 @@ export default function Body() {
   if (!current) return <section className="page"><p className="muted">{t('common.loading')}</p></section>
 
   const today = current.today
-  const byMetric = Object.fromEntries((today.metrics ?? []).map((m) => [m.metric, m]))
-  const regions = REGIONS.map((r) => {
-    const metrics = r.metrics.map((k) => byMetric[k]).filter(Boolean)
-    return { ...r, rows: metrics, level: regionLevel(metrics) }
-  })
+  const regions = buildRegions(today) // always all five regions, with or without readings
   const levels = Object.fromEntries(regions.map((r) => [r.id, r.level]))
-  // Open the first off region by default, otherwise the heart
-  const defaultId = regions.find((r) => RANK[r.level] >= RANK.caution)?.id ?? 'heart'
-  const selectedId = regions.some((r) => r.id === picked) ? picked : defaultId
-  const sel = regions.find((r) => r.id === selectedId) ?? regions[0]
+  const selectedId = regions.some((r) => r.id === picked) ? picked : defaultRegionId(regions)
+  // 3) the selected region stays selected even when it has no readings; its table shows an empty state
+  const sel = regions.find((r) => r.id === selectedId)
   const related = (today.events ?? []).filter((e) => (e.findings ?? []).some((f) => sel.metrics.includes(f.metric)))
   const counts = { caution: regions.filter((r) => r.level === 'caution').length, warning: regions.filter((r) => r.level === 'warning').length }
 
@@ -118,6 +130,9 @@ export default function Body() {
               </tr>
             </thead>
             <tbody>
+              {sel.rows.length === 0 && (
+                <tr><td colSpan={4} className="muted">{t('body.no_rows')}</td></tr>
+              )}
               {sel.rows.map((m) => (
                 <tr key={m.metric} className={m.level === 'caution' || m.level === 'warning' ? `lv-${m.level} off` : ''}>
                   <td>

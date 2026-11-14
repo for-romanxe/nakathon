@@ -51,14 +51,15 @@ function buildCells() {
   return cells
 }
 
-// One region per point: the nearest region centre within 1.3 × its radius (mockup rule), so overlapping
-// areas never hide each other and no element sits on top of another to steal the click.
+// One region per point, with exactly the rule buildCells uses to colour cells: the nearest region centre
+// within its radius. Clicking empty space outside every region selects nothing, overlapping areas go to
+// the nearer centre, and no element sits on top of another to steal the click.
 function regionAt(nx, ny) {
   let best = null
   let bd = Infinity
   for (const r of REGIONS) {
     const d = regionDistance(r, nx, ny)
-    if (d < r.r * 1.3 && d < bd) { bd = d; best = r }
+    if (d < r.r && d < bd) { bd = d; best = r }
   }
   return best
 }
