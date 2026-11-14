@@ -1,0 +1,13 @@
+{
+ "parts": {
+  "symptom_template": 600,
+  "symptom_natural": 520,
+  "mood": 300,
+  "explain": 283
+ },
+ "train": 1533,
+ "valid": 170,
+ "skipped": {},
+ "template_n": 600,
+ "seed": 20261114
+}

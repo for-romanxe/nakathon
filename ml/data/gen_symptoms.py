@@ -57,7 +57,7 @@ NONE_PH = (["오늘은 특별한 증상 없어요", "괜찮아요", "별 일 없
 
 ONSET_PH = {
     "now": (["방금부터", "지금", "조금 전부터"], ["just now", "right now", "since a moment ago"]),
-    "hours": (["몇 시간 전부터", "점심 먹고 나서부터", "두세 시간째"], ["for a few hours", "since lunch", "for the last couple of hours"]),
+    "hours": (["몇 시간 전부터", "오후부터", "두세 시간째"], ["for a few hours", "since this afternoon", "for the last couple of hours"]),
     "today": (["오늘 아침부터", "일어났을 때부터", "오늘 하루 종일", "오전부터"], ["since I woke up", "all day today", "since this morning when I got up", "since this morning"]),
     "days": (["며칠째", "이틀 전부터", "지난주부터", "사흘 정도"], ["for a few days", "since two days ago", "since last week", "about three days now"]),
 }
@@ -71,7 +71,7 @@ WORSE_PH = {
 SEV_PH = {
     1: (["아주 약해요", "살짝이에요", "조금이요"], ["it's mild", "just a little", "barely noticeable"]),
     2: (["약간 그래요", "좀 그래요"], ["somewhat", "a bit"]),
-    3: (["꽤 심해요", "신경 쓰일 정도예요"], ["it's quite bad", "noticeable enough to bother me"]),
+    3: (["꽤 거슬려요", "신경 쓰일 정도예요"], ["it's quite bothersome", "noticeable enough to bother me"]),
     4: (["많이 심해요", "일하기 힘들 정도예요"], ["it's bad", "bad enough that it's hard to work"]),
     5: (["너무 심해서 못 견디겠어요", "최악이에요", "참기 힘들어요"], ["it's unbearable", "the worst it's been", "I can't stand it"]),
 }
@@ -124,10 +124,9 @@ def make(lang):
         text = text.rstrip(".") + ("." if lang == "en" else "")
     if random.random() < 0.1:
         text = text.lower() if lang == "en" else text.replace("요", "")  # 반말 변형
-    # needs_question: 어지러움·두통·메스꺼움·피로인데 언제부터인지도, 언제 심해지는지도 문장에 없을 때 (확인 질문 하나가 판단을 바꾼다).
-    # 문장에 실제로 남은 정보로 정한다: onset 은 위에서 문장에 안 들어갔으면 unknown 으로 바뀐 뒤다. 급한 증상은 묻지 않는다.
-    needs_q = (any(c in codes for c in ["dizziness", "headache", "nausea", "fatigue"]) and worse == "unknown" and onset == "unknown"
-               and not any(c in codes for c in ["crisis", "chest_pain", "shortness_of_breath"]))
+    # needs_question: 모델은 '문장이 모호한가'만 답한다. 템플릿 문장은 모호하지 않으므로 false.
+    # '어지러움·두통·메스꺼움·피로인데 언제부터·언제 심해지는지 없음'은 서비스 코드(client.finish_symptom)가 계산한다.
+    needs_q = False
     label = {"codes": sorted(codes), "onset": onset, "worse_when": worse, "severity": sev, "needs_question": bool(needs_q)}
     return text, label
 

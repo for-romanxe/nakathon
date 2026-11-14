@@ -12,3 +12,5 @@ ml/models/
 mockup/refs/
 node_modules/
 ml/logs/
+ml/data/v2/train.jsonl
+ml/data/v2/valid.jsonl

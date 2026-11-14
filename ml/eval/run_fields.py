@@ -29,6 +29,8 @@ def main(a):
         if not kind or sum(o["source"] == r["source"] for o in out) >= a.n:
             continue
         text, gold = r["messages"][-2]["content"], json.loads(r["messages"][-1]["content"])
+        if kind == "symptom":
+            gold = client.finish_symptom(gold)      # 서비스가 내보내는 최종값끼리 견준다 (확인 질문·심각도 하한은 코드가 계산)
         try:
             got = client.extract_symptoms(text, "ko") if kind == "symptom" else client.score_mood(text, "ko")
         except client.ModelOutputError as e:
