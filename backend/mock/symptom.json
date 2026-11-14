@@ -1,0 +1,16 @@
+[
+ {"match": ["가슴", "흉통", "chest"], "out": {"codes": ["chest_pain"], "onset": "now", "worse_when": "unknown", "severity": 4, "needs_question": false}},
+ {"match": ["숨", "호흡", "breath"], "out": {"codes": ["shortness_of_breath"], "onset": "now", "worse_when": "unknown", "severity": 4, "needs_question": false}},
+ {"match": ["죽고", "끝내", "want to die", "disappear"], "out": {"codes": ["crisis"], "onset": "unknown", "worse_when": "unknown", "severity": 5, "needs_question": false}},
+ {"match": ["어지", "현기증", "dizzy", "spinning", "lightheaded"], "out": {"codes": ["dizziness"], "onset": "today", "worse_when": "standing", "severity": 2, "needs_question": true}},
+ {"match": ["머리", "두통", "headache"], "out": {"codes": ["headache"], "onset": "hours", "worse_when": "unknown", "severity": 2, "needs_question": true}},
+ {"match": ["메스", "울렁", "토할", "nause", "queasy"], "out": {"codes": ["nausea"], "onset": "today", "worse_when": "after_meal", "severity": 2, "needs_question": false}},
+ {"match": ["잠", "불면", "slept", "sleep", "insomnia"], "out": {"codes": ["sleep_issue"], "onset": "today", "worse_when": "unknown", "severity": 2, "needs_question": false}},
+ {"match": ["피곤", "무기력", "기운", "tired", "exhausted", "drained"], "out": {"codes": ["fatigue"], "onset": "today", "worse_when": "unknown", "severity": 2, "needs_question": true}},
+ {"match": ["허리", "어깨", "목이", "무릎", "back", "neck", "shoulder", "knee"], "out": {"codes": ["musculoskeletal_pain"], "onset": "days", "worse_when": "exercise", "severity": 2, "needs_question": false}},
+ {"match": ["코", "기침", "목이 따", "stuff", "cough", "throat"], "out": {"codes": ["congestion"], "onset": "days", "worse_when": "unknown", "severity": 1, "needs_question": false}},
+ {"match": ["발진", "가려", "두드러기", "rash", "itch"], "out": {"codes": ["skin_rash"], "onset": "days", "worse_when": "unknown", "severity": 1, "needs_question": false}},
+ {"match": ["눈", "시야", "흐릿", "vision", "blurry"], "out": {"codes": ["vision_change"], "onset": "days", "worse_when": "unknown", "severity": 2, "needs_question": false}},
+ {"match": ["꿀꿀", "우울", "불안", "짜증", "down", "anxious", "low mood"], "out": {"codes": ["low_mood"], "onset": "today", "worse_when": "unknown", "severity": 2, "needs_question": false}},
+ {"match": [], "out": {"codes": ["none"], "onset": "unknown", "worse_when": "unknown", "severity": 1, "needs_question": false}}
+]
