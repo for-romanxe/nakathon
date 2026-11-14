@@ -89,6 +89,8 @@ export const api = {
   getTx: () => request('/tx', txFixture),
   // POST /tx {event_id} -> queues an event summary for Earth (warning events are queued by the backend already)
   queueTx: (eventId) => request('/tx', txFixture, { method: 'POST', body: JSON.stringify({ event_id: eventId }) }),
+  // POST /tx {daily:true} -> queues today's summary for every crew member (used for a metrics-only warning)
+  queueDaily: () => request('/tx', txFixture, { method: 'POST', body: JSON.stringify({ daily: true }) }),
   // POST /tx/send -> sends queued packets if a comm window is open now; returns the queue
   sendTx: () => request('/tx/send', txFixture, { method: 'POST' }),
   // First steps of the emergency procedure per warning code. No /docs endpoint yet: placeholder fixture only

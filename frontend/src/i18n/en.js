@@ -187,4 +187,6 @@ export default {
   "event.measured_skip": "A reading crossed the warning limit (3σ). The model is skipped for warnings.",
   "event.condition_unlisted": "No condition from the on-device list.",
   "event.local_only": "Saved on this screen only for now; it will be logged for the medical officer once the backend supports it.",
+  "warning.measured_title": "A reading crossed the warning limit",
+  "warning.by_readings": "Raised by the rules because a reading is 3σ or more from your baseline. The on-device model is skipped and cannot lower this.",
 }

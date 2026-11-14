@@ -1,11 +1,14 @@
 // Warning.jsx — full-screen warning (spec §7 경보 화면, scenarios S9 and S12).
 // Raised by rules only (symptom phrases or |z| >= 3); the model is skipped and can never lower it.
+// CONTRACT §5.4: a warning is any event or metric with level "warning"; event.urgent only says whether
+// the report text caused it. A metric at warning opens this screen even with no symptom report.
 // Order: what happened -> first procedure steps -> call the medical officer -> current numbers ->
 // urgent transmission to Earth -> acknowledge, or close as a false alarm with a required reason.
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client.js'
-import { METRICS, OVERRIDE_REASONS, metricLabel, formatMetric } from '../api/contract.js'
+import { METRICS, OVERRIDE_REASONS, metricLabel, formatMetric, isUrgentReport } from '../api/contract.js'
+import { ackWarning, warningKey } from '../warningAck.js'
 import { CURRENT_CREW } from '../session.js'
 import { useMission } from '../mission.jsx'
 import { useT } from '../i18n/index.jsx'
@@ -21,7 +24,9 @@ export default function Warning() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const { mission, refresh: refreshMission } = useMission()
-  const [event, setEvent] = useState(undefined) // undefined = loading, null = no active warning
+  // undefined = loading, null = no active warning,
+  // otherwise { event (or null for a metrics-only warning), findings, urgent, codes }
+  const [warning, setWarning] = useState(undefined)
   const [steps, setSteps] = useState(null)
   const [packet, setPacket] = useState(null)
   const [cmoCalledAt, setCmoCalledAt] = useState(null)
@@ -31,28 +36,34 @@ export default function Warning() {
 
   useEffect(() => {
     async function load() {
-      // ?event=<id> from Log/Event; otherwise the latest warning event of today
+      // ?event=<id> from Log/Event; otherwise today's latest warning event; otherwise a metric at warning
       let id = params.get('event')
+      let today = null
       if (!id) {
-        const today = await api.getToday(CURRENT_CREW, lang)
+        today = await api.getToday(CURRENT_CREW, lang)
         id = [...today.events].reverse().find((e) => e.level === 'warning')?.id
       }
-      if (!id) return setEvent(null)
-      const [ev, firstSteps, tx] = await Promise.all([
-        api.getEvent(id),
-        api.getFirstSteps(),
-        api.getTx().catch(() => []),
-      ])
-      setEvent(ev)
-      const code = ev.codes.find((c) => firstSteps[c]) ?? 'default'
-      setSteps(firstSteps[code])
-      setPacket(tx.find((p) => p.event_id === ev.id) ?? null)
+      const [firstSteps, tx] = await Promise.all([api.getFirstSteps(), api.getTx().catch(() => [])])
+      if (id) {
+        const ev = await api.getEvent(id)
+        setWarning({ event: ev, findings: ev.findings, urgent: isUrgentReport(ev), codes: ev.codes })
+        setSteps(firstSteps[ev.codes.find((c) => firstSteps[c]) ?? 'default'])
+        setPacket(tx.find((p) => p.event_id === ev.id) ?? null)
+        return
+      }
+      if (today.metrics.some((m) => m.level === 'warning')) {
+        setWarning({ event: null, findings: today.metrics, urgent: false, codes: [] })
+        setSteps(firstSteps.default)
+        setPacket(tx.find((p) => p.kind === 'daily' && p.crew === CURRENT_CREW) ?? null)
+        return
+      }
+      setWarning(null)
     }
-    load().catch(() => setEvent(null))
+    load().catch(() => setWarning(null))
   }, [params, lang])
 
-  if (event === undefined) return <div className="warning-screen"><p className="muted">{t('common.loading')}</p></div>
-  if (event === null) {
+  if (warning === undefined) return <div className="warning-screen"><p className="muted">{t('common.loading')}</p></div>
+  if (warning === null) {
     return (
       <section className="page">
         <h1>{t('page.warning')}</h1>
@@ -62,11 +73,17 @@ export default function Warning() {
     )
   }
 
-  const flagged = event.findings.filter((f) => f.level === 'caution' || f.level === 'warning')
+  const { event, findings, urgent, codes } = warning
+  const flagged = findings.filter((f) => f.level === 'caution' || f.level === 'warning')
+  const done = () => {
+    ackWarning(warningKey(CURRENT_CREW, mission?.clock.sol))
+    navigate(event ? `/events/${event.id}` : '/today')
+  }
 
   async function sendNow() {
-    const queue = packet ? await api.sendTx() : await api.queueTx(event.id).then(() => api.sendTx())
-    const p = queue.find((x) => x.event_id === event.id) ?? null
+    // an event warning sends its event summary; a metrics-only warning goes with today's summary
+    const queue = packet ? await api.sendTx() : await (event ? api.queueTx(event.id) : api.queueDaily()).then(() => api.sendTx())
+    const p = queue.find((x) => (event ? x.event_id === event.id : x.kind === 'daily' && x.crew === CURRENT_CREW)) ?? null
     setPacket(p)
     setSendNote(p?.status === 'queued' ? t('warning.tx.no_window', { time: mission?.next_window ?? '–' }) : null)
     refreshMission()
@@ -79,9 +96,11 @@ export default function Warning() {
     <div className="warning-screen" role="alertdialog" aria-labelledby="warning-title" aria-describedby="warning-report">
       <div className="warning-inner">
         <p className="warning-level">{t('warning.level_line')}</p>
-        <h1 id="warning-title">{event.codes.length ? event.codes.map((c) => t(`symptom.${c}`)).join(', ') : event.title}</h1>
-        <p id="warning-report" className="warning-report">“{event.symptom_text}”</p>
-        <p className="muted">{t('warning.by_rules')}</p>
+        <h1 id="warning-title">
+          {urgent && codes.length ? codes.map((c) => t(`symptom.${c}`)).join(', ') : urgent ? event.title : t('warning.measured_title')}
+        </h1>
+        {event && <p id="warning-report" className="warning-report">“{event.symptom_text}”</p>}
+        <p className="muted">{t(urgent ? 'warning.by_rules' : 'warning.by_readings')}</p>
 
         <section className="warning-block">
           <h2>{t('warning.first_steps')}</h2>
@@ -134,7 +153,7 @@ export default function Warning() {
         </section>
 
         <div className="warning-footer">
-          <button type="button" className="btn-primary" onClick={() => navigate(`/events/${event.id}`)}>
+          <button type="button" className="btn-primary" onClick={done}>
             {t('warning.ack')}
           </button>
           {!closing && (
@@ -146,7 +165,7 @@ export default function Warning() {
               onSubmit={(e) => {
                 e.preventDefault()
                 // TODO: POST /events/{id}/override {reason} when the backend has it
-                if (reason) navigate(`/events/${event.id}`)
+                if (reason) done()
               }}
             >
               <label htmlFor="warning-close-reason">{t('event.override_reason')}</label>
