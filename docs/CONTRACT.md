@@ -62,7 +62,7 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 - `onset`: `now | hours | today | days | unknown`
 - `worse_when`: `standing | after_meal | exercise | lying | none | unknown`
 - `severity`: 정수 1~5, `needs_question`: bool
-- **즉시 경보 코드**(규칙이 모델보다 먼저 키워드로 잡음): `chest_pain, shortness_of_breath, crisis` + 의식 변화 키워드.
+- **즉시 경보 코드**(규칙이 모델보다 먼저 키워드로 잡음): `chest_pain, shortness_of_breath, crisis` + 의식 변화 키워드. 걸리면 그 이벤트는 `urgent: true` (§5.4).
 
 **체크인 종류** `checkin.kind`: `morning | evening | weekly | monthly | quarterly`
 **판정 보류 이유** `metrics[].hold_reason`: `insufficient_baseline | missing_reading | zero_variance` (§5.3)
@@ -98,7 +98,7 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 | POST | `/crew/{id}/checkin?lang=` | `{kind, answers:{…}, free_text?}` (§5.2) | 갱신된 `/today` |
 | POST | `/crew/{id}/symptom` | `{text, lang}` | `{event_id, needs_question, question?}` |
 | POST | `/events/{id}/answer` | `{answer:"yes"\|"no"}` | 202, 이후 `GET /events/{id}/stream` (SSE, `stage`) |
-| GET | `/events/{id}` | | event 전체 (§명세 9 엔티티) |
+| GET | `/events/{id}` | | event 전체 (§명세 9 엔티티, `urgent`·`level`은 §5.4) |
 | POST | `/events/{id}/action/{i}/done` · `/share` · `/close` | | event |
 | POST | `/events/{id}/override` | `{reason, note?}` | event |
 | POST | `/crew/{id}/med/ask` | `{text, lang}` | `{table:{...}, text, cites[]}` |
@@ -171,6 +171,52 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 - `hold_reason`: `insufficient_baseline`(기준선 14일 미만) · `missing_reading`(오늘 측정값 없음) · `zero_variance`(기준선 표준편차 0). `hold`가 아니면 null. `hold`일 때 `value`·`baseline`·`sd`·`z`는 null일 수 있다.
 - 전체 판정 `status.level`도 §3의 `level` enum(`normal | advisory | caution | warning | hold`) 값 중 하나다. 지표별 `level`과 오늘 이벤트 `level` 중 가장 높은 것을 쓰며 순서는 `warning` > `caution` > `advisory`. 벗어난 지표가 없는데 `hold` 지표가 있으면 `hold`, 그 외는 `normal`.
 
+### 5.4 이벤트의 `urgent`와 `level` **[추가 11/14, 백엔드·프론트 미구현 — PR #2·#5 리뷰 결정]**
+
+```json
+{ "id": 1, "symptom_text": "가슴이 아파요", "codes": ["chest_pain"], "urgent": true,  "level": "warning" }
+{ "id": 2, "symptom_text": "머리가 아파요", "codes": [],             "urgent": false, "level": "normal" }
+```
+
+(다른 필드는 생략. `/today`의 `events[]`와 `GET /events/{id}`가 같은 모양으로 준다.)
+
+| 필드 | 형식 | 뜻 |
+|---|---|---|
+| `urgent` | bool, 항상 있음 | 이 보고 문장이 즉시 경보 규칙(§3의 즉시 경보 코드 키워드, 의식 변화 키워드)에 걸렸는지. 경보의 **원인이 보고 문장**이라는 표시다 |
+| `level` | §3의 `level` enum | **이 보고 하나**의 판정. 아래 규칙 |
+
+**이벤트 `level`은 그날 전체 상태를 물려받지 않는다.** 그 보고의 증상 코드에 건 규칙과, 그 이벤트에 같이 저장되는 `findings`(보고 시점의 지표 스냅샷)만으로 정한다. `status.level`과 그날의 다른 이벤트 `level`은 읽지 않는다.
+
+| 보고 | `urgent` | `level` |
+|---|---|---|
+| 즉시 경보 규칙에 걸림 | `true` | `warning` |
+| 그 밖 | `false` | 이 이벤트의 `findings`에 든 지표 `level`만으로 §5.3의 전체 판정 규칙을 적용한 값. 그 값이 `advisory`면 `caution` (명세 §10 "지표 1개 + 증상 보고 = 주의") |
+
+- 방향은 한쪽뿐이다. `status.level`이 이벤트 `level`을 반영하고(§5.3), 이벤트는 `status.level`을 읽지 않는다.
+
+**경보(`warning`)는 원인과 상관없이 똑같이 다룬다 (명세 §10과 같은 규칙).** 전체 화면 경보와 모델 건너뜀은 `level`이 정하고, `urgent`는 원인만 알려 준다.
+
+| 경우 | `level` | `urgent` | 전체 화면 경보 | 모델 |
+|---|---|---|---|---|
+| 보고 문장이 즉시 경보 규칙에 걸림 | `warning` | `true` | 띄운다 | 건너뛴다 |
+| 즉시 경보 증상 없이 측정값만 \|z\| ≥ 3 | `warning` | `false` | 띄운다 | 건너뛴다 |
+| 그 밖 (`warning`이 아님) | `normal`·`caution`·`hold` | `false` | 안 띄운다 | 건너뛰지 않는다 |
+
+- **백엔드**: 이벤트 `level`이 `warning`이면 `urgent` 값과 상관없이 모델 단계(`symptom`~`verify`)를 돌리지 않는다. `needs_question`은 false, `explanation`은 null, `runs`는 `[]`, `codes`에는 키워드 규칙이 잡은 코드만 남는다.
+- **프론트 — 경보 여부는 `level`로**: 전체 화면 경보(경보 화면으로 가는 버튼 포함)와 "모델을 건너뛰었다"는 안내는 그 이벤트의 `level === "warning"`으로 판단한다. 증상 보고가 없어도 `/today`의 `metrics[]`에 `warning` 지표가 있으면 전체 화면 경보를 띄운다.
+- **프론트 — 원인 문구는 `urgent`로**: `true`면 "긴급 증상 보고", "보고 내용으로 규칙이 경보를 올렸다"는 문구를 쓴다. `false`인 경보는 측정값이 기준에서 크게 벗어났다는 문구와 그 수치를 보여 준다. `codes`로 원인을 판단하지 않는다(의식 변화 규칙은 `codes: []`로 온다).
+- `title`의 "긴급 증상 보고 / Urgent symptom report"도 `level`이 아니라 `urgent`로 고른다.
+
+근거 — main `bb9b6b9`, 새 DB, `c2`(지표 6개 모두 `normal`)에서 재현:
+
+| 보고 | 지금 `level` | `codes` | 지금 `title` | §5.4대로 하면 |
+|---|---|---|---|---|
+| ① `가슴이 아파요` | `warning` | `["chest_pain"]` | 긴급 증상 보고 | `urgent: true`, `warning` |
+| ② ① 뒤에 `머리가 아파요` | **`warning`** | `[]` | **긴급 증상 보고** | `urgent: false`, `normal` |
+| ③ `동료가 의식이 없어요` (단독) | `warning` | `[]` | 긴급 증상 보고 | `urgent: true`, `warning` |
+
+②는 ① 때문에 그날 상태가 `warning`이 된 것을 물려받았다(두통만 보고하면 `normal`). ②와 ③은 `level`과 `codes`가 같아서 지금 응답으로는 구분할 수 없다.
+
 ## 6. 작업 분담과 넘겨주는 것 (초안, 팀 미팅에서 확정)
 
 | 담당 | 산출물 | 남에게 주는 것 |
@@ -182,6 +228,7 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 
 ## 7. 아직 안 정한 것 (답이 나오면 여기 고침)
 
+- 증상 보고 없이 측정값만 `warning`이 된 경우, 경보 확인·오경보 종결을 붙일 이벤트를 규칙이 만들지 (지금 백엔드는 증상 보고로만 이벤트를 만든다, §5.4).
 - 행사 전 만든 학습셋·어댑터 사용 가능 여부 (팀 미팅/Connect에서 질문; 안 되면 행사 중 재학습 ~45분).
 - `conditions` 최종 목록과 코퍼스 출처 표기.
 - 승무원 이름·역할 4명(`c1`~`c4`), CMO 지정.
