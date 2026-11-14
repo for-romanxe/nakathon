@@ -6,13 +6,23 @@ import { api, USE_FIXTURES } from '../api/client.js'
 import { useMission } from '../mission.jsx'
 import { useT } from '../i18n/index.jsx'
 
-// Scenes from the demo script. Each returns the body for POST /demo/clock, given the current mission state.
+const HHMM = /^(?:[01]\d|2[0-3]):[0-5]\d$/
+
+// GET /mission -> { clock: { sol, time }, next_window, ... } (CONTRACT §5). Anything else is not used.
+function validMission(m) {
+  return Number.isInteger(m?.clock?.sol) && HHMM.test(m?.clock?.time ?? '')
+}
+const hasWindow = (m) => HHMM.test(m?.next_window ?? '')
+
+// Scenes from the demo script. Each returns the body for POST /demo/clock, given a valid mission state,
+// or null when the scene cannot be built from it (no comm window in the response).
 const SCENES = [
   { key: 'morning', body: ({ clock }) => ({ sol: clock.sol, time: '06:10' }) }, // S1 wake-up, band synced
   { key: 'recheck', body: ({ clock }) => ({ sol: clock.sol, time: '14:00' }) }, // S4 afternoon re-check
   { // S7 / S14: next comm window (tomorrow's first one if today's have passed)
     key: 'window',
-    body: ({ clock, next_window }) => ({ sol: clock.sol + (next_window <= clock.time ? 1 : 0), time: next_window }),
+    needsWindow: true,
+    body: (m) => (hasWindow(m) ? { sol: m.clock.sol + (m.next_window <= m.clock.time ? 1 : 0), time: m.next_window } : null),
   },
   { key: 'hour', body: () => ({ advance: '1h' }) },
   { key: 'next_sol', body: ({ clock }) => ({ sol: clock.sol + 1, time: '06:10' }) }, // a second day in a row
@@ -29,7 +39,10 @@ export default function DemoClock() {
     setError(null)
     try {
       const now = await api.getMission() // the shared state can be up to 15 s old
-      await api.setDemoClock(scene.body(now))
+      if (!validMission(now)) { setError('demo.clock.bad_mission'); return }
+      const body = scene.body(now)
+      if (!body) { setError('demo.clock.no_window'); return }
+      await api.setDemoClock(body)
       refresh()
     } catch (e) {
       // with sign-in on, only the medical officer may move the clock (403)
@@ -44,12 +57,13 @@ export default function DemoClock() {
       <div className="panel-head">
         <h2>{t('demo.clock.title')}</h2>
         <span className="muted num small">
-          {mission ? t('demo.clock.now', { sol: mission.clock.sol, time: mission.clock.time }) : '–'}
+          {validMission(mission) ? t('demo.clock.now', { sol: mission.clock.sol, time: mission.clock.time }) : '–'}
         </span>
       </div>
       <div className="demo-clock">
         {SCENES.map((s) => (
-          <button key={s.key} type="button" className="btn-secondary" disabled={busy || USE_FIXTURES} onClick={() => go(s)}>
+          <button key={s.key} type="button" className="btn-secondary" onClick={() => go(s)}
+            disabled={busy || USE_FIXTURES || (s.needsWindow && mission != null && !hasWindow(mission))}>
             <span>{t(`demo.clock.${s.key}`)}</span>
             <span className="muted small">{t(`demo.clock.${s.key}_hint`)}</span>
           </button>
