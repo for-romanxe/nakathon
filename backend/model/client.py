@@ -55,13 +55,15 @@ def _first_json_object(text: str) -> dict:
     raise ModelOutputError("no JSON object in model output")
 
 
-def _chat(system: str, user: str, max_tokens=160) -> dict:
-    """live 모드: OpenAI 호환 서버를 호출하고 답의 첫 JSON 객체를 돌려준다."""
+def _chat(system: str, user: str, max_tokens=160, shots=()) -> dict:
+    """live 모드: OpenAI 호환 서버를 호출하고 답의 첫 JSON 객체를 돌려준다. shots 는 앞에 붙일 예시 대화 (질문, 답) 쌍."""
     root = os.environ.get("MODEL_URL", "http://127.0.0.1:8080").rstrip("/").removesuffix("/v1")
     url = root + "/v1/chat/completions"
     # "default_model" 은 mlx_lm.server 가 '서버를 띄울 때 준 모델(+어댑터)'로 읽는 이름이다.
     body = {"model": os.environ.get("MODEL_NAME", "default_model"), "temperature": 0, "max_tokens": max_tokens,
-            "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]}
+            "messages": [{"role": "system", "content": system},
+                         *({"role": role, "content": text} for pair in shots for role, text in zip(("user", "assistant"), pair)),
+                         {"role": "user", "content": user}]}
     req = urllib.request.Request(url, json.dumps(body).encode(), {"Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=float(os.environ.get("MODEL_TIMEOUT", "60"))) as r:
@@ -206,6 +208,18 @@ def _retry_note(rejected: dict) -> str:
     return "\nYour previous answer was rejected by the checker. Fix this in the new answer: " + "; ".join(parts) + "."
 
 
+def _explain_prompt() -> dict:
+    return json.loads((pathlib.Path(__file__).resolve().parent / "explain_prompt.json").read_text(encoding="utf-8"))
+
+
+def _explain_request(level, findings, candidates, texts) -> str:
+    """설명 요청 한 건의 본문. 실제 요청과 예시가 같은 모양이 되도록 한 곳에서 만든다. 문단은 번호로 보여 준다."""
+    conds = _conditions()
+    paras = "\n".join(f"[{n}] {text}" for n, text in enumerate(texts, 1))
+    return (f"level: {level}\nfindings: {json.dumps(findings, ensure_ascii=False)}\n"
+            f"candidates: {json.dumps({c: conds[c] for c in candidates}, ensure_ascii=False)}\nparagraphs:\n{paras}")
+
+
 def explain(level: str, findings: list, condition_candidates: list, paragraphs: list, lang: str, rejected=None) -> dict:
     """③ 규칙 판정 + findings + 검색 문단 → Explanation (category, condition_id, lines[≤3], cites[]).
     숫자 문장은 템플릿이 쓴다. 모델은 '왜·무엇을 조심' 1~2문장만. 반드시 verify.verify() 를 거친다.
@@ -219,19 +233,13 @@ def explain(level: str, findings: list, condition_candidates: list, paragraphs: 
         _delay()
         out = _mock_explanation(list(condition_candidates), paragraphs, lang)
         return _among_candidates(_validated(out, "explanation"), condition_candidates)
-    cand = {c: conds[c] for c in condition_candidates}
-    paras = "\n".join(f"[{n}] {p['text']}" for n, p in enumerate(paragraphs, 1))
-    system = ("You write a short risk note for an astronaut. The rule engine already decided the level; never raise or lower it. "
-              "Answer with JSON only: {\"category\": \"...\", \"condition_id\": \"one of the candidate keys\", "
-              "\"lines\": [\"sentence\", \"sentence\"], \"cites\": [numbers of the paragraphs you used]}. "
-              "lines is an array of 1-2 short sentences (why this matters, what to watch). "
-              "Use only candidate conditions and only the given paragraphs. Do not state numbers. "
-              "Say 'possible' / '가능성', never 'certain' or 'diagnosis'. "
-              f"Write in {'Korean' if lang == 'ko' else 'English'}.")
-    user = f"level: {level}\nfindings: {json.dumps(findings, ensure_ascii=False)}\ncandidates: {json.dumps(cand, ensure_ascii=False)}\nparagraphs:\n{paras}"
+    prompt = _explain_prompt()["ko" if lang == "ko" else "en"]      # 지시문과 예시는 출력 언어로 쓴 것을 쓴다
+    shots = [(_explain_request(s["level"], s["findings"], s["candidates"], s["paragraphs"]), json.dumps(s["answer"], ensure_ascii=False))
+             for s in prompt["shots"]]
+    user = _explain_request(level, findings, condition_candidates, [p["text"] for p in paragraphs])
     if rejected:
         user += _retry_note(rejected)
-    out = _chat(system, user, 220)
+    out = _chat(prompt["system"], user, 220, shots)
     if isinstance(out.get("cites"), list):   # 모델은 문단 번호만 쓴다. id 는 코드가 붙인다(잘못된 id 를 쓸 수 없게).
         out["cites"] = [_cite_id(c, paragraphs) for c in out["cites"]]
     return _among_candidates(_validated(out, "explanation"), condition_candidates)

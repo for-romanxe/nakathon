@@ -97,7 +97,7 @@ class LiveModel(unittest.TestCase):
                 Stub.seen = []
                 Stub.reply = completion(json.dumps({**reply, "cites": cites}))
                 self.assertEqual(client.explain("caution", [], ["dehydration"], paras, "en")["cites"], want)
-                user = Stub.seen[0][1]["messages"][1]["content"]
+                user = Stub.seen[0][1]["messages"][-1]["content"]
                 self.assertIn("[1] Stand up slowly.", user)
                 self.assertNotIn("eval:fluids#p1", user)
         # "²", "①" 은 isdigit() 은 참이지만 int() 로 못 바꾼다. 그때도 ValueError 가 아니라 ModelOutputError 여야 한다.
@@ -114,11 +114,44 @@ class LiveModel(unittest.TestCase):
         paras = [{"id": "eval:sleep#p1", "text": "Sleep."}]
         client.explain("advisory", [], ["sleep_deficit"], paras, "en")
         client.explain("advisory", [], ["sleep_deficit"], paras, "en", rejected={"numbers": ["12"], "wording": ["입니다", "수면 부족"]})
-        first, retry = (seen[1]["messages"][1]["content"] for seen in Stub.seen)
+        first, retry = (seen[1]["messages"][-1]["content"] for seen in Stub.seen)
         self.assertNotIn("rejected", first)
         self.assertTrue(retry.startswith(first))
         self.assertIn("write no digits at all (you wrote: 12)", retry)
         self.assertIn("(you wrote: 입니다, 수면 부족)", retry)
+
+    def test_explain_prompt_is_written_in_the_output_language_with_two_examples(self):
+        # 연습 12문항에서 한국어 지시문 + 예시 2개가 첫 통과 7/7·해요체 7/7 로 가장 좋았다 (ml/eval/README.md).
+        Stub.reply = completion(json.dumps({"category": "sleep", "condition_id": "sleep_deficit", "lines": ["잠이 부족할 수 있어요."], "cites": [1]}))
+        paras = [{"id": "eval:sleep#p1", "text": "Sleep."}]
+        for lang, in_system, in_example in (("ko", "한국어로 쓰세요", "좋아요"), ("en", "Write in English", "may")):
+            with self.subTest(lang=lang):
+                Stub.seen = []
+                client.explain("advisory", [], ["sleep_deficit"], paras, lang, rejected={"numbers": ["12"]})
+                messages = Stub.seen[0][1]["messages"]
+                self.assertEqual([m["role"] for m in messages], ["system", "user", "assistant", "user", "assistant", "user"])
+                self.assertIn(in_system, messages[0]["content"])
+                self.assertIn('"lines": [', messages[0]["content"])
+                for asked, answered in ((messages[1], messages[2]), (messages[3], messages[4])):
+                    self.assertIn("paragraphs:\n[1] ", asked["content"])           # 예시 요청은 실제 요청과 같은 모양
+                    self.assertNotIn("rejected", asked["content"])                  # 고칠 점은 실제 요청에만 붙는다
+                    self.assertIn(in_example, " ".join(json.loads(answered["content"])["lines"]))
+                self.assertIn("you wrote: 12", messages[5]["content"])
+
+    def test_the_examples_shown_to_the_model_pass_the_verifier_themselves(self):
+        # 예시가 검증기에 걸리는 문장이면 모델에게 걸리는 문장을 가르치는 셈이다.
+        from backend import verify
+        for lang, profile in client._explain_prompt().items():
+            if lang.startswith("_"):
+                continue
+            for n, shot in enumerate(profile["shots"]):
+                with self.subTest(lang=lang, shot=n):
+                    ids = [f"eval:shot#p{i}" for i in range(1, len(shot["paragraphs"]) + 1)]
+                    answer = dict(shot["answer"], cites=[ids[c - 1] for c in shot["answer"]["cites"]])
+                    result = verify.verify(answer, shot["findings"], shot["level"], ids, lang, candidates=shot["candidates"])
+                    self.assertEqual(result["fails"], [], result["note"])
+                    if lang == "ko":
+                        self.assertTrue(all(line.rstrip(".").endswith("요") for line in answer["lines"]), answer["lines"])
 
     def test_category_follows_the_condition_not_the_model(self):
         # 실제 모델이 category 에 "advisory"(판정 단계)나 상태 이름을 써 넣었다(10문항 중 4개). 범주는 상태 목록이 정한다.
