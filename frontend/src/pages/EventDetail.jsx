@@ -105,7 +105,7 @@ function Guidance({ event }) {
     body = (
       <div className="notice lv-warning">
         <p>{t(isUrgentReport(event) ? 'event.urgent_skip' : 'event.measured_skip')}</p>
-        <Link className="btn-primary" to="/warning">{t('log.open_warning')}</Link>
+        <Link className="btn-primary" to={`/warning?event=${event.id}`}>{t('log.open_warning')}</Link>
       </div>
     )
   } else if (withheld) {

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client.js'
 import CheckinSheet from '../components/CheckinSheet.jsx'
 import { useMission } from '../mission.jsx'
+import { isWarningAcked, warningKey } from '../warningAck.js'
 import { METRICS, metricLabel, formatMetric } from '../api/contract.js'
 import { CURRENT_CREW } from '../session.js'
 import { useT } from '../i18n/index.jsx'
@@ -43,6 +44,13 @@ export default function Today() {
       .then(setData)
       .catch(setError)
   }, [lang, sol])
+
+  // CONTRACT §5.4: a metric at warning opens the full-screen warning even without a symptom report
+  useEffect(() => {
+    if (sol == null || !data) return
+    const hit = data.metrics.some((m) => m.level === 'warning')
+    if (hit && !isWarningAcked(warningKey(CURRENT_CREW, sol))) navigate('/warning')
+  }, [data, sol, navigate])
 
   function closeSheet(closed) {
     sheetDismissedFor = closed ? sheetKey : null

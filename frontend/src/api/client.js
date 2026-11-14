@@ -3,6 +3,8 @@
 // API fields are snake_case and are used as-is (CONTRACT §0-4).
 import todayFixture from './fixtures/today.json'
 import crewFixture from './fixtures/crew.json'
+import firstStepsFixture from './fixtures/first_steps.json'
+import txFixture from './fixtures/tx.json'
 import missionFixture from './fixtures/mission.json'
 import eventCautionFixture from './fixtures/event_caution.json'
 import eventWarningFixture from './fixtures/event_warning.json'
@@ -86,7 +88,7 @@ export const api = {
   getToday: (crewId, lang) =>
     request(`/crew/${crewId}/today?lang=${lang}`, () => ({
       ...todayFixture,
-      events: [...todayFixture.events, ...Object.values(fixtureEvents)], // fixture-only reports from this session
+      events: [...todayFixture.events, ...Object.values(fixtureEvents)].sort((a, b) => b.id - a.id),
     })),
   // POST /crew/{id}/checkin {kind, answers, free_text?} -> updated /today (CONTRACT §5)
   // answers (agreed with backend): { sleep_quality, mood, fatigue: 1-5 ints, symptoms?: "none"|"yes" }
@@ -120,6 +122,16 @@ export const api = {
     request(`/events/${id}/override`, () => (fixtureEvents[id] = {
       ...fixtureEvent(id), status: 'closed', closed_reason: reason, override: { reason },
     }), { method: 'POST', body: JSON.stringify({ reason }) }),
+  // GET /tx -> transmission packets to Earth, warning first (seq, event_id, priority, status, attempts, ...)
+  getTx: () => request('/tx', txFixture),
+  // POST /tx {event_id} -> queues an event summary for Earth (warning events are queued by the backend already)
+  queueTx: (eventId) => request('/tx', txFixture, { method: 'POST', body: JSON.stringify({ event_id: eventId }) }),
+  // POST /tx {daily:true} -> queues today's summary for every crew member (used for a metrics-only warning)
+  queueDaily: () => request('/tx', txFixture, { method: 'POST', body: JSON.stringify({ daily: true }) }),
+  // POST /tx/send -> sends queued packets if a comm window is open now; returns the queue
+  sendTx: () => request('/tx/send', txFixture, { method: 'POST' }),
+  // First steps of the emergency procedure per warning code. No /docs endpoint yet: placeholder fixture only
+  getFirstSteps: () => Promise.resolve(firstStepsFixture),
   // GET /crew -> [{ id: "c1", name: "C1", ... }] — display names come from here
   getCrew: () => request('/crew', crewFixture),
   // GET /mission -> { clock:{sol,time}, environment, one_way_delay_min, next_window }
