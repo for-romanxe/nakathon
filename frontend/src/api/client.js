@@ -36,6 +36,10 @@ function fixtureSymptom({ text }) {
     : { event_id: id, needs_question: true, question: 'Is it worse when you stand up?' }
 }
 
+function fixtureEvent(id) {
+  return fixtureEvents[id] ?? { ...eventCautionFixture, id: Number(id) }
+}
+
 export class ApiError extends Error {
   constructor(code, message) {
     super(message)
@@ -91,7 +95,17 @@ export const api = {
       }),
   // GET /events/{id} -> event (spec §9: findings, codes, risk, explanation, runs, verified, ...)
   getEvent: (eventId) =>
-    request(`/events/${eventId}`, () => fixtureEvents[eventId] ?? { ...eventCautionFixture, id: Number(eventId) }),
+    request(`/events/${eventId}`, () => fixtureEvent(eventId)),
+  shareEvent: (id) =>
+    request(`/events/${id}/share`, () => (fixtureEvents[id] = { ...fixtureEvent(id), shared: true }), { method: 'POST' }),
+  closeEvent: (id) =>
+    request(`/events/${id}/close`, () => (fixtureEvents[id] = {
+      ...fixtureEvent(id), status: 'closed', closed_reason: 'resolved',
+    }), { method: 'POST' }),
+  overrideEvent: (id, reason) =>
+    request(`/events/${id}/override`, () => (fixtureEvents[id] = {
+      ...fixtureEvent(id), status: 'closed', closed_reason: reason, override: { reason },
+    }), { method: 'POST', body: JSON.stringify({ reason }) }),
   // GET /crew -> [{ id: "c1", name: "C1", ... }] — display names come from here
   getCrew: () => request('/crew', crewFixture),
   // GET /mission -> { clock:{sol,time}, environment, one_way_delay_min, next_window }

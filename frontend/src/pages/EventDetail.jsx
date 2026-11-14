@@ -17,6 +17,10 @@ function formatZ(z) {
 
 export default function EventDetail() {
   const { id } = useParams()
+  return <EventDetails key={id} id={id} />
+}
+
+function EventDetails({ id }) {
   const { t } = useT()
   const [event, setEvent] = useState(null)
   const [error, setError] = useState(false)
@@ -41,7 +45,7 @@ export default function EventDetail() {
       <Facts event={event} />
       <Guidance event={event} />
       <Verification event={event} />
-      <Response event={event} />
+      <Response event={event} onSave={setEvent} />
     </section>
   )
 }
@@ -91,7 +95,7 @@ function Guidance({ event }) {
   const { t, lang } = useT()
   const runs = event.runs ?? []
   const passed = runs.some((r) => r.ok)
-  const withheld = runs.length >= 2 && !passed // verification failed twice -> judgement withheld
+  const withheld = event.stage === 'hold' || (runs.length >= 2 && !passed)
   const ex = event.explanation
 
   let body
@@ -197,37 +201,56 @@ function Verification({ event }) {
 }
 
 // Share with the medical officer, or dismiss with a required reason (logged and visible to the CMO)
-function Response({ event }) {
+function Response({ event, onSave }) {
   const { t } = useT()
-  const [shared, setShared] = useState(event.shared)
   const [overriding, setOverriding] = useState(false)
   const [reason, setReason] = useState('')
-  const [overridden, setOverridden] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(false)
+  const closed = event.status === 'closed'
+  const overrideReason = event.override?.reason
+
+  async function save(operation) {
+    setSaving(true)
+    setError(false)
+    try {
+      onSave(await operation())
+      setOverriding(false)
+    } catch {
+      setError(true)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <section className="panel">
       <div className="panel-head"><h2>{t('event.response')}</h2></div>
       <div className="response">
-        {/* TODO: POST /events/{id}/share and /override when the backend has them; local only for now */}
-        <button type="button" className="btn-secondary" disabled={shared} onClick={() => setShared(true)}>
-          {shared ? `✔ ${t('event.shared')}` : t('event.share')}
+        <button type="button" className="btn-secondary" disabled={event.shared || saving} onClick={() => save(() => api.shareEvent(event.id))}>
+          {event.shared ? `✔ ${t('event.shared')}` : t('event.share')}
         </button>
-        {!overridden && !overriding && (
-          <button type="button" className="btn-ghost" onClick={() => setOverriding(true)}>{t('event.override')}</button>
+        {!closed && !overriding && (
+          <>
+            {event.level !== 'warning' && (
+              <button type="button" className="btn-ghost" disabled={saving} onClick={() => save(() => api.closeEvent(event.id))}>{t('event.close')}</button>
+            )}
+            <button type="button" className="btn-ghost" disabled={saving} onClick={() => setOverriding(true)}>{t('event.override')}</button>
+          </>
         )}
-        {overriding && (
-          <form className="override" onSubmit={(e) => { e.preventDefault(); if (reason) { setOverridden(reason); setOverriding(false) } }}>
+        {!closed && overriding && (
+          <form className="override" onSubmit={(e) => { e.preventDefault(); if (reason && !saving) save(() => api.overrideEvent(event.id, reason)) }}>
             <label htmlFor="override-reason">{t('event.override_reason')}</label>
-            <select id="override-reason" value={reason} onChange={(e) => setReason(e.target.value)} required>
+            <select id="override-reason" value={reason} disabled={saving} onChange={(e) => setReason(e.target.value)} required>
               <option value="">{t('event.override_pick')}</option>
               {OVERRIDE_REASONS.map((r) => <option key={r} value={r}>{t(`override.${r}`)}</option>)}
             </select>
-            <button type="submit" className="btn-secondary" disabled={!reason}>{t('event.override_confirm')}</button>
-            <button type="button" className="btn-ghost" onClick={() => setOverriding(false)}>{t('common.cancel')}</button>
+            <button type="submit" className="btn-secondary" disabled={!reason || saving}>{t('event.override_confirm')}</button>
+            <button type="button" className="btn-ghost" disabled={saving} onClick={() => setOverriding(false)}>{t('common.cancel')}</button>
           </form>
         )}
-        {overridden && <p className="muted">{t('event.overridden', { reason: t(`override.${overridden}`) })}</p>}
-        {(shared || overridden) && <p className="muted small">{t('event.local_only')}</p>}
+        {closed && <p className="muted">{overrideReason ? t('event.overridden', { reason: t(`override.${overrideReason}`) }) : t('event.closed')}</p>}
+        {error && <p className="error" role="alert">{t('event.save_failed')}</p>}
       </div>
     </section>
   )

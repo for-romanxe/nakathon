@@ -176,7 +176,7 @@ function ResultCard({ event }) {
     ? t(isUrgentReport(event) ? 'log.result.urgent' : 'log.result.measured')
     : runs.some((r) => r.ok)
       ? t('log.result.normal')
-      : runs.length >= 2
+      : event.stage === 'hold' || runs.length >= 2
         ? t('event.withheld')
         : t('log.result.pending')
   return (
