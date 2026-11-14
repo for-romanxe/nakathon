@@ -1,6 +1,6 @@
-# backend
+# backend — AI 담당 구성요소 (모델 클라이언트·검증기)
 
-FastAPI + SQLite (백엔드 담당). 지금 들어 있는 것은 AI 담당 몫만:
+백엔드 API 안내는 `backend/README.md`(백엔드 담당). 이 문서는 AI 담당 몫만 다룬다:
 
 - `contracts.py` — `contracts/*.json` 로더 + 최소 스키마 검사
 - `model/client.py` — 모델 호출 3함수 `extract_symptoms / score_mood / explain`. `MODEL=mock`(기본) 또는 `MODEL=live`
