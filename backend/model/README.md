@@ -25,8 +25,8 @@ MODEL=live python3 -c "from backend.model import client; print(client.extract_sy
 
 어댑터 `ml/adapters/gemma-12b-v2`(42MB)는 2026-11-14에 쓰기로 정했고 저장소에는 없다. 근거와 측정값은 `ml/eval/v2/README.md`에 있다. 파일이 없으면 둘 중 하나로 한다.
 - `--adapter-path adapters/gemma-12b-v2`를 빼고 띄운다. 코드는 그대로 동작한다. 그때의 측정값은 `ml/eval/v2/README.md`의 "규칙 지시문" 열이다.
-- 직접 학습한다: `python3 ml/data/build_v2.py` 뒤에 `(cd ml && .venv/bin/python train_v2.py -c train_v2.yaml)`. 모델 서버를 먼저 내린다. M5 Pro 24GB에서 약 80분 걸렸다. 다시 학습한 결과가 같은 값을 내는지는 확인하지 않았다.
+- 직접 학습한다: 학습셋을 만든 커밋(`1cde53e`)에서 `python3 ml/data/build_v2.py`로 학습셋을 만든 뒤 `(cd ml && .venv/bin/python train_v2.py -c train_v2.yaml)`. 모델 서버를 먼저 내린다. M5 Pro 24GB에서 약 80분 걸렸다. 다시 학습한 결과가 같은 값을 내는지는 확인하지 않았다.
 
-어댑터는 지금 코드의 지시문(`client.py`)으로 학습했다. 지시문을 바꾸면 어댑터와 어긋날 수 있으니 `ml/eval/run_eval2.py`로 다시 잰다.
+어댑터는 부위(`locations`) 문단을 넣기 전의 지시문으로 학습했다. 부위 문단을 넣은 지금 지시문으로는 다시 재서 확인했다(`ml/eval/v2/README.md`). 지금 코드로 학습셋을 다시 만들면 지시문은 부위를 묻는데 정답에는 부위가 없어서 `train_v2.py`가 멈춘다. 지시문을 더 바꾸면 `ml/eval/run_eval2.py`로 다시 잰다.
 
 모델 파일은 Hugging Face `mlx-community/gemma-4-12B-it-qat-OptiQ-4bit`(디스크 8.4GB)를 `ml/models/` 아래에 받는다. 서버 프로세스는 M5 Pro 24GB에서 메모리 약 12GB(최대 13GB)를 썼다(2026-11-14 측정). 모델을 고른 근거는 `ml/eval/README.md`.
