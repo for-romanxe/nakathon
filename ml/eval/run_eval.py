@@ -97,6 +97,7 @@ def run(repeat):
     for it in Q["mood"]:
         for n in range(1, repeat + 1):
             out, err, sec = call(client.score_mood, it["text"], it["lang"])
+            # out 은 score_mood 의 스키마 검사를 통과한 값이라 mood·fatigue·stress 가 모두 정수로 들어 있다. 아니면 None 이다.
             off = [k for k, (lo, hi) in it["range"].items() if out is None or not lo <= out[k] <= hi]
             rows.append({"section": "mood", "id": it["id"], "by": "model", "run": n, "out": out, "error": err,
                          "sec": round(sec, 2), "ok": not off, "out_of_range": off})
@@ -166,9 +167,12 @@ if __name__ == "__main__":
         ap.error("--repeat must be 1 or more")
     if a.label and not re.fullmatch(r"[A-Za-z0-9._+-]+", a.label):     # 결과 파일 이름이 된다. 경로 글자는 받지 않는다
         ap.error("--label may only contain letters, digits and . _ + -")
-    problems = check_set()
-    print("\n".join(problems) or "question set ok: 12 symptom / 8 mood / 10 explain, no sentence found in the training data")
-    if a.check or [p for p in problems if "overlap not checked" not in p]:
+    found = check_set()
+    skipped = [p for p in found if p.startswith("overlap not checked")]      # 학습 파일이 없는 기기: 실패가 아니라 알림
+    problems = [p for p in found if p not in skipped]
+    print("\n".join(problems) or "question set ok: 12 symptom / 8 mood / 10 explain, "
+          + (skipped[0] if skipped else "no sentence found in the training data"))
+    if a.check or problems:
         sys.exit(1 if problems else 0)
     if not a.label:
         ap.error("--label is required to run the evaluation")
