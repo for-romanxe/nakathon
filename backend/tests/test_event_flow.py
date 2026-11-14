@@ -50,6 +50,7 @@ class EventFlowTest(TestCase):
             outputs = [
                 dict(base, locations=["left_leg", "left_leg", "unknown", {}, "unsupported", "right_arm"]),
                 dict(base, locations={"left_leg": True}),
+                dict(base, locations=[]),
             ]
             with patch.object(model, "_chat", side_effect=outputs):
                 ids = [
@@ -60,7 +61,7 @@ class EventFlowTest(TestCase):
         with TestClient(create_app(self.db), headers=headers) as api:
             today = api.get("/crew/c2/today").raise_for_status().json()
             by_id = {event["id"]: event for event in today["events"]}
-            for event_id, expected in zip(ids, (["left_leg", "right_arm"], ["unknown"])):
+            for event_id, expected in zip(ids, (["left_leg", "right_arm"], ["unknown"], [])):
                 event = api.get(f"/events/{event_id}").raise_for_status().json()
                 self.assertEqual(event["locations"], expected)
                 self.assertEqual(by_id[event_id]["locations"], expected)

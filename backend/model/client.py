@@ -169,7 +169,7 @@ def extract_symptoms(text: str, lang: str, recent_summary: str = "") -> dict:
         locations = dict.fromkeys(
             location for location in raw if isinstance(location, str) and location in allowed and location != "unknown"
         ) if isinstance(raw, list) else {}
-        out["locations"] = list(locations) or ["unknown"]
+        out["locations"] = [] if raw == [] else list(locations) or ["unknown"]
     return _validated(out, "symptom")
 
 
