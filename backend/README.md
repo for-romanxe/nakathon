@@ -150,6 +150,8 @@ identity system.
 
 - `GET /crew/{id}/medication-intakes` returns up to 50 recent entries in
   `entries`, newest first, with `id`, `name`, `amount`, `ts`, and `mission_day`.
+  Entries with the same mission timestamp are ordered by descending record ID.
+  Preserve record IDs when copying intake history to retain that order.
   The owner can read their records. The medical officer can read them when
   the owner has enabled medical officer access.
 - `POST /crew/{id}/medication-intakes` accepts a UUID `request_id`, `name`, and

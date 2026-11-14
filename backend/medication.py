@@ -47,6 +47,7 @@ class MedicationIntake(BaseModel):
 
 
 def read_intakes(connection: sqlite3.Connection, crew_id: str) -> list[dict]:
+    # The append-only SQLite primary key preserves creation order within a mission timestamp.
     rows = connection.execute(
         """SELECT id, name, amount, ts, mission_day FROM medication_intake
            WHERE crew_id = ? ORDER BY ts DESC, id DESC LIMIT 50""",

@@ -254,11 +254,15 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
     @app.get("/crew/{crew_id}/medication-intakes")
     def get_medication_intakes(crew_id: str, member=Depends(viewer)):
         crew_id = crew_id.lower()
-        with closing(connect(db_path)) as connection, connection:
+        with closing(connect(db_path)) as connection:
+            # Read consent and intake history from the same snapshot.
             connection.execute("BEGIN")
-            if not can_read_crew(connection, crew_id, member):
-                return crew_not_found()
-            return {"entries": read_intakes(connection, crew_id)}
+            try:
+                if not can_read_crew(connection, crew_id, member):
+                    return crew_not_found()
+                return {"entries": read_intakes(connection, crew_id)}
+            finally:
+                connection.rollback()
 
     @app.post("/crew/{crew_id}/medication-intakes")
     def post_medication_intake(crew_id: str, entry: MedicationIntake, member=Depends(viewer)):

@@ -35,6 +35,43 @@ class MedicationIntakeTest(TestCase):
                 with TestClient(create_app(path)):
                     pass
 
+    def test_history_keeps_latest_fifty_at_same_mission_time_after_backup(self):
+        root = Path(self.enterContext(TemporaryDirectory()))
+        path = root / "crew.sqlite3"
+        restored = root / "restored.sqlite3"
+        url = "/crew/c1/medication-intakes"
+        with TestClient(create_app(path)) as api:
+            entries = [
+                api.post(url, json={
+                    "request_id": str(uuid4()), "name": f"Test item {index}", "amount": "1 test unit",
+                }).raise_for_status().json()
+                for index in range(51)
+            ]
+            self.assertEqual(len({entry["ts"] for entry in entries}), 1)
+        with closing(connect(path)) as source, closing(connect(restored)) as target:
+            source.backup(target)
+        with TestClient(create_app(restored)) as api:
+            history = api.get(url).raise_for_status().json()["entries"]
+        self.assertEqual(history, entries[:0:-1])
+
+    def test_history_ends_read_transaction_with_rollback(self):
+        path = Path(self.enterContext(TemporaryDirectory())) / "crew.sqlite3"
+        statements = []
+
+        def traced_connect(db_path):
+            connection = connect(db_path)
+            connection.set_trace_callback(statements.append)
+            return connection
+
+        with TestClient(create_app(path)) as api, patch("backend.main.connect", side_effect=traced_connect):
+            for crew, viewer, status in (("c1", "c1", 200), ("c1", "c3", 403), ("unknown", "c1", 404)):
+                with self.subTest(status=status):
+                    statements.clear()
+                    response = api.get(f"/crew/{crew}/medication-intakes", headers={"X-Demo-Viewer": viewer})
+                    self.assertEqual(response.status_code, status)
+                    transactions = [sql for sql in statements if sql in ("BEGIN", "COMMIT", "ROLLBACK")]
+                    self.assertEqual(transactions, ["BEGIN", "ROLLBACK"])
+
     def test_records_survive_upgrade_and_retry_and_respect_crew_permissions(self):
         path = Path(self.enterContext(TemporaryDirectory())) / "crew.sqlite3"
         initialize(path)
@@ -48,6 +85,7 @@ class MedicationIntakeTest(TestCase):
         entry = {"request_id": str(uuid4()), "name": " Test item ", "amount": " 1 test unit "}
         with TestClient(create_app(path)) as api:
             self.assertEqual(api.get(url).json(), {"entries": []})
+            self.assertEqual(api.get("/crew/unknown/medication-intakes").status_code, 404)
             self.assertEqual(api.post(url, json={**entry, "amount": "  "}).status_code, 422)
             self.assertEqual(api.post(url, json={**entry, "request_id": "bad-id"}).status_code, 422)
             self.assertEqual(api.post(url, headers=cmo, json=entry).status_code, 403)
