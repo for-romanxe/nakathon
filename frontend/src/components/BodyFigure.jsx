@@ -64,6 +64,25 @@ function regionAt(nx, ny) {
   return best
 }
 
+// Screen point -> figure (viewBox) point. Uses the SVG's own point API (no DOMPoint needed); if that is
+// missing, falls back to the bounding box with the default "xMidYMid meet" scaling of the viewBox.
+function toFigure(svg, clientX, clientY) {
+  if (!svg) return null
+  const ctm = svg.getScreenCTM?.()
+  if (ctm && svg.createSVGPoint) {
+    const p = svg.createSVGPoint()
+    p.x = clientX
+    p.y = clientY
+    return p.matrixTransform(ctm.inverse())
+  }
+  const box = svg.getBoundingClientRect()
+  const scale = Math.min(box.width / W, box.height / H)
+  if (!scale) return null
+  const offX = (box.width - W * scale) / 2
+  const offY = (box.height - H * scale) / 2
+  return { x: (clientX - box.left - offX) / scale, y: (clientY - box.top - offY) / scale }
+}
+
 let cellCache = null
 // Cells are the same for every render; keep a good result, but never keep an empty one (try again next time)
 function getCells() {
@@ -79,11 +98,8 @@ export default function BodyFigure({ levels, selected, onSelect, label, unavaila
 
   // Click anywhere on the figure: turn the screen point into figure coordinates and pick the region there
   function handleClick(ev) {
-    const svg = svgRef.current
-    const ctm = svg?.getScreenCTM?.()
-    if (!ctm) return
-    const pt = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(ctm.inverse())
-    const region = regionAt(pt.x / W, pt.y / H)
+    const pt = toFigure(svgRef.current, ev.clientX, ev.clientY)
+    const region = pt && regionAt(pt.x / W, pt.y / H)
     if (region) onSelect(region.id)
   }
 

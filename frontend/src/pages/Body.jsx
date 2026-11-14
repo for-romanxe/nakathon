@@ -51,6 +51,7 @@ export default function Body() {
   const sol = mission?.clock?.sol
   const [result, setResult] = useState(null)
   const [picked, setPicked] = useState(null)
+  const [openable, setOpenable] = useState({}) // "doc#pN" -> true when that paragraph exists on this device
   const key = `${lang}:${sol}`
 
   useEffect(() => {
@@ -65,6 +66,25 @@ export default function Body() {
     return () => { active = false }
   }, [lang, sol, key])
 
+  // Check each region's source against the documents the Procedures screen will show; link only real paragraphs
+  useEffect(() => {
+    let active = true
+    api.getDocs()
+      .then(async ({ docs }) => {
+        const found = {}
+        for (const r of REGIONS) {
+          if (!r.doc) continue
+          const [docId, para] = r.doc.split('#p')
+          let doc = docs.find((d) => d.id === docId)
+          if (doc && !Array.isArray(doc.paragraphs)) doc = await api.getDoc(docId).catch(() => null)
+          found[r.doc] = !!doc?.paragraphs?.some((p) => String(p.n) === para)
+        }
+        if (active) setOpenable(found)
+      })
+      .catch(() => {}) // unknown -> no links
+    return () => { active = false }
+  }, [])
+
   const current = result?.key === key ? result : null
   if (current?.error) return <section className="page"><p className="error">{t('common.error')}</p></section>
   if (!current) return <section className="page"><p className="muted">{t('common.loading')}</p></section>
@@ -75,7 +95,9 @@ export default function Body() {
   const selectedId = regions.some((r) => r.id === picked) ? picked : defaultRegionId(regions)
   // 3) the selected region stays selected even when it has no readings; its table shows an empty state
   const sel = regions.find((r) => r.id === selectedId)
-  const related = (today.events ?? []).filter((e) => (e.findings ?? []).some((f) => sel.metrics.includes(f.metric)))
+  // Events carry all six readings, so match only the region's readings that were off baseline (not normal/hold)
+  const related = (today.events ?? []).filter((e) => (e.findings ?? []).some(
+    (f) => sel.metrics.includes(f.metric) && f.level && f.level !== 'normal' && f.level !== 'hold'))
   const counts = { caution: regions.filter((r) => r.level === 'caution').length, warning: regions.filter((r) => r.level === 'warning').length }
 
   return (
@@ -150,7 +172,7 @@ export default function Body() {
           </table>
           <div className="body-note">
             <p>{t(`body.note.${sel.id}`)}</p>
-            {sel.doc && <p className="muted small">{t('body.source')} <Cite id={sel.doc} /></p>}
+            {sel.doc && openable[sel.doc] && <p className="muted small">{t('body.source')} <Cite id={sel.doc} /></p>}
           </div>
           <div className="panel-head body-subhead">
             <h2>{t('body.related')}</h2>
