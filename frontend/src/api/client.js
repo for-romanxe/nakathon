@@ -15,6 +15,10 @@ import { CURRENT_CREW } from '../session.js'
 export const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES !== 'false'
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000' // CONTRACT §1
 
+// Korean status.text for c1–c4 in fixture mode (what the backend sends with ?lang=ko). A top-level map of its own,
+// separate from the per-crew /today objects, so every crew id including c1 has an entry
+const STATUS_TEXT_KO = todayOthersFixture.status_text_ko
+
 // Fixture for POST /checkin: the updated /today with the check-in marked done
 function checkinFixture(body) {
   return {
@@ -93,7 +97,7 @@ export const api = {
         events: [...todayFixture.events, ...Object.values(fixtureEvents)].sort((a, b) => b.id - a.id),
       }
       // the backend localises status.text via ?lang; the fixtures are English, so swap in its Korean sentence
-      const ko = lang === 'ko' && todayOthersFixture.status_text_ko[crewId]
+      const ko = lang === 'ko' && STATUS_TEXT_KO[crewId]
       return ko ? { ...today, status: { ...today.status, text: ko } } : today
     }),
   // POST /crew/{id}/checkin {kind, answers, free_text?} -> updated /today (CONTRACT §5)
