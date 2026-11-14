@@ -197,6 +197,33 @@ class LiveModel(unittest.TestCase):
         with self.assertRaises(client.ModelOutputError):
             client.extract_symptoms("My head is splitting", "en")
 
+    def test_rules_that_can_be_computed_are_computed_not_asked_of_the_model(self):
+        # 모델에게 맡겼더니 확인 질문을 절반 가까이 잘못 켰다(학습 안 쓴 문장 112개 중 56개). 정해진 규칙은 코드가 계산한다.
+        def got(**reply):
+            Stub.reply = completion(json.dumps({**SYMPTOM, "needs_question": False, **reply}))
+            out = client.extract_symptoms("report", "en")
+            return out["severity"], out["needs_question"]
+        # 확인 질문: 어지러움·두통·메스꺼움·피로인데 언제부터인지도 언제 심해지는지도 없으면 묻는다
+        self.assertEqual(got(codes=["headache"], onset="unknown", worse_when="unknown"), (2, True))
+        self.assertEqual(got(codes=["headache"], onset="today", worse_when="unknown"), (2, False))
+        self.assertEqual(got(codes=["skin_rash"], onset="unknown", worse_when="unknown"), (2, False))
+        self.assertEqual(got(codes=["skin_rash"], onset="unknown", worse_when="unknown", needs_question=True), (2, True))   # 모델이 모호하다고 본 경우는 둔다
+        # 급한 증상은 묻지 않는다. 심각도 하한: 가슴 통증·호흡 곤란 3, 위기 4, 증상 없음 1
+        self.assertEqual(got(codes=["chest_pain", "dizziness"], onset="unknown", worse_when="unknown", needs_question=True, severity=1), (3, False))
+        self.assertEqual(got(codes=["crisis"], severity=2, needs_question=True), (4, False))
+        self.assertEqual(got(codes=["none"], onset="unknown", worse_when="unknown", severity=3), (1, False))
+
+    def test_number_fields_written_loosely_are_tidied_not_thrown_away(self):
+        # 긴 지시문에서 실제 모델이 severity 를 정수가 아닌 값으로, confidence 를 1 넘는 값으로 써서 보고가 통째로 버려졌다.
+        for written, kept in ((2.0, 2), (2.6, 3), ("4", 4)):
+            Stub.reply = completion(json.dumps({**SYMPTOM, "severity": written}))
+            self.assertEqual(client.extract_symptoms("report", "en")["severity"], kept)
+        Stub.reply = completion(json.dumps({"mood": 4, "fatigue": 1, "stress": 1, "confidence": 1.1}))
+        self.assertEqual(client.score_mood("Calm and rested", "en")["confidence"], 1)
+        Stub.reply = completion(json.dumps({"mood": 4, "fatigue": 1, "stress": 9, "confidence": 0.9}))      # 척도 자체가 틀리면 그대로 거부
+        with self.assertRaises(client.ModelOutputError):
+            client.score_mood("Calm and rested", "en")
+
     def test_first_json_object_is_used_when_the_model_says_more(self):
         one = json.dumps(SYMPTOM, ensure_ascii=False)
         for content in (
