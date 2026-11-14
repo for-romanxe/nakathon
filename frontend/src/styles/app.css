@@ -271,6 +271,9 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
 .result-head { display: flex; align-items: center; gap: 10px; }
 .result-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .composer { display: flex; gap: 8px; align-items: stretch; }
+.intake-form { display: flex; flex-wrap: wrap; align-items: end; gap: 8px 12px; }
+.intake-form label { display: grid; gap: 4px; }
+.intake-form input { min-height: 40px; padding: 0 10px; font: inherit; color: var(--text); background: var(--well); border: 1px solid var(--line); border-radius: var(--radius); }
 .composer textarea {
   flex: 1; min-height: 52px; padding: 10px 12px; resize: vertical;
   font: inherit; color: var(--text); background: var(--well); border: 1px solid var(--line); border-radius: var(--radius);

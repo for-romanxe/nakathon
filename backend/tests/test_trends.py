@@ -20,6 +20,15 @@ class TrendsTest(TestCase):
     def read(self, days):
         return self.api.get(self.url, params={"metric": "hr", "days": days}).raise_for_status().json()
 
+    def test_demo_metrics_have_distinct_seven_day_shapes(self):
+        shapes = set()
+        for metric in ("hr", "hrv", "eda", "temp", "sleep", "act"):
+            response = self.api.get(self.url, params={"metric": metric, "days": 7})
+            values = [point["value"] for point in response.raise_for_status().json()["points"]]
+            self.assertEqual(len(values), 7)
+            shapes.add(tuple((b > a) - (b < a) for a, b in zip(values, values[1:])))
+        self.assertEqual(len(shapes), 6)
+
     def test_window_averages_samples_and_omits_missing_and_future_days(self):
         with closing(connect(self.path)) as db, db:
             db.execute("UPDATE sample SET value = NULL WHERE crew_id = 'c1' AND metric = 'hr' AND mission_day = 15")
@@ -70,13 +79,21 @@ class TrendsTest(TestCase):
                 """INSERT INTO sample (crew_id, metric, ts, mission_day, value, source)
                    VALUES ('c1', 'hr', '2026-11-15T06:00:00+00:00', 17, 68, 'test')"""
             )
+            history = [
+                row["value"] for row in db.execute(
+                    """SELECT value FROM sample WHERE crew_id = 'c1' AND metric = 'hr'
+                       AND mission_day BETWEEN 1 AND 14"""
+                )
+            ]
         self.api.post("/demo/clock", json={"sol": 17, "time": "08:00"}).raise_for_status()
 
+        self.assertEqual(len(history), 14)
+        expected = {"mean": mean(history), "sd": pstdev(history)}
         today = self.api.get("/crew/c1/today").raise_for_status().json()
         hr = next(metric for metric in today["metrics"] if metric["metric"] == "hr")
         self.assertIsNone(hr["hold_reason"])
-        self.assertEqual({"mean": hr["baseline"], "sd": hr["sd"]}, {"mean": 68, "sd": 2})
-        self.assertEqual(self.read(7)["baseline"], {"mean": 68, "sd": 2})
+        self.assertEqual({"mean": hr["baseline"], "sd": hr["sd"]}, expected)
+        self.assertEqual(self.read(7)["baseline"], expected)
 
     def test_validation_and_visibility_match_today(self):
         cmo = {"X-Demo-Viewer": "c2"}
