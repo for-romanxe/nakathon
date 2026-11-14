@@ -77,6 +77,13 @@ async function request(path, fixture, options = {}) {
 }
 
 export const api = {
+  getMedicationReferences: () => request('/medication-references'),
+  getMedicationIntakes: (crewId) => request(`/crew/${crewId}/medication-intakes`),
+  getMedicationIntakeSummary: (crewId, productId, signal) =>
+    request(`/crew/${crewId}/medication-intake-summary?${new URLSearchParams({ product_id: productId })}`, null, { signal }),
+  recordMedicationIntake: (crewId, entry) => request(`/crew/${crewId}/medication-intakes`, null, {
+    method: 'POST', body: JSON.stringify(entry),
+  }),
   getTrends: (crewId, metric, days) => request(
     `/crew/${crewId}/trends?${new URLSearchParams({ metric, days })}`,
     () => {

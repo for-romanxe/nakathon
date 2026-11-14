@@ -1,12 +1,22 @@
-// bodyRegions.js — body regions for the pixel body and the Body screen.
-// Circles are in 0–1 figure coordinates (from the team mockup); each region lists the metrics it shows.
+// bodyRegions.js — body regions for the hologram and the Body screen.
+// metrics: the band readings the region shows. sensor: 'band' (measured there), 'whole' (a whole-body reading
+// shown for reference, e.g. activity for each leg) or 'none' (nothing measures this part).
+// location: the body_location value proposed for contracts/enums.json (team, 11/14), used to place symptom reports.
 // doc: on-device source for the region note (null when the mockup's source is not in the documents).
 export const REGIONS = [
-  { id: 'head', cx: 0.5, cy: 0.09, r: 0.075, metrics: ['sleep'], doc: 'hrp:sleep-02#p1' },
-  { id: 'heart', cx: 0.56, cy: 0.33, r: 0.09, metrics: ['hr', 'hrv'], doc: 'hrp:sm-03#p2' },
-  { id: 'core', cx: 0.5, cy: 0.44, r: 0.08, metrics: ['temp'], doc: 'hrp:sm-01#p1' },
-  // Left wrist: the figure faces the viewer, so the person's left arm is on the viewer's right.
-  // (The mockup had cx 0.15, which is the right arm.) Centre x 181 / 220, y 241 / 460: inside the arm outline.
-  { id: 'wrist', cx: 0.823, cy: 0.524, r: 0.055, metrics: ['eda'], doc: null },
-  { id: 'legs', cx: 0.5, cy: 0.78, r: 0.11, metrics: ['act'], doc: 'hrp:sm-03#p5' },
+  { id: 'head', location: 'head', metrics: ['sleep'], sensor: 'band', doc: 'hrp:sleep-02#p1' },
+  { id: 'heart', location: 'chest', metrics: ['hr', 'hrv'], sensor: 'band', doc: 'hrp:sm-03#p2' },
+  { id: 'core', location: 'abdomen', metrics: ['temp'], sensor: 'band', doc: 'hrp:sm-01#p1' },
+  { id: 'left_arm', location: 'left_arm', metrics: ['eda'], sensor: 'band', doc: null }, // the band is on this wrist
+  { id: 'right_arm', location: 'right_arm', metrics: [], sensor: 'none', doc: null },
+  { id: 'left_leg', location: 'left_leg', metrics: ['act'], sensor: 'whole', doc: 'hrp:sm-03#p5' },
+  { id: 'right_leg', location: 'right_leg', metrics: ['act'], sensor: 'whole', doc: 'hrp:sm-03#p5' },
 ]
+
+// body_location (contracts/symptom.schema.json, #37) -> region shown on the body. neck and back have no region of
+// their own and are drawn on the nearest one; "unknown" (and anything else) has none.
+export const REGION_BY_LOCATION = {
+  ...Object.fromEntries(REGIONS.map((r) => [r.location, r.id])),
+  neck: 'head',
+  back: 'core',
+}

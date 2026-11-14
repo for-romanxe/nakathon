@@ -1,18 +1,28 @@
 // Log.jsx — symptom chat (spec §7-4, scenario S2/S9). The only screen where free text reaches the model.
 // Flow: report -> (rules) -> optional confirm question -> pipeline stages -> result card -> event detail.
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { api, runPipeline } from '../api/client.js'
+import { Link, useLocation } from 'react-router-dom'
+import { api, runPipeline, USE_FIXTURES } from '../api/client.js'
 import { isUrgentReport, formatTs } from '../api/contract.js'
 import { CURRENT_CREW } from '../session.js'
 import { useT } from '../i18n/index.jsx'
 import PipelineProgress from '../components/PipelineProgress.jsx'
+import MedicationIntakes from '../components/MedicationIntakes.jsx'
 
 const EXAMPLES = ['log.example.dizzy', 'log.example.headache', 'log.example.chest']
 
 export default function Log() {
   const { t, lang } = useT()
-  const [text, setText] = useState('')
+  // Body screen "Record a symptom here" opens this page with the body part already written ("Left leg: ")
+  const prefill = useLocation().state?.prefill ?? ''
+  const [text, setText] = useState(prefill)
+  const inputRef = useRef(null)
+  useEffect(() => {
+    const el = inputRef.current
+    if (!prefill || !el) return
+    el.focus()
+    el.setSelectionRange(el.value.length, el.value.length) // cursor after the part, ready to say how it feels
+  }, [prefill])
   // idle: can send | question: waiting for the yes/no answer | running: rules + pipeline in progress
   const [phase, setPhase] = useState('idle')
   const busy = phase !== 'idle'
@@ -128,6 +138,7 @@ export default function Log() {
       <form className="composer" onSubmit={(e) => { e.preventDefault(); send(text) }}>
         <label htmlFor="symptom-input" className="sr-only">{t('log.input_label')}</label>
         <textarea
+          ref={inputRef}
           id="symptom-input"
           rows={2}
           maxLength={4000}
@@ -163,6 +174,7 @@ export default function Log() {
           </ul>
         </section>
       )}
+      {!USE_FIXTURES && <MedicationIntakes key={CURRENT_CREW} crew={CURRENT_CREW} />}
     </section>
   )
 }
