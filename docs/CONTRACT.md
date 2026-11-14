@@ -200,9 +200,11 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 |---|---|---|---|---|
 | 보고 문장이 즉시 경보 규칙에 걸림 | `warning` | `true` | 띄운다 | 건너뛴다 |
 | 즉시 경보 증상 없이 측정값만 \|z\| ≥ 3 | `warning` | `false` | 띄운다 | 건너뛴다 |
-| 그 밖 (`warning`이 아님) | `normal`·`caution`·`hold` | `false` | 안 띄운다 | 건너뛰지 않는다 |
+| 그 밖 | `warning`이 아닌 모든 값 | `false` | 안 띄운다 | 건너뛰지 않는다 |
 
-- **백엔드**: 이벤트 `level`이 `warning`이면 `urgent` 값과 상관없이 모델 단계(`symptom`~`verify`)를 돌리지 않는다. `needs_question`은 false, `explanation`은 null, `runs`는 `[]`, `codes`에는 키워드 규칙이 잡은 코드만 남는다.
+모델을 건너뛰는 조건은 `level === "warning"` 하나뿐이다. 이벤트 `level`에 `advisory`는 나오지 않지만(위 표에서 `caution`으로 올린다), 나오더라도 `warning`이 아니므로 건너뛰지 않는다.
+
+- **백엔드**: 이벤트의 `level === "warning"`이면 `urgent` 값과 상관없이 모델 단계(`symptom`~`verify`)를 돌리지 않는다. `needs_question`은 false, `explanation`은 null, `runs`는 `[]`, `codes`에는 키워드 규칙이 잡은 코드만 남는다.
 - **프론트 — 경보 여부는 `level`로**: 전체 화면 경보(경보 화면으로 가는 버튼 포함)와 "모델을 건너뛰었다"는 안내는 그 이벤트의 `level === "warning"`으로 판단한다. 증상 보고가 없어도 `/today`의 `metrics[]`에 `warning` 지표가 있으면 전체 화면 경보를 띄운다.
 - **프론트 — 원인 문구는 `urgent`로**: `true`면 "긴급 증상 보고", "보고 내용으로 규칙이 경보를 올렸다"는 문구를 쓴다. `false`인 경보는 측정값이 기준에서 크게 벗어났다는 문구와 그 수치를 보여 준다. `codes`로 원인을 판단하지 않는다(의식 변화 규칙은 `codes: []`로 온다).
 - `title`의 "긴급 증상 보고 / Urgent symptom report"도 `level`이 아니라 `urgent`로 고른다.
