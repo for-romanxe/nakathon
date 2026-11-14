@@ -13,5 +13,8 @@
 python3 -m unittest discover -s backend/tests -t .
 # mock 지연 끄기
 MOCK_DELAY=0 python3 -c "from backend.model import client; print(client.extract_symptoms('어지러워요','ko'))"
-# live: MODEL=live MODEL_URL=http://127.0.0.1:8080 MODEL_NAME=<served name>
+# live: 모델 서버를 띄우고(ml/.venv, 포트 8080) MODEL=live 로 호출
+(cd ml && .venv/bin/python -m mlx_lm server --model models/<모델> --adapter-path adapters/<어댑터> --port 8080)
+MODEL=live python3 -c "from backend.model import client; print(client.extract_symptoms('어지러워요','ko'))"
+# MODEL_URL 기본 http://127.0.0.1:8080 (끝에 /v1 을 붙여도 된다). MODEL_NAME 기본 default_model = mlx_lm.server 가 띄울 때 받은 모델
 ```

@@ -45,8 +45,10 @@ def _first_json_object(text: str) -> dict:
 
 def _chat(system: str, user: str, max_tokens=160) -> dict:
     """live 모드: OpenAI 호환 서버를 호출하고 답의 첫 JSON 객체를 돌려준다."""
-    url = os.environ.get("MODEL_URL", "http://127.0.0.1:8080").rstrip("/") + "/v1/chat/completions"
-    body = {"model": os.environ.get("MODEL_NAME", "default"), "temperature": 0, "max_tokens": max_tokens,
+    root = os.environ.get("MODEL_URL", "http://127.0.0.1:8080").rstrip("/").removesuffix("/v1")
+    url = root + "/v1/chat/completions"
+    # "default_model" 은 mlx_lm.server 가 '서버를 띄울 때 준 모델(+어댑터)'로 읽는 이름이다.
+    body = {"model": os.environ.get("MODEL_NAME", "default_model"), "temperature": 0, "max_tokens": max_tokens,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]}
     req = urllib.request.Request(url, json.dumps(body).encode(), {"Content-Type": "application/json"})
     try:
@@ -159,8 +161,9 @@ def explain(level: str, findings: list, condition_candidates: list, paragraphs: 
     cand = {c: conds[c] for c in condition_candidates}
     paras = "\n".join(f"[{p['id']}] {p['text']}" for p in paragraphs)
     system = ("You write a short risk note for an astronaut. The rule engine already decided the level; never raise or lower it. "
-              "Answer with JSON only: {\"category\": str, \"condition_id\": one of the candidate keys, "
-              "\"lines\": 1-2 sentences (why this matters, what to watch), \"cites\": paragraph ids you used}. "
+              "Answer with JSON only: {\"category\": \"...\", \"condition_id\": \"one of the candidate keys\", "
+              "\"lines\": [\"sentence\", \"sentence\"], \"cites\": [\"paragraph id you used\"]}. "
+              "lines is an array of 1-2 short sentences (why this matters, what to watch). "
               "Use only candidate conditions and only the given paragraphs. Do not state numbers. "
               "Say 'possible' / '가능성', never 'certain' or 'diagnosis'. "
               f"Write in {'Korean' if lang == 'ko' else 'English'}.")
