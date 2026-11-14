@@ -46,7 +46,7 @@ class TrendsTest(TestCase):
         self.api.post("/demo/clock", json={"sol": 13, "time": "08:00"}).raise_for_status()
         event = self.api.post("/crew/c1/symptom", json={"text": "Chest pain", "lang": "en"}).raise_for_status().json()
         self.api.post("/demo/clock", json={"sol": 16, "time": "08:00"}).raise_for_status()
-        self.assertEqual(check(), {"mean": None, "sd": None})
+        self.assertEqual(check(), {"mean": 68, "sd": 2})
         self.assertEqual([row["id"] for row in self.read(7)["events"]], [event["event_id"]])
         self.assertEqual(self.read(2)["events"], [])
 

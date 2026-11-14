@@ -28,9 +28,29 @@ HOLD_TEXT = {
 }
 
 
-def metric_at(days: dict[int, float], sol: int, excluded_days: frozenset[int] = frozenset()) -> dict:
+def excluded_baseline_days(connection: sqlite3.Connection, crew_id: str, sol: int) -> set[int]:
+    return {
+        row["mission_day"] for row in connection.execute(
+            "SELECT DISTINCT mission_day FROM event WHERE crew_id = ? AND mission_day < ?",
+            (crew_id, sol),
+        )
+    }
+
+
+def baseline_start(sol: int, excluded_days: set[int]) -> int:
+    start = sol - BASELINE_DAYS
+    for day in sorted(excluded_days, reverse=True):
+        if day >= sol:
+            continue
+        if day < start:
+            break
+        start -= 1
+    return start
+
+
+def metric_at(days: dict[int, float], sol: int, start: int, excluded_days: set[int]) -> dict:
     history = [
-        days[day] for day in range(sol - BASELINE_DAYS, sol)
+        days[day] for day in range(start, sol)
         if day in days and day not in excluded_days
     ]
     value = days.get(sol)
@@ -49,25 +69,27 @@ def metric_at(days: dict[int, float], sol: int, excluded_days: frozenset[int] = 
 
 def today(connection: sqlite3.Connection, crew_id: str, sol: int, lang: str = "en") -> dict:
     event_rows = connection.execute(
-        """SELECT * FROM event WHERE crew_id = ? AND mission_day BETWEEN ? AND ?
+        """SELECT * FROM event WHERE crew_id = ? AND mission_day = ?
            ORDER BY id DESC""",
-        (crew_id, sol - BASELINE_DAYS - 1, sol),
+        (crew_id, sol),
     ).fetchall()
-    excluded_days = frozenset(row["mission_day"] for row in event_rows if row["mission_day"] < sol)
-    events = [event_payload(row) for row in event_rows if row["mission_day"] == sol]
+    excluded_days = excluded_baseline_days(connection, crew_id, sol)
+    start = baseline_start(sol, excluded_days)
+    previous_start = baseline_start(sol - 1, excluded_days)
+    events = [event_payload(row) for row in event_rows]
     rows = connection.execute(
         """SELECT metric, mission_day, AVG(value) AS value
            FROM sample WHERE crew_id = ? AND mission_day BETWEEN ? AND ?
              AND value IS NOT NULL
            GROUP BY metric, mission_day""",
-        (crew_id, sol - BASELINE_DAYS - 1, sol),
+        (crew_id, min(start, previous_start), sol),
     )
     readings = {metric: {} for metric in CONTRACT["metrics"]}
     for row in rows:
         if row["metric"] in readings:
             readings[row["metric"]][row["mission_day"]] = row["value"]
     metrics = [
-        {"metric": metric, **metric_at(days, sol, excluded_days)}
+        {"metric": metric, **metric_at(days, sol, start, excluded_days)}
         for metric, days in readings.items()
     ]
     advisory_limit, warning_limit = CONTRACT["sensitivity"]["standard"]
@@ -75,7 +97,7 @@ def today(connection: sqlite3.Connection, crew_id: str, sol: int, lang: str = "e
                 and abs(metric["z"]) >= advisory_limit]
     repeated = set()
     for metric in outliers:
-        previous = metric_at(readings[metric["metric"]], sol - 1, excluded_days)["z"]
+        previous = metric_at(readings[metric["metric"]], sol - 1, previous_start, excluded_days)["z"]
         if previous is not None and abs(previous) >= advisory_limit:
             repeated.add(metric["metric"])
     for metric in metrics:

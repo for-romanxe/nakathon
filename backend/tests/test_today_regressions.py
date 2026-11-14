@@ -56,19 +56,31 @@ class TodayRegressions(TestCase):
         self.assertEqual(mission["clock"], {"sol": 17, "time": "08:00"})
         self.assertEqual(mission["next_window"], "20:00")
 
-    def test_event_day_is_excluded_only_while_inside_baseline(self):
+    def test_next_day_baseline_skips_distinct_event_days_and_uses_older_readings(self):
+        headers = {"X-Demo-Viewer": "c2"}
         self.client.post("/demo/clock", json={"sol": 2, "time": "10:00"}).raise_for_status()
-        self.client.post("/crew/c2/symptom", headers={"X-Demo-Viewer": "c2"}, json={"text": "Dizzy", "lang": "en"}).raise_for_status()
-
+        self.client.post("/crew/c2/symptom", headers=headers, json={"text": "Dizzy", "lang": "en"}).raise_for_status()
         self.client.post("/demo/clock", json={"sol": 16, "time": "10:00"}).raise_for_status()
-        metric = self.client.get("/crew/c2/today", headers={"X-Demo-Viewer": "c2"}).json()["metrics"][0]
-        self.assertEqual(metric["hold_reason"], "insufficient_baseline")
-        self.assertIsNotNone(metric["value"])
+        for _ in range(2):
+            self.client.post("/crew/c2/symptom", headers=headers, json={"text": "Headache", "lang": "en"}).raise_for_status()
+        with closing(connect(self.db_path)) as db, db:
+            db.execute(
+                """INSERT INTO sample (crew_id, metric, ts, mission_day, value, source)
+                   SELECT crew_id, metric, '2026-11-15T06:00:00+00:00', 17, value, 'test'
+                   FROM sample WHERE crew_id = 'c2' AND mission_day = 16"""
+            )
+        self.client.post("/demo/clock", json={"advance": "24h"}).raise_for_status()
+        today = self.client.get("/crew/c2/today", headers=headers).raise_for_status().json()
+        self.assertEqual(today["status"]["level"], "normal")
+        self.assertEqual({row["level"] for row in today["metrics"]}, {"normal"})
+        hr = next(row for row in today["metrics"] if row["metric"] == "hr")
+        self.assertAlmostEqual(hr["baseline"], 70 - 2 / 7)
 
-        self.client.post("/demo/clock", json={"sol": 17, "time": "10:00"}).raise_for_status()
-        metric = self.client.get("/crew/c2/today", headers={"X-Demo-Viewer": "c2"}).json()["metrics"][0]
-        self.assertIsNotNone(metric["baseline"])
-        self.assertEqual(metric["hold_reason"], "missing_reading")
+        with closing(connect(self.db_path)) as db, db:
+            db.execute("DELETE FROM sample WHERE crew_id = 'c2' AND metric = 'hr' AND mission_day = 15")
+        today = self.client.get("/crew/c2/today", headers=headers).raise_for_status().json()
+        hr = next(row for row in today["metrics"] if row["metric"] == "hr")
+        self.assertEqual(hr["hold_reason"], "insufficient_baseline")
 
     def test_missing_metric_does_not_hide_caution_or_warning(self):
         with closing(connect(self.db_path)) as db, db:
