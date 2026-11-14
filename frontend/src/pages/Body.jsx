@@ -137,7 +137,9 @@ export default function Body() {
   for (const r of reports[sel.id] ?? []) {
     related.set(r.event.id, { ...related.get(r.event.id), event: r.event, report: r })
   }
-  const relatedList = [...related.values()].sort((a, b) => b.event.id - a.event.id)
+  // newest first: by report time (ISO ts), then by id as a number (CONTRACT ids are integers)
+  const relatedList = [...related.values()].sort((a, b) =>
+    String(b.event.ts ?? '').localeCompare(String(a.event.ts ?? '')) || (Number(b.event.id) || 0) - (Number(a.event.id) || 0))
   const counts = { caution: regions.filter((r) => r.level === 'caution').length, warning: regions.filter((r) => r.level === 'warning').length }
 
   // "Record a symptom here": open the Log with the part already written, the crew member adds how it feels

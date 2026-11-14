@@ -450,7 +450,7 @@ a.cite:hover { text-decoration: underline; }
 .holo-leader { stroke: color-mix(in srgb, var(--bp-line) 45%, transparent); stroke-width: 0.75; transition: stroke 0.25s; }
 .holo-end, .holo-tick { fill: var(--bp-line); transition: fill 0.25s; }
 /* a wide invisible stroke over the leader, so the line (not only the name) selects the part */
-.holo-leader-hit { stroke: transparent; stroke-width: 12; pointer-events: stroke; }
+.holo-leader-hit { stroke: transparent; stroke-width: 12; stroke-linecap: round; pointer-events: stroke; } /* round ends cover both dots */
 .holo-text {
   pointer-events: auto; user-select: none;
   font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
