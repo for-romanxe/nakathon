@@ -45,7 +45,7 @@ function EventDetails({ id }) {
       <blockquote className="report">“{event.symptom_text}”</blockquote>
 
       <Facts event={event} />
-      <Guidance event={event} />
+      <Guidance event={event} onSave={setEvent} />
       <Verification event={event} />
       {event.crew === CURRENT_CREW && <Response event={event} onSave={setEvent} />}
     </section>
@@ -93,8 +93,24 @@ function Facts({ event }) {
 }
 
 // Risk guidance in three lines: HRP category · possible condition (fixed list, always "possibility") · today's actions
-function Guidance({ event }) {
+function Guidance({ event, onSave }) {
   const { t, lang } = useT()
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(false)
+  const actions = event.risk?.actions ?? []
+
+  async function completeAction(index) {
+    setSaving(true)
+    setSaveError(false)
+    try {
+      const updated = await api.completeAction(event.id, index)
+      onSave(current => ({ ...current, risk: updated.risk }))
+    } catch {
+      setSaveError(true)
+    } finally {
+      setSaving(false)
+    }
+  }
   const runs = event.runs ?? []
   const passed = runs.some((r) => r.ok)
   const failedTwice = runs.length >= 2 && !passed // verification failed twice -> judgement withheld
@@ -132,20 +148,23 @@ function Guidance({ event }) {
             <div className="cites">{(Array.isArray(ex.cites) ? ex.cites : []).map((c) => <Cite key={c} id={c} />)}</div>
           </div>
         </li>
-        <li>
+        {actions.length > 0 && <li>
           <span className="guidance-label">{t('event.line.today')}</span>
           <ul className="actions">
-            {(event.risk?.actions ?? []).map((a, i) => (
+            {actions.map((a, i) => (
               <li key={i}>
                 <label>
-                  <input type="checkbox" /> {/* TODO: POST /events/{id}/action/{i}/done when the backend has it */}
+                  <input type="checkbox" checked={Boolean(a.done)}
+                    disabled={saving || a.done || event.status === 'closed' || event.crew !== CURRENT_CREW}
+                    onChange={() => completeAction(i)} />
                   <span>{a.text}</span>
                 </label>
                 {a.doc && <Cite id={a.doc} />}
               </li>
             ))}
           </ul>
-        </li>
+          {saveError && <p className="error" role="alert">{t('event.save_failed')}</p>}
+        </li>}
       </ol>
     )
   }
@@ -217,7 +236,8 @@ function Response({ event, onSave }) {
     setSaving(true)
     setError(false)
     try {
-      onSave(await operation())
+      const updated = await operation()
+      onSave(current => ({ ...updated, risk: current.risk }))
       setOverriding(false)
     } catch {
       setError(true)
