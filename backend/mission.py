@@ -7,6 +7,14 @@ from backend.seed import DEMO_SOL, MISSION_START
 
 DEMO_TIME = MISSION_START + timedelta(days=DEMO_SOL - 1, hours=6, minutes=12)
 WINDOW_HOURS = (8, 20)
+WINDOW_DURATION = timedelta(minutes=30)
+
+
+def active_window(timestamp: datetime) -> str | None:
+    start = timestamp.replace(minute=0, second=0, microsecond=0)
+    if timestamp.hour in WINDOW_HOURS and timestamp < start + WINDOW_DURATION:
+        return start.isoformat()
+    return None
 
 
 def mission_sol(timestamp: datetime) -> int:

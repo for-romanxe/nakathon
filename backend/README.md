@@ -62,3 +62,24 @@ The event endpoint uses demo keyword rules for urgent symptoms. Model
 interpretation, follow-up questions, and explanation verification are pending.
 Crew access controls are pending. Use these localhost endpoints with synthetic
 data only.
+
+## Transmission queue simulation
+
+A warning symptom event creates a summary packet with a sequence number and a
+SHA-256 hash of its canonical JSON. The packet contains the event ID, crew ID,
+timestamp, level, codes, and flagged readings. The same payload and sequence
+number are kept for retries.
+
+- `GET /tx` lists packets in priority order.
+- `POST /tx` queues an existing event with `{"event_id":1}`, or one daily
+  summary per crew member with `{"daily":true}`. Repeating a request reuses
+  the existing packet.
+- `POST /tx/send` marks eligible packets as sent during the first 30 minutes
+  of the 08:00 and 20:00 mission-time windows. An optional body uses the same
+  format as `POST /tx`.
+- `POST /tx/{seq}/receipt` accepts `{"status":"acked","attempt":1}` or
+  `{"status":"missing","attempt":1}`. A missing packet can be sent again in
+  a later window. Use the packet's current `attempts` value when sending a receipt.
+
+The send and receipt routes simulate delivery; data stays in the local SQLite
+database.

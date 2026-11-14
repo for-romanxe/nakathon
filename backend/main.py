@@ -10,9 +10,12 @@ from fastapi.responses import JSONResponse
 from backend.checkin import Checkin, save_checkin
 from backend.db import connect, initialize
 from backend.events import SymptomInput, event_payload, save_event
-from backend.mission import ClockUpdate, DEMO_TIME, mission_sol, mission_status
+from backend.mission import ClockUpdate, DEMO_TIME, active_window, mission_sol, mission_status
 from backend.seed import DEMO_DB, seed
 from backend.today import today
+from backend.transmission import (
+    DeliveryResult, QueueRequest, dispatch, enqueue_daily, enqueue_event, packets, record_delivery,
+)
 
 
 def crew_not_found() -> JSONResponse:
@@ -100,7 +103,67 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             sol = mission_sol(timestamp)
             current = today(connection, crew_id, sol, report.lang)
             event_id = save_event(connection, crew_id, sol, report, current, timestamp)
+            event = connection.execute("SELECT * FROM event WHERE id = ?", (event_id,)).fetchone()
+            if event["level"] == "warning":
+                enqueue_event(connection, event)
             return {"event_id": event_id, "needs_question": False}
+
+    @app.get("/tx")
+    def read_queue():
+        with closing(connect(db_path)) as connection:
+            return packets(connection)
+
+    def queue_summary(connection, request: QueueRequest, timestamp):
+        if request.event_id is not None:
+            event = connection.execute("SELECT * FROM event WHERE id = ?", (request.event_id,)).fetchone()
+            if event is None:
+                return JSONResponse(
+                    status_code=404,
+                    content={"error": {"code": "event_not_found", "message": "Event not found."}},
+                )
+            enqueue_event(connection, event)
+        else:
+            sol = mission_sol(timestamp)
+            for crew in connection.execute("SELECT id FROM crew"):
+                crew_id = crew["id"]
+                enqueue_daily(connection, crew_id, sol, today(connection, crew_id, sol))
+        return None
+
+    @app.post("/tx")
+    def queue_transmission(request: QueueRequest):
+        with closing(connect(db_path)) as connection, connection:
+            connection.execute("BEGIN IMMEDIATE")
+            error = queue_summary(connection, request, clock)
+            return error if error is not None else packets(connection)
+
+    @app.post("/tx/send")
+    def send_transmissions(request: QueueRequest | None = None):
+        with closing(connect(db_path)) as connection, connection:
+            connection.execute("BEGIN IMMEDIATE")
+            timestamp = clock
+            if request is not None:
+                error = queue_summary(connection, request, timestamp)
+                if error is not None:
+                    return error
+            window_id = active_window(timestamp)
+            if window_id is not None:
+                dispatch(connection, window_id)
+            return packets(connection)
+
+    @app.post("/tx/{seq}/receipt")
+    def receive_transmission(seq: int, result: DeliveryResult):
+        with closing(connect(db_path)) as connection, connection:
+            if not record_delivery(connection, seq, result):
+                exists = connection.execute("SELECT 1 FROM tx_packet WHERE seq = ?", (seq,)).fetchone()
+                return JSONResponse(
+                    status_code=409 if exists else 404,
+                    content={"error": {
+                        "code": "invalid_receipt" if exists else "packet_not_found",
+                        "message": "Receipt does not match the packet's current attempt."
+                        if exists else "Packet not found.",
+                    }},
+                )
+            return packets(connection)
 
     @app.get("/events/{event_id}")
     def read_event(event_id: int):
