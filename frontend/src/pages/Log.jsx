@@ -171,13 +171,15 @@ function ResultCard({ event }) {
   const { t } = useT()
   const urgent = event.level === 'warning' // full-screen warning + model skipped: decided by level (§5.4)
   const runs = event.runs ?? []
-  // Say only what actually happened: warning (and why), verified explanation, withheld, or no explanation yet
+  const failedTwice = runs.length >= 2 && !runs.some((r) => r.ok)
+  // Say only what actually happened: warning (and why), withheld (stage "hold" wins over any run count),
+  // verified explanation, or no explanation yet
   const message = urgent
     ? t(isUrgentReport(event) ? 'log.result.urgent' : 'log.result.measured')
-    : runs.some((r) => r.ok)
-      ? t('log.result.normal')
-      : event.stage === 'hold' || runs.length >= 2
-        ? t('event.withheld')
+    : event.stage === 'hold' || failedTwice
+      ? t(failedTwice ? 'event.withheld' : 'event.withheld_hold')
+      : runs.some((r) => r.ok)
+        ? t('log.result.normal')
         : t('log.result.pending')
   return (
     <div className={`result-card lv-${event.level}`}>
