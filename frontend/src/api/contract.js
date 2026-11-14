@@ -20,8 +20,17 @@ export const VERIFY_CHECKS = enums.verify_check // numbers, cites, level, schema
 export const OVERRIDE_REASONS = enums.override_reason
 export const IMMEDIATE_WARNING_CODES = enums.immediate_warning_codes
 
-// Condition names come only from the fixed on-device list (CONTRACT §0-3)
+// Condition names come only from the fixed on-device list (CONTRACT §0-3).
+// An id outside the list returns null so the UI never shows it.
 export function conditionLabel(id, lang) {
-  const c = enums.conditions[id]
-  return c ? (lang === 'ko' ? c.ko : c.en) : id
+  const c = id && id !== '_doc' ? enums.conditions[id] : null
+  return c ? (lang === 'ko' ? c.ko : c.en) : null
+}
+
+// CONTRACT §5.4: whether the warning is a full-screen warning comes from `level`;
+// whether the REPORT TEXT caused it comes from `urgent`. Until the backend sends `urgent`,
+// fall back to the immediate-warning codes (the consciousness rule sends no code, so it reads as measured).
+export function isUrgentReport(event) {
+  if (typeof event.urgent === 'boolean') return event.urgent
+  return (event.codes ?? []).some((c) => IMMEDIATE_WARNING_CODES.includes(c))
 }

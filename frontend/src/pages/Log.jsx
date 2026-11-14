@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, runPipeline } from '../api/client.js'
+import { isUrgentReport } from '../api/contract.js'
 import { CURRENT_CREW } from '../session.js'
 import { useT } from '../i18n/index.jsx'
 import PipelineProgress from '../components/PipelineProgress.jsx'
@@ -15,11 +16,12 @@ export default function Log() {
   const [busy, setBusy] = useState(false)
   const [items, setItems] = useState([]) // chat items for this session
   const [todayEvents, setTodayEvents] = useState([])
+  const [results, setResults] = useState(0) // refetch today's reports only when a new result arrives
   const bottom = useRef(null)
 
   useEffect(() => {
     api.getToday(CURRENT_CREW, lang).then((d) => setTodayEvents(d.events)).catch(() => {})
-  }, [lang, items.length])
+  }, [lang, results])
 
   useEffect(() => { bottom.current?.scrollIntoView({ block: 'end' }) }, [items])
 
@@ -36,6 +38,7 @@ export default function Log() {
     update(key, { final })
     const event = await api.getEvent(eventId)
     push({ kind: 'result', event })
+    setResults((n) => n + 1)
     setBusy(false)
   }
 
@@ -47,7 +50,7 @@ export default function Log() {
     push({ kind: 'me', text: report })
     try {
       const res = await api.postSymptom(CURRENT_CREW, report, lang)
-      const first = await api.getEvent(res.event_id) // the rules already ran: warning means the model is skipped
+      const first = await api.getEvent(res.event_id) // the rules already ran: level warning means the model is skipped (§5.4)
       const urgent = first.level === 'warning'
       if (!urgent && res.needs_question) {
         push({ kind: 'question', eventId: res.event_id, question: res.question, answered: null })
@@ -153,11 +156,11 @@ export default function Log() {
 
 function ResultCard({ event }) {
   const { t } = useT()
-  const urgent = event.level === 'warning'
+  const urgent = event.level === 'warning' // full-screen warning + model skipped: decided by level (§5.4)
   const runs = event.runs ?? []
-  // Say only what actually happened: urgent skip, verified explanation, withheld, or no explanation yet
+  // Say only what actually happened: warning (and why), verified explanation, withheld, or no explanation yet
   const message = urgent
-    ? t('log.result.urgent')
+    ? t(isUrgentReport(event) ? 'log.result.urgent' : 'log.result.measured')
     : runs.some((r) => r.ok)
       ? t('log.result.normal')
       : runs.length >= 2

@@ -25,7 +25,8 @@ function checkinFixture(body) {
 // ---- Fixture-only symptom flow (fake data; the real rules live in backend/events.py) ----
 const fixtureEvents = {}
 let fixtureNextId = 101
-const FIXTURE_URGENT = /chest pain|can't breathe|want to die|흉통|가슴|숨을 못|숨이 안|죽고\s*싶/i
+// Same phrases as backend/events.py WARNING_PHRASES + CONSCIOUSNESS_CHANGE, so rehearsed demo lines behave the same
+const FIXTURE_URGENT = /\bchest pain\b|흉통|가슴 통증|가슴이 아파|\bshortness of breath\b|\b(can't|cannot) breathe\b|호흡곤란|숨을 못 쉬|\bkill myself\b|\bwant to die\b|죽고 싶|\bloss of consciousness\b|\bunresponsive\b|의식 소실|의식이 없/i
 
 function fixtureSymptom({ text }) {
   const urgent = FIXTURE_URGENT.test(text)
@@ -99,8 +100,11 @@ export const api = {
 }
 
 // Pipeline progress for one event (CONTRACT §4 stage names). Calls onStage(stage) as stages arrive and
-// resolves with the final stage ("done" or "hold").
-// Live: SSE GET /events/{id}/stream. The backend has no stream yet, so a failed stream resolves "done".
+// resolves with how it ended — only what actually happened:
+//   "done" | "hold"  the stream said so
+//   "unavailable"    the stream could not be opened at all (no endpoint yet): progress unknown, not "done"
+//   "interrupted"    the stream broke after some stages: shown as stopped, never as "done"
+// Live: SSE GET /events/{id}/stream.
 export function runPipeline(eventId, { urgent, onStage }) {
   if (USE_FIXTURES) {
     // urgent reports skip the model: rules -> done (spec S9)
@@ -109,7 +113,9 @@ export function runPipeline(eventId, { urgent, onStage }) {
   }
   return new Promise((resolve) => {
     const source = new EventSource(`${API_BASE}/events/${eventId}/stream`)
+    let seen = 0
     source.onmessage = (msg) => {
+      seen += 1
       const { stage } = JSON.parse(msg.data)
       onStage(stage)
       if (stage === 'done' || stage === 'hold') {
@@ -119,7 +125,7 @@ export function runPipeline(eventId, { urgent, onStage }) {
     }
     source.onerror = () => {
       source.close()
-      resolve('done')
+      resolve(seen === 0 ? 'unavailable' : 'interrupted')
     }
   })
 }

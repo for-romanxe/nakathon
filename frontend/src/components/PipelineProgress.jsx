@@ -16,6 +16,8 @@ export default function PipelineProgress({ stages, final }) {
           )
         })}
         {!final && stages.length === 0 && <li className="running">◌ {t('stage.waiting')}</li>}
+        {final === 'unavailable' && <li className="muted">{t('stage.unavailable')}</li>}
+        {final === 'interrupted' && <li className="stopped">✖ {t('stage.interrupted')}</li>}
       </ol>
     </div>
   )
