@@ -3,12 +3,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client.js'
 import CheckinSheet from '../components/CheckinSheet.jsx'
+import GuideWhy from '../components/GuideWhy.jsx'
 import { useMission } from '../mission.jsx'
 import { isWarningAcked, warningKey } from '../warningAck.js'
 import { METRICS, metricLabel, formatMetric } from '../api/contract.js'
 import { CURRENT_CREW } from '../session.js'
 import Cite from '../components/Cite.jsx'
-import GuideWhy from '../components/GuideWhy.jsx'
 import { useT } from '../i18n/index.jsx'
 
 // Status is never shown by color alone: icon + word + color
