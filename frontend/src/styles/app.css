@@ -338,8 +338,6 @@ a.cite:hover { text-decoration: underline; }
 .cell-warning, .body-legend .cell-warning { fill: var(--warning); background: var(--warning); }
 .cell-hold, .body-legend .cell-hold { fill: color-mix(in srgb, var(--hold) 25%, transparent); background: color-mix(in srgb, var(--hold) 25%, transparent); }
 .cell-selected { stroke: var(--accent); stroke-width: 0.8; }
-.body-hit { pointer-events: none; fill: transparent; }
-.body-hit.on { fill: color-mix(in srgb, var(--accent) 8%, transparent); stroke: color-mix(in srgb, var(--accent) 50%, transparent); stroke-width: 0.8; }
 @media (prefers-reduced-motion: no-preference) {
   .cell-warning { animation: cell-pulse 1.6s ease-in-out infinite; }
   @keyframes cell-pulse { 50% { opacity: 0.55; } }

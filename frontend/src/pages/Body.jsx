@@ -14,6 +14,7 @@ import { useT } from '../i18n/index.jsx'
 
 const LEVEL_ICONS = { normal: '✔', advisory: '•', caution: '▲', warning: '✖', hold: '↻' }
 const RANK = { normal: 0, advisory: 1, caution: 2, warning: 3 }
+const DOCS_RETRY_MS = 10000
 
 // Most serious backend level among the region's metrics; a region whose metrics are all on hold is "hold"
 function regionLevel(metrics) {
@@ -67,24 +68,36 @@ export default function Body() {
   }, [lang, sol, key])
 
   // Check each region's source against the documents the Procedures screen will show; link only real paragraphs
+  // A failed request (network, server) is not the same as "no such paragraph": links stay hidden while unknown
+  // and the check runs again every DOCS_RETRY_MS until it gets an answer.
   useEffect(() => {
     let active = true
-    api.getDocs()
-      .then(async ({ docs }) => {
+    let timer = null
+    async function check() {
+      try {
+        const { docs } = await api.getDocs()
         const found = {}
         for (const r of REGIONS) {
           if (!r.doc) continue
           const [docId, para] = r.doc.split('#p')
           const has = (doc) => !!doc?.paragraphs?.some((p) => String(p.n) === para)
           const listed = docs.find((d) => d.id === docId)
-          // The list may carry no paragraphs, an empty array, or only some: if the paragraph is not there,
-          // ask for the full document before deciding there is no link
-          found[r.doc] = has(listed) || (listed ? has(await api.getDoc(docId).catch(() => null)) : false)
+          if (has(listed) || !listed) { found[r.doc] = has(listed); continue }
+          // The list may carry no paragraphs, an empty array, or only some: ask for the full document.
+          // Only "document not found" means no link; any other error goes to the retry below.
+          const doc = await api.getDoc(docId).catch((e) => {
+            if (e?.code === 'doc_not_found') return null
+            throw e
+          })
+          found[r.doc] = has(doc)
         }
         if (active) setOpenable(found)
-      })
-      .catch(() => {}) // unknown -> no links
-    return () => { active = false }
+      } catch {
+        if (active) timer = setTimeout(check, DOCS_RETRY_MS)
+      }
+    }
+    check()
+    return () => { active = false; clearTimeout(timer) }
   }, [])
 
   const current = result?.key === key ? result : null
