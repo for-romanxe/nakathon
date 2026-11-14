@@ -1,11 +1,12 @@
 // Body.jsx — Body screen (spec §7-2): pixel body + region list + region detail.
 // Region colour = the most serious backend level among that region's metrics (GET /crew/{id}/today).
 // Nothing is recomputed from z; each metric row shows its own backend level.
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client.js'
 import { METRICS, metricLabel, formatMetric } from '../api/contract.js'
-import BodyFigure from '../components/BodyFigure.jsx'
+// three.js is large: load the hologram only when the Body screen opens
+const HoloBody = lazy(() => import('../components/HoloBody.jsx'))
 import Cite from '../components/Cite.jsx'
 import { REGIONS } from '../components/bodyRegions.js'
 import { useMission } from '../mission.jsx'
@@ -151,9 +152,11 @@ export default function Body() {
             <h2>{t('body.figure')}</h2>
             <span className="muted small">{t('body.figure_hint')}</span>
           </div>
-          <BodyFigure levels={levels} selected={selectedId} label={t('body.figure_label')}
-            onSelect={(id) => { setNoSensor(false); setPicked(id) }} onNoSensor={() => setNoSensor(true)}
-            unavailableText={t('body.figure_unavailable')} />
+          <Suspense fallback={<p className="panel-empty muted">{t('common.loading')}</p>}>
+            <HoloBody levels={levels} selected={selectedId} label={t('body.figure_label')}
+              onSelect={(id) => { setNoSensor(false); setPicked(id) }} onNoSensor={() => setNoSensor(true)}
+              unavailableText={t('body.figure_unavailable')} />
+          </Suspense>
           {noSensor && <p className="panel-empty muted small" role="status">{t('body.no_sensor')}</p>}
         </section>
 
