@@ -49,7 +49,6 @@
    "items": {
     "enum": ["head", "neck", "chest", "abdomen", "back", "left_arm", "right_arm", "left_leg", "right_leg", "unknown"]
    },
-   "minItems": 1,
    "uniqueItems": true
   },
   "worse_when": {
