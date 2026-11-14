@@ -8,6 +8,7 @@ import { isWarningAcked, warningKey } from '../warningAck.js'
 import { METRICS, metricLabel, formatMetric } from '../api/contract.js'
 import { CURRENT_CREW } from '../session.js'
 import Cite from '../components/Cite.jsx'
+import GuideWhy from '../components/GuideWhy.jsx'
 import { useT } from '../i18n/index.jsx'
 
 // Status is never shown by color alone: icon + word + color
@@ -110,6 +111,7 @@ export default function Today() {
                   {g.cites.map((c) => <Cite key={c} id={c} />)}
                 </div>
               )}
+              {!g.done && <GuideWhy cites={g.cites} />}
             </li>
           ))}
         </ul>
