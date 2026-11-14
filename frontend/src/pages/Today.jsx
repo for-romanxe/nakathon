@@ -1,6 +1,8 @@
 // Today.jsx — Today screen (spec §7-1): greeting -> status sentence -> today's guide -> evidence (6 metrics) -> check-in streak.
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client.js'
+import CheckinSheet from '../components/CheckinSheet.jsx'
 import { METRICS, SENSITIVITY, metricLabel, formatMetric } from '../api/contract.js'
 import { CURRENT_CREW } from '../session.js'
 import { useT } from '../i18n/index.jsx'
@@ -25,6 +27,8 @@ export default function Today() {
   const { t, lang } = useT()
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
+  const [sheetClosed, setSheetClosed] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     // /crew and /mission are not on the backend yet, so their failure must not break Today
@@ -45,9 +49,27 @@ export default function Today() {
   // The backend writes status.text in English; Korean uses the dictionary until /today supports ?lang
   const statusText = lang === 'en' && today.status.text ? today.status.text : t(`today.status.${level}`)
   const [advisoryLimit] = SENSITIVITY.standard
+  const showSheet = !today.checkin.morning_done && !sheetClosed
+
+  async function submitCheckin(body) {
+    const updated = await api.postCheckin(CURRENT_CREW, body) // backend recomputes the guide and returns /today
+    setData((d) => ({ ...d, today: updated }))
+  }
 
   return (
     <section className="page">
+      {showSheet && (
+        <CheckinSheet
+          onSubmit={submitCheckin}
+          onSymptoms={() => navigate('/log')}
+          onClose={() => setSheetClosed(true)}
+        />
+      )}
+      {!today.checkin.morning_done && sheetClosed && (
+        <button type="button" className="btn-secondary align-start" onClick={() => setSheetClosed(false)}>
+          {t('checkin.open')}
+        </button>
+      )}
       <h1>
         {crew
           ? t(mission ? greetingKey(mission.clock.time) : 'today.greeting.day', { name: crew.name })

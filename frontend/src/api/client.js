@@ -8,6 +8,15 @@ import missionFixture from './fixtures/mission.json'
 const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES !== 'false'
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000' // CONTRACT §1
 
+// Fixture for POST /checkin: the updated /today with the check-in marked done
+function checkinFixture(body) {
+  return {
+    ...todayFixture,
+    checkin: { ...todayFixture.checkin, [`${body.kind}_done`]: true },
+    streak: todayFixture.streak + (body.kind === 'morning' ? 1 : 0),
+  }
+}
+
 export class ApiError extends Error {
   constructor(code, message) {
     super(message)
@@ -36,6 +45,10 @@ export const api = {
   // GET /crew/{id}/today -> { status:{level,text}, guide, metrics:[{metric,value,baseline,sd,z}], events, checkin, streak }
   // lang is sent so the backend can localise status.text and guide lines (requested; ignored until supported)
   getToday: (crewId, lang) => request(`/crew/${crewId}/today?lang=${lang}`, todayFixture),
+  // POST /crew/{id}/checkin {kind, answers, free_text?} -> updated /today (CONTRACT §5)
+  // answers shape is our proposal (spec §8): { sleep_quality, mood, fatigue: 1-5, symptoms: "none"|"yes" }
+  postCheckin: (crewId, body) =>
+    request(`/crew/${crewId}/checkin`, checkinFixture(body), { method: 'POST', body: JSON.stringify(body) }),
   // GET /crew -> crew list (CONTRACT: CMO view). Used for names until /today carries the crew profile
   getCrew: () => request('/crew', crewFixture),
   // Mission clock, environment, comm delay, next window. Not in CONTRACT §5 yet — fixture only
