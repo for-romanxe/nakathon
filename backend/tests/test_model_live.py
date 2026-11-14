@@ -127,6 +127,13 @@ class LiveModel(unittest.TestCase):
         out = client.explain("advisory", [], ["sleep_deficit"], [{"id": "eval:sleep#p1", "text": "Sleep."}], "en")
         self.assertEqual(out["category"], "sleep")
 
+    def test_a_space_inside_a_key_name_is_removed(self):
+        # PC 에서 학습해 변환한 어댑터가 Mac 에서 "worse_ when" 이라고 써서, 코드가 맞은 답 3개가 스키마 오류로 버려졌다.
+        Stub.reply = completion('{"codes": ["headache"], "onset": "today", "worse_ when": "unknown", "severity": 2, "needs_question": false}')
+        out = client.extract_symptoms("오늘 headache가 좀 있어요", "ko")
+        self.assertEqual((out["codes"], out["worse_when"]), (["headache"], "unknown"))
+        self.assertNotIn("worse_ when", out)
+
     def test_made_up_onset_or_worse_when_becomes_unknown(self):
         # 실제 모델이 "hurts when I bend it" 에 worse_when "bending" 을 지어내 맞는 코드까지 버려졌다.
         Stub.reply = completion(json.dumps({**SYMPTOM, "codes": ["musculoskeletal_pain"], "worse_when": "bending", "onset": "yesterday"}))

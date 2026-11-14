@@ -37,8 +37,8 @@ def _first_json_object(text: str) -> dict:
             obj, _ = decoder.raw_decode(text, start)
         except json.JSONDecodeError:
             obj = None
-        if isinstance(obj, dict):
-            return obj
+        if isinstance(obj, dict):       # 키 이름 안의 공백은 지운다: "worse_ when" → "worse_when"
+            return {"".join(str(key).split()): value for key, value in obj.items()}
         start = text.find("{", start + 1)
     raise ModelOutputError("no JSON object in model output")
 

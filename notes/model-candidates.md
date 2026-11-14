@@ -96,3 +96,13 @@ Gemma 4 12B · Ministral 3 8B · **Gemma 4 E4B**(4B급). 세 개를 같은 30문
 - Ministral 3 8B QLoRA: 600 iter 중 580까지 진행(iter당 약 6.3초, VRAM 11.6GB) 후 프로세스가 트레이스백 없이 종료(rc=1). iter 400 체크포인트(val_loss 0.0239) 남음 → 이걸 평가. 같은 새벽 06:52에 PC가 재부팅된 적 있음(E4B 바닐라 평가 중 CUDA unknown error 직후) — GPU/드라이버 불안정 의심, 미확인.
 - Gemma 4 E4B: bnb-4bit 로드만 10.2GB → 12GB에서 학습 미시도(OOM 예상). 12B bf16 + bnb 4bit 즉시 양자화도 미시도.
 - Ministral 3 8B QLoRA(iter 400 체크포인트) PC 평가(no-think, valid 240, 1회): JSON 100% · 코드 일치 100% · Jaccard 1.0 · onset 100% · worse 100% · severity 73% · needs_q 85% · 목록 밖 0 · p50 5.2s. Mac MLX 어댑터(99.6%)와 같은 결론. 어댑터 사본 `ml/adapters/pc/`(gitignore), 원본 `D:\adapters\...-symptoms` (PEFT 형식, transformers에서 바로 로드).
+
+## 행사 중 재학습 (11/14, 09:00 이후) — PC
+- **Ministral 3 8B QLoRA 재학습**: 10:21:22 시작 → 11:30:05 학습 끝(rc=0) → 11:51:12 평가 끝. 600 iter, val_loss 0.0243, 4105초, VRAM 12.1GB. 스크립트 `ml/retrain_8b_pc.cmd`, 데이터는 11/14 09:27에 생성기로 다시 만든 `ml/data/symptoms`(시드 고정).
+- PC 평가(valid 240, 1회): JSON 100% · 코드 일치 100% · Jaccard 1.0 · onset 100% · worse 100% · severity 73.8% · needs_q 85% · 목록 밖 0 · p50 5.11s · p95 5.83s.
+- 원본 `D:\adapters\Ministral-3-8B-Instruct-2512-unsloth-bnb-4bit-symptoms-1114`(PEFT, r16 α32, language_model 전 층 7종 proj). Mac 사본 `ml/adapters/pc/Ministral-3-8B-symptoms-1114`(gitignore).
+- **Mac으로 변환**: `ml/convert_peft_to_mlx.py` — 텐서 476개, 층 0~33, rank 16, scale 2.0. MLX 모델에 올려 476개 모두 같은 값으로 들어간 것 확인. 결과 `ml/adapters/Ministral-3-8B-Instruct-2512-4bit-symptoms-1114-from-pc`.
+- 변환본 Mac 평가(valid 240, 1회, 12:01): JSON 100% · 코드 일치 99.6% · Jaccard 0.997 · onset 100% · **worse 89.2%** · severity 75% · needs_q 85% · 목록 밖 0 · p50 1.37s. PC 값(worse 100%)과 다르다. Mac에서는 키를 `"worse_ when"`으로 쓰는 답이 나온다(30문항에서 3건 확인). 바탕 모델 양자화가 달라서(bnb 대 MLX)로 보이지만 원인은 확인하지 않았다.
+- 30문항 비교는 `ml/eval/README.md`: 행사 전 Mac 어댑터 증상 12/12·기분 7/8·설명 보류 1/10, 행사 중 변환 어댑터 증상 11/12·기분 8/8·설명 보류 3/10.
+- **Gemma 4 E4B QLoRA(PC)**: 600 iter까지 끝남(val_loss 0.0241, 5985초, 메모리 23.4GB로 표시 — 12GB 카드라 공유 메모리로 넘친 것으로 보임). 학습 뒤 평가는 돌지 않았다(06:48·06:50의 평가 로그에는 결과 줄이 없다).
+- 미정: 제출에 쓸 어댑터. 행사 전 어댑터는 사전 작업 규칙에 걸릴 수 있고, 변환본은 Mac에서 조금 나쁘다. Mac에서 MLX로 다시 학습하면 행사 중 제작 + 같은 형식이 되지만 아직 하지 않았다(사용자가 11/14 오전에 Mac 학습을 멈추게 함).
