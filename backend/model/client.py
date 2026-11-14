@@ -163,6 +163,13 @@ def extract_symptoms(text: str, lang: str, recent_summary: str = "") -> dict:
     for key in ("onset", "worse_when"):      # 보조 필드를 지어내면 unknown 으로 둔다. codes 는 건드리지 않는다(목록 밖이면 거부).
         if key in out and out[key] not in e[key]:
             out[key] = "unknown"
+    if "locations" in out:
+        raw = out["locations"]
+        allowed = contracts.schema("symptom")["properties"]["locations"]["items"]["enum"]
+        locations = dict.fromkeys(
+            location for location in raw if isinstance(location, str) and location in allowed and location != "unknown"
+        ) if isinstance(raw, list) else {}
+        out["locations"] = [] if raw == [] else list(locations) or ["unknown"]
     return _validated(out, "symptom")
 
 
