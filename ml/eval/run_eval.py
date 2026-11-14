@@ -115,8 +115,9 @@ def run(repeat):
                 result, _, sec = call(pipeline.explain_verified, it["level"], it["findings"], it["candidates"], paras, it["lang"])
             finally:
                 client.explain = real
-            if result["runs"][0]["note"].startswith("model unavailable"):
-                sys.exit(f"ERROR {result['runs'][0]['note']}. Fix: start mlx_lm.server (backend/model/README.md) or set MODEL_URL.")
+            down = [r["note"] for r in result["runs"] if r["note"].startswith("model unavailable")]
+            if down:                                 # 재생성 중에 서버가 죽어도 보류로 세지 않고 멈춘다. 일부만 잰 결과는 저장하지 않는다
+                sys.exit(f"ERROR {down[0]}. Fix: start mlx_lm.server (backend/model/README.md) or set MODEL_URL.")
             attempts = [{"out": out, **{k: r[k] for k in ("ok", "fails", "note")}} for out, r in zip(outs, result["runs"])]
             rows.append({"section": "explain", "id": it["id"], "by": "model", "run": n, "attempts": attempts,
                          "sec": round(sec, 2), "ok": not result["hold"], "hold": result["hold"]})
