@@ -1,5 +1,8 @@
 import json
+import logging
+import os
 from contextlib import asynccontextmanager, closing
+from pathlib import Path
 from threading import Lock
 from typing import Literal
 
@@ -16,6 +19,9 @@ from backend.docs import build_docs
 from backend import event_flow
 from backend.events import EventOverride, SymptomAnswer, SymptomInput, event_payload, save_event
 from backend.link_simulation import LinkSimulation, compare_packet
+from backend.medication import (
+    PRODUCT_ID, MedicationIntake, ProductIntake, intake_summary, load_medication_references, read_intakes, save_intake,
+)
 from backend.mission import ClockUpdate, DEMO_TIME, active_window, mission_sol, mission_status
 from backend.preflight import PreflightUpdate, read_preflight, save_preflight
 from backend.seed import CONTRACT, CREW, DEMO_DB, seed
@@ -48,15 +54,24 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
     event_locks = [Lock() for _ in range(32)]
     evidence = []
     docs = []
+    medication_references = []
+    medication_catalog_failed = False
     sessions = None
     frontend_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        nonlocal evidence, sessions, docs
+        nonlocal evidence, sessions, docs, medication_references, medication_catalog_failed
         sessions = CrewSessions(crew_id for crew_id, *_ in CREW)
         evidence = event_flow.load_evidence()
         docs = build_docs(evidence)
+        try:
+            medication_references = load_medication_references()
+            medication_catalog_failed = False
+        except (OSError, ValueError):
+            logging.getLogger(__name__).warning("Medication catalog could not be loaded.")
+            medication_references = []
+            medication_catalog_failed = True
         initialize(db_path)
         with closing(connect(db_path)) as connection:
             seed(connection)
@@ -241,6 +256,57 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             raise HTTPException(403, "Crew record write denied.")
         with closing(connect(db_path)) as connection, connection:
             return save_preflight(connection, crew_id, update)
+
+    @app.get("/medication-references")
+    def get_medication_references(member=Depends(viewer)):
+        if medication_catalog_failed:
+            return event_error("medication_catalog_invalid", "Medication catalog could not be loaded.", 503)
+        return {"references": [reference.model_dump(mode="json", exclude_none=True) for reference in medication_references]}
+
+    @app.get("/crew/{crew_id}/medication-intakes")
+    def get_medication_intakes(crew_id: str, member=Depends(viewer)):
+        crew_id = crew_id.lower()
+        with closing(connect(db_path)) as connection:
+            # Read consent and intake history from the same snapshot.
+            connection.execute("BEGIN")
+            try:
+                if not can_read_crew(connection, crew_id, member):
+                    return crew_not_found()
+                return {"entries": read_intakes(connection, crew_id)}
+            finally:
+                connection.rollback()
+
+    @app.get("/crew/{crew_id}/medication-intake-summary")
+    def get_medication_intake_summary(
+        crew_id: str, product_id: str = Query(pattern=PRODUCT_ID, max_length=80), member=Depends(viewer),
+    ):
+        crew_id = crew_id.lower()
+        with closing(connect(db_path)) as connection:
+            connection.execute("BEGIN")
+            try:
+                if not can_read_crew(connection, crew_id, member):
+                    return crew_not_found()
+                reference = next((row for row in medication_references if row.id == product_id), None)
+                if reference is None or reference.count_unit is None:
+                    return event_error("intake_product_unavailable", "This product has no configured count unit.", 404)
+                return intake_summary(connection, crew_id, reference, clock, medication_references)
+            finally:
+                connection.rollback()
+
+    @app.post("/crew/{crew_id}/medication-intakes")
+    def post_medication_intake(crew_id: str, entry: MedicationIntake | ProductIntake, member=Depends(viewer)):
+        crew_id = crew_id.lower()
+        if member["id"] != crew_id:
+            raise HTTPException(403, "Crew record write denied.")
+        try:
+            with closing(connect(db_path)) as connection, connection:
+                connection.execute("BEGIN IMMEDIATE")
+                saved = save_intake(connection, crew_id, entry, clock, medication_references)
+        except ValueError as error:
+            return event_error("intake_product_unavailable", str(error), 422)
+        if saved is None:
+            return event_error("intake_conflict", "Request ID already used for a different intake.", 409)
+        return saved
 
     @app.get("/crew/{crew_id}/trends")
     def read_trends(crew_id: str, metric: str, days: int = Query(14, ge=1, le=90), member=Depends(viewer)):
@@ -506,4 +572,4 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
     return app
 
 
-app = create_app()
+app = create_app(Path(os.environ.get("CREW_HEALTH_DB") or DEMO_DB))

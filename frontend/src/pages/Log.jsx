@@ -2,11 +2,12 @@
 // Flow: report -> (rules) -> optional confirm question -> pipeline stages -> result card -> event detail.
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { api, runPipeline } from '../api/client.js'
+import { api, runPipeline, USE_FIXTURES } from '../api/client.js'
 import { isUrgentReport, formatTs } from '../api/contract.js'
 import { CURRENT_CREW } from '../session.js'
 import { useT } from '../i18n/index.jsx'
 import PipelineProgress from '../components/PipelineProgress.jsx'
+import MedicationIntakes from '../components/MedicationIntakes.jsx'
 
 const EXAMPLES = ['log.example.dizzy', 'log.example.headache', 'log.example.chest']
 
@@ -173,6 +174,7 @@ export default function Log() {
           </ul>
         </section>
       )}
+      {!USE_FIXTURES && <MedicationIntakes key={CURRENT_CREW} crew={CURRENT_CREW} />}
     </section>
   )
 }

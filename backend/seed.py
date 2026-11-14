@@ -4,6 +4,7 @@ import sqlite3
 from contextlib import closing
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from statistics import mean, pstdev
 
 from backend.db import connect, initialize
 
@@ -28,6 +29,14 @@ METRIC_SEEDS = {
     "sleep": (7.5, 0.3),
     "act": (150, 8),
 }
+HISTORICAL_OFFSETS = {
+    "hr": (-2, -2, -1, 0, 1, 2, 2, 1, 0, -1, -2, -1, 0, 1, 1),
+    "hrv": (0, 1, -2, -1, 1, 2, 1, 2, 0, -2, -1, -2, 0, 1, 2),
+    "eda": (-1, -1, 0, 3, 0, -1, -1, 0, 2, 0, -1, 1, 3, 1, 0),
+    "temp": (-2, -2, -1, -1, 0, 0, 1, 2, 1, 0, -1, 0, 1, 1, 2),
+    "sleep": (2, 1, 0, -1, -2, 1, 2, 0, -2, -2, -1, 1, 2, 2, 0),
+    "act": (0, 2, 1, 0, -2, -2, 0, 1, 2, 3, 0, -2, -1, 1, 3),
+}
 DEVIATIONS = {"c1": {"hr": 2.5, "hrv": -2.5}, "c4": {"hr": 2.5}}
 
 
@@ -47,6 +56,10 @@ def seed(connection: sqlite3.Connection) -> None:
             for metric in CONTRACT["metrics"]:
                 center, spread = METRIC_SEEDS[metric]
                 center += crew_index * spread
+                offsets = HISTORICAL_OFFSETS[metric]
+                # Normalize sols 2–15 to preserve the final-sol alert scenarios.
+                baseline_mean = mean(offsets[1:])
+                baseline_sd = pstdev(offsets[1:])
                 connection.execute(
                     """INSERT INTO preflight_baseline (crew_id, metric, value, source)
                        VALUES (?, ?, ?, ?) ON CONFLICT (crew_id, metric) DO NOTHING""",
@@ -54,9 +67,10 @@ def seed(connection: sqlite3.Connection) -> None:
                 )
                 for sol in range(first_sol, DEMO_SOL + 1):
                     ts = MISSION_START + timedelta(days=sol - 1, hours=6)
-                    deviation = (-1) ** sol
                     if sol == DEMO_SOL:
                         deviation = DEVIATIONS.get(crew_id, {}).get(metric, 0)
+                    else:
+                        deviation = (offsets[sol - 1] - baseline_mean) / baseline_sd
                     connection.execute(
                         """INSERT INTO sample
                            (crew_id, metric, ts, mission_day, value, source, source_key)
