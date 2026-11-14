@@ -20,7 +20,7 @@ def explain_verified(level: str, findings: list, condition_candidates: list, par
     for n in range(1, MAX_RUNS + 1):
         try:
             out = client.explain(level, findings, condition_candidates, paragraphs, lang, rejected=rejected)
-            result = verify.verify(out, findings, level, [p["id"] for p in paragraphs], lang)
+            result = verify.verify(out, findings, level, [p["id"] for p in paragraphs], lang, candidates=condition_candidates)
             passed = checks - len(result["fails"])
         except client.ModelUnavailableError as error:      # 서버에 닿지 못하면 다시 불러도 같다
             return _stopped(runs, n, f"model unavailable: {error}")

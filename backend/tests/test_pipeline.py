@@ -65,6 +65,17 @@ class RetryLoop(unittest.TestCase):
         self.assertEqual(result["runs"][0]["fails"], [])
         self.assertIn("unknown condition candidates ['made_up']", result["runs"][0]["note"])
 
+    def test_the_other_candidate_may_be_named(self):
+        # 후보가 둘일 때 고르지 않은 쪽 이름("수면 부족")을 썼다고 폐기하지 않는다. 후보 밖 이름은 폐기한다.
+        named = {"category": "behavioral", "condition_id": "mood_low", "cites": ["eval:fluids#p1"],
+                 "lines": ["수면 부족과 함께 기분이 가라앉을 가능성이 있어요."]}
+        with mock.patch.object(client, "explain", side_effect=[named]):
+            result = pipeline.explain_verified("caution", FINDINGS, ["mood_low", "sleep_deficit"], PARAS, "ko")
+        self.assertEqual((result["hold"], result["runs"][0]["fails"]), (False, []))
+        with mock.patch.object(client, "explain", side_effect=[named, named]):
+            result = pipeline.explain_verified("caution", FINDINGS, ["mood_low", "dehydration"], PARAS, "ko")
+        self.assertEqual((result["hold"], result["runs"][0]["fails"]), (True, ["wording"]))
+
     def test_malformed_input_holds_instead_of_raising(self):
         # 호출 쪽이 문단·후보·findings 를 잘못 넘겨도 이벤트 처리가 죽지 않는다. 이유는 runs[0].note 에 남는다.
         cases = {
