@@ -1,6 +1,26 @@
 [
-  { "id": "c1", "name": "Crew A", "role": "Flight engineer", "cmo": false },
-  { "id": "c2", "name": "Crew B", "role": "Commander", "cmo": true },
-  { "id": "c3", "name": "Crew C", "role": "Scientist", "cmo": false },
-  { "id": "c4", "name": "Crew D", "role": "Pilot", "cmo": false }
+  {
+    "id": "c1",
+    "name": "C1",
+    "role": "Flight engineer",
+    "cmo": false
+  },
+  {
+    "id": "c2",
+    "name": "C2",
+    "role": "Commander",
+    "cmo": true
+  },
+  {
+    "id": "c3",
+    "name": "C3",
+    "role": "Scientist",
+    "cmo": false
+  },
+  {
+    "id": "c4",
+    "name": "C4",
+    "role": "Pilot",
+    "cmo": false
+  }
 ]

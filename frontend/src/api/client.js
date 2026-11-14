@@ -29,10 +29,9 @@ async function request(path, fixture, options = {}) {
     await new Promise((r) => setTimeout(r, 300)) // small delay so the loading state is visible
     return structuredClone(fixture)
   }
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-  })
+  // Content-Type only when there is a body, so plain GETs skip the CORS preflight
+  const headers = options.body ? { 'Content-Type': 'application/json', ...options.headers } : options.headers
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
   const body = res.status === 204 ? null : await res.json().catch(() => null)
   if (!res.ok) {
     // CONTRACT §5 error shape: { "error": { "code", "message" } }
@@ -43,14 +42,14 @@ async function request(path, fixture, options = {}) {
 
 export const api = {
   // GET /crew/{id}/today -> { status:{level,text}, guide, metrics:[{metric,value,baseline,sd,z}], events, checkin, streak }
-  // lang is sent so the backend can localise status.text and guide lines (requested; ignored until supported)
+  // ?lang=ko localises status.text (guide lines are English for now)
   getToday: (crewId, lang) => request(`/crew/${crewId}/today?lang=${lang}`, todayFixture),
   // POST /crew/{id}/checkin {kind, answers, free_text?} -> updated /today (CONTRACT §5)
-  // answers shape is our proposal (spec §8): { sleep_quality, mood, fatigue: 1-5, symptoms: "none"|"yes" }
-  postCheckin: (crewId, body) =>
-    request(`/crew/${crewId}/checkin`, checkinFixture(body), { method: 'POST', body: JSON.stringify(body) }),
-  // GET /crew -> crew list (CONTRACT: CMO view). Used for names until /today carries the crew profile
+  // answers (agreed with backend): { sleep_quality, mood, fatigue: 1-5 ints, symptoms?: "none"|"yes" }
+  postCheckin: (crewId, body, lang) =>
+    request(`/crew/${crewId}/checkin?lang=${lang}`, checkinFixture(body), { method: 'POST', body: JSON.stringify(body) }),
+  // GET /crew -> [{ id: "c1", name: "C1", ... }] — display names come from here
   getCrew: () => request('/crew', crewFixture),
-  // Mission clock, environment, comm delay, next window. Not in CONTRACT §5 yet — fixture only
+  // GET /mission -> { clock:{sol,time}, environment, one_way_delay_min, next_window }
   getMission: () => request('/mission', missionFixture),
 }

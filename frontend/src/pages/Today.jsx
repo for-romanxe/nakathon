@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client.js'
 import CheckinSheet from '../components/CheckinSheet.jsx'
-import { METRICS, SENSITIVITY, metricLabel, formatMetric } from '../api/contract.js'
+import { METRICS, metricLabel, formatMetric } from '../api/contract.js'
 import { CURRENT_CREW } from '../session.js'
 import { useT } from '../i18n/index.jsx'
 
@@ -31,7 +31,7 @@ export default function Today() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // /crew and /mission are not on the backend yet, so their failure must not break Today
+    // Crew names and the mission clock are extras: if they fail, Today still renders
     Promise.all([
       api.getToday(CURRENT_CREW, lang),
       api.getCrew().catch(() => []),
@@ -46,13 +46,11 @@ export default function Today() {
 
   const { today, crew, mission } = data
   const level = today.status.level
-  // The backend writes status.text in English; Korean uses the dictionary until /today supports ?lang
-  const statusText = lang === 'en' && today.status.text ? today.status.text : t(`today.status.${level}`)
-  const [advisoryLimit] = SENSITIVITY.standard
+  const statusText = today.status.text || t(`today.status.${level}`) // backend localises via ?lang
   const showSheet = !today.checkin.morning_done && !sheetClosed
 
   async function submitCheckin(body) {
-    const updated = await api.postCheckin(CURRENT_CREW, body) // backend recomputes the guide and returns /today
+    const updated = await api.postCheckin(CURRENT_CREW, body, lang) // backend recomputes the guide and returns /today
     setData((d) => ({ ...d, today: updated }))
   }
 
@@ -109,9 +107,8 @@ export default function Today() {
         </div>
         <div className="readouts">
           {today.metrics.map((m) => {
-            // Which metric drove the verdict: the backend's per-metric level when it sends one (requested),
-            // otherwise |z| at or above the contract's advisory limit. The overall verdict stays the backend's.
-            const flagged = m.level ? m.level !== 'normal' : m.z != null && Math.abs(m.z) >= advisoryLimit
+            // Per-metric level comes from the backend rules (metrics[].level); the UI never computes it
+            const flagged = m.level != null && m.level !== 'normal' && m.level !== 'hold'
             const tint = flagged && (level === 'caution' || level === 'warning') ? level : null // advisory stays uncoloured
             const z = formatZ(m.z)
             return (
