@@ -21,9 +21,9 @@ Use the corresponding crew ID in the `X-Demo-Viewer` header for each request.
 | `GET /crew/c4/today` | `advisory` |
 
 The baseline uses population standard deviation over daily averages for the
-most recent 14 prior sols without a symptom event. Each skipped event day
-extends the window backward. Missing measurements in the selected sols or zero
-variance make the corresponding z-score unavailable. Overall warning,
+latest 14 sols with measurements before the current sol, excluding event days.
+Older eligible measurements fill any gaps. Fewer than 14 eligible sols, a
+missing current reading, or zero variance makes the corresponding z-score unavailable. Overall warning,
 caution, and advisory take precedence over hold, while each missing metric
 retains its own hold status. The seeded readings are scenario fixtures and the
 thresholds reproduce the team's demo rules.
