@@ -162,8 +162,9 @@ class MedicationIntakeTest(TestCase):
                 other = api.get(summary_url.replace("synthetic-product", "other-product")).raise_for_status().json()
                 self.assertEqual(other["limit_comparison"], {"status": "hold", "reason": "no_limits"})
                 api.post("/demo/clock", json={"time": "11:00", "sol": 16}).raise_for_status()
-                over = api.get(summary_url).raise_for_status().json()["limit_comparison"]
-                self.assertTrue(over["exceeds_24h_limit"])
+                at_cutoff = api.get(summary_url).raise_for_status().json()
+                self.assertTrue(at_cutoff["limit_comparison"]["exceeds_24h_limit"])
+                self.assertIsNone(at_cutoff["shortest_violating_gap_minutes"])
                 api.post("/demo/clock", json={"time": "13:00", "sol": 16}).raise_for_status()
                 exact = api.get(summary_url).raise_for_status().json()["limit_comparison"]
                 self.assertEqual(exact["minutes_below_minimum_interval"], 0)

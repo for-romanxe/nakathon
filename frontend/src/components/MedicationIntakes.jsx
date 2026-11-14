@@ -65,7 +65,12 @@ export default function MedicationIntakes({ crew }) {
   return (
     <section className="panel">
       <div className="panel-head"><h2>{t('intake.title')}</h2></div>
-      <MedicationReferences reference={reference} disabled={editingLocked} onSelect={(row) => { setReference(row); setAmount('') }} />
+      <MedicationReferences reference={reference} disabled={editingLocked}
+        onSelect={(row) => {
+          if (editingLocked || pending.current !== null) return
+          setReference(row)
+          setAmount('')
+        }} />
       {countUnit && <IntakeSummary key={reference.id} crew={crew} reference={reference} entries={entries} />}
       <div className="panel-empty">
         {countUnit && !reference.intake_limits && <p className="muted">{t('intake.record_only')}</p>}

@@ -126,16 +126,24 @@ def intake_summary(
     shortest_gap = None
     if limits is not None:
         gaps = connection.execute(
-            """SELECT ts, LAG(ts) OVER (ORDER BY ts, id) AS previous
-               FROM medication_intake
-               WHERE crew_id = ? AND product_id = ? AND ts > ? AND ts <= ?""",
-            (crew_id, reference.id, (now - timedelta(hours=24) - timedelta(minutes=limits.minimum_interval_minutes)).isoformat(),
-             now.isoformat()),
+            """WITH previous_intake AS (
+                   SELECT id, ts FROM medication_intake
+                   WHERE crew_id = :crew AND product_id = :product AND ts <= :cutoff
+                   ORDER BY ts DESC, id DESC LIMIT 1
+               ), history AS (
+                   SELECT id, ts FROM previous_intake
+                   UNION ALL
+                   SELECT id, ts FROM medication_intake
+                   WHERE crew_id = :crew AND product_id = :product AND ts > :cutoff AND ts <= :now
+               ), gaps AS (
+                   SELECT ts, LAG(ts) OVER (ORDER BY ts, id) AS previous FROM history
+               )
+               SELECT ts, previous FROM gaps WHERE ts > :cutoff AND previous IS NOT NULL""",
+            {"crew": crew_id, "product": reference.id, "cutoff": cutoff, "now": now.isoformat()},
         )
-        # Include the preceding intake even when it falls before the 24-hour window.
         shortest_gap = min((
             int((datetime.fromisoformat(gap["ts"]) - datetime.fromisoformat(gap["previous"])).total_seconds() // 60)
-            for gap in gaps if gap["previous"] is not None and gap["ts"] > cutoff
+            for gap in gaps
         ), default=None)
     review = review_other_products(connection, crew_id, reference, now, review_minutes, references)
     if limits is None:
@@ -184,6 +192,8 @@ def review_other_products(
     longest = max([review_minutes] + [
         rule.lookback_minutes for rules in rules_by_product.values() for _, rule in rules
     ])
+    # Future intakes are excluded before grouping, so the latest remaining
+    # intake is inside a lookback whenever any intake for that product is.
     rows = connection.execute(
         """SELECT product_id, MAX(ts) AS latest FROM medication_intake
            WHERE crew_id = ? AND ts > ? AND ts <= ? AND (product_id != ? OR product_id IS NULL)
