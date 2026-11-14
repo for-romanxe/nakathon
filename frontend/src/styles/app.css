@@ -381,6 +381,13 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
 }
 .crew-card h2 { display: flex; align-items: center; gap: 8px; }
 .crew-tag { padding: 1px 7px; font-size: 0.72rem; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; }
+/* Demo-mode start screen: one large button per crew member */
+.crew-start { max-width: 640px; margin: 8vh auto 0; }
+.crew-start-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.crew-start-head .rail-lang { margin: 0; }
+.crew-start-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.crew-start-btn { min-height: 96px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.crew-start-id { font-family: var(--mono); font-size: 1.6rem; font-weight: 600; }
 .crew-rows { margin: 0; padding: 4px 16px 12px; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 12px; font-size: 0.9rem; }
 .crew-rows dt { color: var(--muted); font-size: 0.82rem; padding-top: 2px; white-space: nowrap; }
 .crew-rows dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }

@@ -21,13 +21,49 @@ const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000' // CON
 // separate from the per-crew /today objects, so every crew id including c1 has an entry
 const STATUS_TEXT_KO = todayOthersFixture.status_text_ko
 
-// Fixture for POST /checkin: the updated /today with the check-in marked done
-function checkinFixture(body) {
-  return {
-    ...todayFixture,
-    checkin: { ...todayFixture.checkin, [`${body.kind}_done`]: true },
-    streak: todayFixture.streak + (body.kind === 'morning' ? 1 : 0),
+// ---- Fixture-only mission clock: the demo clock moves it in memory, as POST /demo/clock does on the backend ----
+const WINDOW_MINUTES = [8 * 60, 20 * 60] // comm windows 08:00 and 20:00 (backend/mission.py)
+const hhmm = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+const { _note: _missionNote, ...missionStart } = missionFixture
+let fixtureMission = structuredClone(missionStart)
+function moveFixtureClock(update) {
+  const [h, m] = fixtureMission.clock.time.split(':').map(Number)
+  let total = (fixtureMission.clock.sol - 1) * 1440 + h * 60 + m
+  if (update.advance) {
+    const n = Number.parseInt(update.advance, 10)
+    total += update.advance.endsWith('h') ? n * 60 : n
+  } else {
+    const [uh, um] = update.time.split(':').map(Number)
+    total = (update.sol - 1) * 1440 + uh * 60 + um
   }
+  const minute = total % 1440
+  const next = WINDOW_MINUTES.find((w) => w > minute) ?? WINDOW_MINUTES[0]
+  fixtureMission = { ...fixtureMission, clock: { sol: Math.floor(total / 1440) + 1, time: hhmm(minute) }, next_window: hhmm(next) }
+  return structuredClone(fixtureMission)
+}
+
+// ---- Fixture-only check-ins: kept per crew member and sol, so a check-in stays done for the person who made it ----
+const fixtureCheckins = {} // "c3:16" -> { morning: true, evening: true }
+function fixtureToday(crewId, lang) {
+  const base = todayOthersFixture[crewId] ?? todayFixture
+  // this session's fixture reports go only to the crew member who sent them
+  const mine = Object.values(fixtureEvents).filter((e) => e.crew === crewId)
+  const done = fixtureCheckins[`${crewId}:${fixtureMission.clock.sol}`] ?? {}
+  const today = {
+    ...base,
+    events: [...base.events, ...mine].sort((a, b) => b.id - a.id),
+    checkin: { ...base.checkin, ...(done.morning && { morning_done: true }), ...(done.evening && { evening_done: true }) },
+    streak: (base.streak ?? 0) + (done.morning && !base.checkin?.morning_done ? 1 : 0),
+  }
+  // the backend localises status.text via ?lang; the fixtures are English, so swap in its Korean sentence
+  const ko = lang === 'ko' && STATUS_TEXT_KO[crewId]
+  return ko ? { ...today, status: { ...today.status, text: ko } } : today
+}
+// Fixture for POST /checkin: that crew member's /today with the check-in marked done
+function checkinFixture(crewId, body, lang) {
+  const key = `${crewId}:${fixtureMission.clock.sol}`
+  fixtureCheckins[key] = { ...fixtureCheckins[key], [body.kind]: true }
+  return fixtureToday(crewId, lang)
 }
 
 // ---- Fixture-only symptom flow (fake data; the real rules live in backend/events.py) ----
@@ -116,19 +152,11 @@ export const api = {
   // GET /crew/{id}/today -> { status:{level,text}, guide, metrics:[{metric,value,baseline,sd,z}], events, checkin, streak }
   // ?lang=ko localises status.text (guide lines are English for now)
   getToday: (crewId, lang) =>
-    request(`/crew/${crewId}/today?lang=${lang}`, () => {
-      const base = todayOthersFixture[crewId] ?? todayFixture
-      // this session's fixture reports go only to the crew member who sent them
-      const mine = Object.values(fixtureEvents).filter((e) => e.crew === crewId)
-      const today = { ...base, events: [...base.events, ...mine].sort((a, b) => b.id - a.id) }
-      // the backend localises status.text via ?lang; the fixtures are English, so swap in its Korean sentence
-      const ko = lang === 'ko' && STATUS_TEXT_KO[crewId]
-      return ko ? { ...today, status: { ...today.status, text: ko } } : today
-    }),
+    request(`/crew/${crewId}/today?lang=${lang}`, () => fixtureToday(crewId, lang)),
   // POST /crew/{id}/checkin {kind, answers, free_text?} -> updated /today (CONTRACT §5)
   // answers (agreed with backend): { sleep_quality, mood, fatigue: 1-5 ints, symptoms?: "none"|"yes" }
   postCheckin: (crewId, body, lang) =>
-    request(`/crew/${crewId}/checkin?lang=${lang}`, checkinFixture(body), { method: 'POST', body: JSON.stringify(body) }),
+    request(`/crew/${crewId}/checkin?lang=${lang}`, () => checkinFixture(crewId, body, lang), { method: 'POST', body: JSON.stringify(body) }),
   // POST /crew/{id}/symptom {text, lang} -> { event_id, needs_question, question? } (CONTRACT §5)
   postSymptom: (crewId, text, lang) =>
     request(`/crew/${crewId}/symptom`, () => fixtureSymptom({ crewId, text }), {
@@ -199,13 +227,13 @@ export const api = {
   // GET /crew -> [{ id: "c1", name: "C1", ... }] — display names come from here
   getCrew: () => request('/crew', crewFixture),
   // GET /mission -> { clock:{sol,time}, environment, one_way_delay_min, next_window }
-  getMission: () => request('/mission', missionFixture),
+  getMission: () => request('/mission', () => structuredClone(fixtureMission)),
   recordReceipt: (seq, status, attempt) =>
     request(`/tx/${seq}/receipt`, [], { method: 'POST', body: JSON.stringify({ status, attempt }) }),
   simulateTransmission: (seq, amplitude) =>
     request(`/tx/${seq}/simulate`, null, { method: 'POST', body: JSON.stringify({ wide_amplitude: amplitude }) }),
   setDemoClock: (clock) =>
-    request('/demo/clock', missionFixture, { method: 'POST', body: JSON.stringify(clock) }),
+    request('/demo/clock', () => moveFixtureClock(clock), { method: 'POST', body: JSON.stringify(clock) }),
 }
 
 // Pipeline progress for one event (CONTRACT §4 stage names). Calls onStage(stage) as stages arrive and

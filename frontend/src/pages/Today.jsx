@@ -28,8 +28,17 @@ function formatZ(z) {
   return `${r > 0 ? '+' : r < 0 ? '−' : '±'}${Math.abs(r).toFixed(1)}σ`
 }
 
-// Remembers "closed the check-in sheet" per crew and sol, so it stays closed when you come back to Today
+// Remembers "closed the check-in sheet" per crew, sol and kind, so it stays closed when you come back to Today
 let sheetDismissedFor = null
+const EVENING_FROM = 18 // the evening check-out is offered from 18:00 mission time, once the morning one is done
+
+// Which check-in is due now: morning until it is done, then the evening check-out in the evening, else none
+function dueCheckin(checkin, time) {
+  if (!checkin?.morning_done) return 'morning'
+  const hour = Number(String(time ?? '').split(':')[0])
+  if (!checkin.evening_done && hour >= EVENING_FROM) return 'evening'
+  return null
+}
 
 export default function Today() {
   const { t, lang } = useT()
@@ -38,8 +47,9 @@ export default function Today() {
   const navigate = useNavigate()
   const { mission } = useMission()
   const sol = mission?.clock.sol
-  const sheetKey = `${CURRENT_CREW}:${sol}`
   const [, setSheetClosed] = useState(false) // re-render trigger; the source of truth is sheetDismissedFor
+  const due = dueCheckin(data?.checkin, mission?.clock.time)
+  const sheetKey = `${CURRENT_CREW}:${sol}:${due}`
   const sheetClosed = sheetDismissedFor === sheetKey
 
   useEffect(() => {
@@ -66,7 +76,7 @@ export default function Today() {
   const today = data
   const level = today.status.level
   const statusText = today.status.text || t(`today.status.${level}`) // backend localises via ?lang
-  const showSheet = !today.checkin.morning_done && !sheetClosed
+  const showSheet = due != null && !sheetClosed
 
   async function submitCheckin(body) {
     const updated = await api.postCheckin(CURRENT_CREW, body, lang) // backend recomputes the guide and returns /today
@@ -77,14 +87,16 @@ export default function Today() {
     <section className="page">
       {showSheet && (
         <CheckinSheet
+          key={due}
+          kind={due}
           onSubmit={submitCheckin}
           onSymptoms={() => navigate('/log')}
           onClose={() => closeSheet(true)}
         />
       )}
-      {!today.checkin.morning_done && sheetClosed && (
+      {due != null && sheetClosed && (
         <button type="button" className="btn-secondary align-start" onClick={() => closeSheet(false)}>
-          {t('checkin.open')}
+          {t(due === 'evening' ? 'checkin.evening.open' : 'checkin.open')}
         </button>
       )}
       <h1>

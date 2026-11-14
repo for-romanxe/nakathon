@@ -12,7 +12,8 @@ import Warning from './pages/Warning.jsx'
 import Procedures from './pages/Procedures.jsx'
 import Body from './pages/Body.jsx'
 import Settings from './pages/Settings.jsx'
-import { CURRENT_CREW, setSignedInCrew, CREW_IDS } from './session.js'
+import { CURRENT_CREW, setSignedInCrew, CREW_IDS, VIEWER_CHOSEN } from './session.js'
+import CrewStart from './components/CrewStart.jsx'
 import { api } from './api/client.js'
 import { useT } from './i18n/index.jsx'
 
@@ -65,6 +66,8 @@ export default function App() {
       </main>
     )
   }
+  // Demo mode (no access codes): ask who is using the app before showing anyone's records
+  if (!session.login_required && !VIEWER_CHOSEN) return <CrewStart />
   return (
     <div className="app">
       <Rail />
