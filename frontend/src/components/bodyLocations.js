@@ -38,7 +38,8 @@ function sideOf(word) {
 // A report can deny one part while naming another ("가슴 통증은 없고 오른쪽 팔만 아파요", "no chest pain but my right
 // arm hurts"). The text is cut into clauses, and a clause that denies pain or a problem names no part. Only pain
 // / trouble denials count: "왼팔에 힘이 없어요" or "no strength in my left arm" are symptoms, not denials.
-const CLAUSE = /[,.;!?\n]|\s(?:but|and|although|though|while)\s|(?:고|는데|은데|지만|면서)(?=\s)|그리고|하지만|그런데/i
+// "~데 " also ends a clause: 아픈데 / 저린데 are 아프+ㄴ데, not 는데 or 은데 ("다른 데는" has no space after 데)
+const CLAUSE = /[,.;!?\n]|\s(?:but|and|although|though|while)\s|(?:고|는데|은데|데|지만|면서)(?=\s)|그리고|하지만|그런데/i
 const DENIAL = new RegExp([
   '\\bno\\s+(?:\\w+\\s+)?(?:pain|ache|headaches?|migraines?|problems?|issues?|soreness|discomfort)\\b',
   "\\b(?:doesn'?t|does not|don'?t|do not|isn'?t|is not|aren'?t|are not)\\s+(?:hurt|ache|have|feel|sore|painful)",
@@ -56,7 +57,7 @@ const DENIAL = new RegExp([
 // "It hurt, but it's fine now": a denial clause that names no part of its own takes back the clause before it,
 // when that clause is in the past ("아팠는데", "hurt earlier") or the denial says "now" ("지금은 괜찮아요",
 // "fine now", "anymore"). Without either ("왼쪽 다리가 아파요. 다른 데는 괜찮아요") the earlier part stays.
-const PAST_EN = /\b(?:was|were|had|hurt earlier|ached|earlier|yesterday|before|used to)\b|어제|아까|전에/i
+const PAST_EN = /\b(?:was|were|had|hurt earlier|ached|earlier|yesterday|before|used to|until)\b|어제|아까|전에|까지/i
 // Korean past tense puts ㅆ under a syllable, often contracted (아팠, 저렸, 쑤셨, 했): any Hangul syllable with the
 // final consonant ㅆ counts, except 있 ("there is"), which is not a past form
 function isPast(clause) {
@@ -102,7 +103,10 @@ export function locationsInText(text) {
   const kept = clauses.map((clause) => (DENIAL.test(clause) ? [] : partsIn(clause)))
   clauses.forEach((clause, i) => {
     if (i === 0 || !DENIAL.test(clause) || partsIn(clause).length > 0) return
-    if (OTHERS.test(clause) || STILL.test(clauses[i - 1])) return // about the rest, or the part still hurts
+    // about the rest, or the part still hurts now. "계속 / still" in a past clause ("어제까지 계속 아팠는데") only
+    // says it went on until then, so it does not keep the part.
+    const stillNow = STILL.test(clauses[i - 1]) && !isPast(clauses[i - 1])
+    if (OTHERS.test(clause) || stillNow) return
     if (isPast(clauses[i - 1]) || NOW.test(clause)) kept[i - 1] = []
   })
   const out = new Map()
