@@ -43,17 +43,18 @@ export default function Warning() {
       let today = null
       if (!id) {
         today = await api.getToday(CURRENT_CREW, lang)
-        id = [...today.events].reverse().find((e) => e.level === 'warning')?.id
+        id = [...(today.events ?? [])].reverse().find((e) => e.level === 'warning')?.id
       }
       const [firstSteps, tx] = await Promise.all([api.getFirstSteps(), api.getTx().catch(() => [])])
       if (id) {
         const ev = await api.getEvent(id)
-        setWarning({ event: ev, findings: ev.findings, urgent: isUrgentReport(ev), codes: ev.codes })
-        setSteps(firstSteps[ev.codes.find((c) => firstSteps[c]) ?? 'default'])
+        const codes = ev.codes ?? [] // missing fields must not break the warning screen
+        setWarning({ event: ev, findings: ev.findings ?? [], urgent: isUrgentReport(ev), codes })
+        setSteps(firstSteps[codes.find((c) => firstSteps[c]) ?? 'default'])
         setPacket(tx.find((p) => p.event_id === ev.id) ?? null)
         return
       }
-      if (today.metrics.some((m) => m.level === 'warning')) {
+      if ((today.metrics ?? []).some((m) => m.level === 'warning')) {
         setWarning({ event: null, findings: today.metrics, urgent: false, codes: [] })
         setSteps(firstSteps.default)
         setPacket(tx.find((p) => p.kind === 'daily' && p.crew === CURRENT_CREW) ?? null)
