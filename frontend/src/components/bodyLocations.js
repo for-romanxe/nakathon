@@ -45,6 +45,8 @@ const DENIAL = new RegExp([
   '\\bwithout\\s+(?:\\w+\\s+)?pain\\b',
   "(?:\\bis|'s|\\bare|'re|\\bfeels?)\\s+(?:fine|okay|ok|normal|better)\\b",
   '\\b(?:no longer|not anymore)\\b',
+  '\\b(?:went away|has gone|is gone|healed|recovered)\\b',
+  '나았|나아졌|회복(?:됐|되었|했)|사라졌|없어졌',
   '(?:통증|아픔|증상|문제|이상|두통|흉통|복통)(?:은|는|이|가|도)?\\s*없',
   '(?:아프|저리|쑤시)지\\s*(?:는\\s*)?않',
   '안\\s*(?:아프|아파|저리|저려|쑤시|쑤셔)',
@@ -54,8 +56,23 @@ const DENIAL = new RegExp([
 // "It hurt, but it's fine now": a denial clause that names no part of its own takes back the clause before it,
 // when that clause is in the past ("아팠는데", "hurt earlier") or the denial says "now" ("지금은 괜찮아요",
 // "fine now", "anymore"). Without either ("왼쪽 다리가 아파요. 다른 데는 괜찮아요") the earlier part stays.
-const PAST = /(?:았|었|였|했)|\b(?:was|were|had|hurt earlier|ached|earlier|yesterday|before|used to)\b/i
+const PAST_EN = /\b(?:was|were|had|hurt earlier|ached|earlier|yesterday|before|used to)\b|어제|아까|전에/i
+// Korean past tense puts ㅆ under a syllable, often contracted (아팠, 저렸, 쑤셨, 했): any Hangul syllable with the
+// final consonant ㅆ counts, except 있 ("there is"), which is not a past form
+function isPast(clause) {
+  for (const ch of clause) {
+    const code = ch.charCodeAt(0) - 0xac00
+    if (code >= 0 && code < 11172 && code % 28 === 20 && ch !== '있') return true
+  }
+  return PAST_EN.test(clause)
+}
 const NOW = /지금|이제|현재|더\s*이상|\b(?:now|anymore|any more|no longer)\b/i
+// ...but not when the denial is about the other parts ("everything else is fine now", "나머지는 이제 괜찮아요"),
+// or when the earlier clause says it still hurts ("still hurts", "아직", "여전히"): that part is current.
+// ("everything is fine now" / "다 나았어요" with no "else" means the earlier part is fine too, so only words that
+// point away from it count here)
+const OTHERS = /\b(?:else|other|others|rest)\b|다른|나머지|그\s*외|외에는/i
+const STILL = /\bstill\b|아직|여전히|계속/i
 
 // parts named in one clause, before any denial is applied: [{ location, sideStated }]
 function partsIn(clause) {
@@ -85,7 +102,8 @@ export function locationsInText(text) {
   const kept = clauses.map((clause) => (DENIAL.test(clause) ? [] : partsIn(clause)))
   clauses.forEach((clause, i) => {
     if (i === 0 || !DENIAL.test(clause) || partsIn(clause).length > 0) return
-    if (PAST.test(clauses[i - 1]) || NOW.test(clause)) kept[i - 1] = []
+    if (OTHERS.test(clause) || STILL.test(clauses[i - 1])) return // about the rest, or the part still hurts
+    if (isPast(clauses[i - 1]) || NOW.test(clause)) kept[i - 1] = []
   })
   const out = new Map()
   for (const { location, sideStated } of kept.flat()) {
