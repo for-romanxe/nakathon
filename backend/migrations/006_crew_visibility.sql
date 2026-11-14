@@ -1,0 +1,4 @@
+BEGIN IMMEDIATE;
+ALTER TABLE crew ADD COLUMN cmo_access INTEGER NOT NULL DEFAULT 1 CHECK (cmo_access IN (0, 1));
+PRAGMA user_version = 6;
+COMMIT;

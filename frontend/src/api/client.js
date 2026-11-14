@@ -7,6 +7,7 @@ import missionFixture from './fixtures/mission.json'
 import eventCautionFixture from './fixtures/event_caution.json'
 import eventWarningFixture from './fixtures/event_warning.json'
 import { PIPELINE_STAGES } from './contract.js'
+import { CURRENT_CREW } from '../session.js'
 
 export const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES !== 'false'
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000' // CONTRACT §1
@@ -55,8 +56,8 @@ async function request(path, fixture, options = {}) {
     await wait(300) // small delay so the loading state is visible
     return structuredClone(typeof fixture === 'function' ? fixture() : fixture)
   }
-  // Content-Type only when there is a body, so plain GETs skip the CORS preflight
-  const headers = options.body ? { 'Content-Type': 'application/json', ...options.headers } : options.headers
+  const headers = { 'X-Demo-Viewer': CURRENT_CREW, ...options.headers }
+  if (options.body) headers['Content-Type'] = 'application/json'
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
   const body = res.status === 204 ? null : await res.json().catch(() => null)
   if (!res.ok) {
@@ -67,6 +68,14 @@ async function request(path, fixture, options = {}) {
 }
 
 export const api = {
+  selectViewer: (id) => request(`/demo/viewer/${id}`, () => ({ id }), { method: 'POST' }),
+  getSettings: () => request('/settings', () => ({
+    cmo_access: localStorage.getItem(`crew-health-cmo-${CURRENT_CREW}`) !== 'false',
+  })),
+  setSettings: (settings) => request('/settings', () => {
+    localStorage.setItem(`crew-health-cmo-${CURRENT_CREW}`, String(settings.cmo_access))
+    return settings
+  }, { method: 'PUT', body: JSON.stringify(settings) }),
   // GET /crew/{id}/today -> { status:{level,text}, guide, metrics:[{metric,value,baseline,sd,z}], events, checkin, streak }
   // ?lang=ko localises status.text (guide lines are English for now)
   getToday: (crewId, lang) =>
@@ -136,7 +145,7 @@ export function runPipeline(eventId, { urgent, onStage }) {
   return new Promise((resolve) => {
     let source
     try {
-      source = new EventSource(`${API_BASE}/events/${eventId}/stream`)
+      source = new EventSource(`${API_BASE}/events/${eventId}/stream?demo_viewer=${CURRENT_CREW}`)
     } catch {
       resolve('unavailable')
       return

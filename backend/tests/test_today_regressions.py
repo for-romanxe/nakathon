@@ -26,9 +26,9 @@ class TodayRegressions(TestCase):
         with closing(connect(self.db_path)) as db, db:
             db.execute("UPDATE sample SET value = 75 WHERE crew_id = 'c2' AND metric = 'hr' AND mission_day = 15")
         self.client.post("/demo/clock", json={"sol": 15, "time": "08:00"}).raise_for_status()
-        self.assertEqual(self.client.get("/crew/c2/today").json()["status"]["level"], "advisory")
+        self.assertEqual(self.client.get("/crew/c2/today", headers={"X-Demo-Viewer": "c2"}).json()["status"]["level"], "advisory")
         self.client.post("/demo/clock", json={"sol": 16, "time": "08:00"}).raise_for_status()
-        self.assertEqual(self.client.get("/crew/c2/today").json()["status"]["level"], "normal")
+        self.assertEqual(self.client.get("/crew/c2/today", headers={"X-Demo-Viewer": "c2"}).json()["status"]["level"], "normal")
 
     def test_next_window_reports_next_opening(self):
         for time, next_window in (
@@ -58,15 +58,15 @@ class TodayRegressions(TestCase):
 
     def test_event_day_is_excluded_only_while_inside_baseline(self):
         self.client.post("/demo/clock", json={"sol": 2, "time": "10:00"}).raise_for_status()
-        self.client.post("/crew/c2/symptom", json={"text": "Dizzy", "lang": "en"}).raise_for_status()
+        self.client.post("/crew/c2/symptom", headers={"X-Demo-Viewer": "c2"}, json={"text": "Dizzy", "lang": "en"}).raise_for_status()
 
         self.client.post("/demo/clock", json={"sol": 16, "time": "10:00"}).raise_for_status()
-        metric = self.client.get("/crew/c2/today").json()["metrics"][0]
+        metric = self.client.get("/crew/c2/today", headers={"X-Demo-Viewer": "c2"}).json()["metrics"][0]
         self.assertEqual(metric["hold_reason"], "insufficient_baseline")
         self.assertIsNotNone(metric["value"])
 
         self.client.post("/demo/clock", json={"sol": 17, "time": "10:00"}).raise_for_status()
-        metric = self.client.get("/crew/c2/today").json()["metrics"][0]
+        metric = self.client.get("/crew/c2/today", headers={"X-Demo-Viewer": "c2"}).json()["metrics"][0]
         self.assertIsNotNone(metric["baseline"])
         self.assertEqual(metric["hold_reason"], "missing_reading")
 

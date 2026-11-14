@@ -11,6 +11,8 @@ The server creates and seeds `data/crew-health.sqlite3` on startup. It keeps
 existing rows across restarts. The demo clock starts at Sol 16, 06:12 and exposes
 synthetic crew data on localhost. Use only synthetic data with this demo endpoint.
 
+Use the corresponding crew ID in the `X-Demo-Viewer` header for each request.
+
 | Request | Expected status level |
 | --- | --- |
 | `GET /crew/c1/today` | `caution` |
@@ -84,8 +86,22 @@ paragraphs by symptom code. Code matches and citation checks do not validate
 medical advice or guarantee that the text supports each sentence. The repo
 does not bundle a reviewed evidence corpus.
 
-Crew access controls are pending. Use these localhost endpoints with synthetic
-data only.
+### Demo crew access
+
+Use Settings to switch between C1–C4 and change whether the crew medical officer
+can read the selected crew member's records. This preference is stored per crew
+member and defaults to on. Owners can read and modify their own records. The
+medical officer (C2) can read another member's records when allowed and can open
+marked reports from the Crew page. The roster and transmission controls are
+restricted to the medical officer. Turning access off hides that member's
+packets and pauses their dispatch until access is restored.
+
+For direct requests, pass `X-Demo-Viewer: c1` through `c4` (default `c1`).
+EventSource passes the same ID in `demo_viewer`. `GET /settings` reads the
+selected viewer's preference and `PUT /settings` accepts
+`{"cmo_access":false}`. `POST /demo/viewer/{id}` validates a demo selection.
+The caller supplies the role for rehearsal. This is not authentication and is
+intended only for synthetic localhost data.
 
 ### Event follow-up
 
@@ -138,6 +154,8 @@ error correction or framing overhead and does not change packet delivery
 status. It runs independently of the mission clock and transmission window.
 
 ### Frontend integration
+
+Use `X-Demo-Viewer: c2` for all transmission API calls in this walkthrough.
 
 Render the queue from `GET /tx`. Each row has `seq`, `crew`, `event_id`,
 `kind`, `priority`, `status`, `attempts`, `window_id`, `hash`, and `payload`.

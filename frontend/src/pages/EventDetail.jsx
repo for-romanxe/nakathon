@@ -6,6 +6,7 @@ import { Link, useParams } from 'react-router-dom'
 import { api } from '../api/client.js'
 import { METRICS, VERIFY_CHECKS, OVERRIDE_REASONS, metricLabel, formatMetric, conditionLabel, isUrgentReport, formatTs } from '../api/contract.js'
 import { useT } from '../i18n/index.jsx'
+import { CURRENT_CREW } from '../session.js'
 
 const ICONS = { normal: '✔', advisory: '•', caution: '▲', warning: '✖', hold: '↻' }
 
@@ -45,7 +46,7 @@ function EventDetails({ id }) {
       <Facts event={event} />
       <Guidance event={event} />
       <Verification event={event} />
-      <Response event={event} onSave={setEvent} />
+      {event.crew === CURRENT_CREW && <Response event={event} onSave={setEvent} />}
     </section>
   )
 }

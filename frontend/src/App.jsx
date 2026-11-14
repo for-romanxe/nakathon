@@ -8,6 +8,8 @@ import Crew from './pages/Crew.jsx'
 import Placeholder from './pages/Placeholder.jsx'
 import Log from './pages/Log.jsx'
 import EventDetail from './pages/EventDetail.jsx'
+import Settings from './pages/Settings.jsx'
+import { CURRENT_CREW } from './session.js'
 
 export default function App() {
   return (
@@ -22,8 +24,8 @@ export default function App() {
           <Route path="/trends" element={<Placeholder titleKey="nav.trends" />} />
           <Route path="/log" element={<Log />} />
           <Route path="/procedures" element={<Placeholder titleKey="nav.procedures" />} />
-          <Route path="/crew" element={<Crew />} />
-          <Route path="/settings" element={<Placeholder titleKey="nav.settings" />} />
+          <Route path="/crew" element={CURRENT_CREW === 'c2' ? <Crew /> : <Navigate to="/today" replace />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/events/:id" element={<EventDetail />} />
           <Route path="/warning" element={<Placeholder titleKey="page.warning" />} />
         </Routes>

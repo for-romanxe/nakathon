@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api, USE_FIXTURES } from '../api/client.js'
 import { useT } from '../i18n/index.jsx'
 import { useMission } from '../mission.jsx'
@@ -46,7 +47,14 @@ export default function Crew() {
     <section className="page">
       <h1>{t('nav.crew')}</h1>
       <ul className="panel guide">
-        {crew.map(member => <li key={member.id}><strong>{member.name}</strong><span>{member.role}</span></li>)}
+        {crew.map(member => (
+          <li key={member.id}>
+            <strong>{member.name}</strong><span>{member.role}</span>
+            {(member.shared_event_ids ?? []).map(id => (
+              <Link key={id} to={`/events/${id}`}>{t('log.open_event')} #{id}</Link>
+            ))}
+          </li>
+        ))}
       </ul>
       <h2>{t('tx.title')}</h2>
       {USE_FIXTURES && <p className="muted">{t('tx.connect')}</p>}

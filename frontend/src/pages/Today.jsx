@@ -39,9 +39,8 @@ export default function Today() {
   const sheetClosed = sheetDismissedFor === sheetKey
 
   useEffect(() => {
-    // Crew names are an extra: if /crew fails, Today still renders. Refetch when the demo clock moves to a new sol
-    Promise.all([api.getToday(CURRENT_CREW, lang), api.getCrew().catch(() => [])])
-      .then(([today, crew]) => setData({ today, crew: crew.find((c) => c.id === CURRENT_CREW) }))
+    api.getToday(CURRENT_CREW, lang)
+      .then(setData)
       .catch(setError)
   }, [lang, sol])
 
@@ -53,14 +52,14 @@ export default function Today() {
   if (error) return <section className="page"><p className="error">{t('common.error')}</p></section>
   if (!data) return <section className="page"><p className="muted">{t('common.loading')}</p></section>
 
-  const { today, crew } = data
+  const today = data
   const level = today.status.level
   const statusText = today.status.text || t(`today.status.${level}`) // backend localises via ?lang
   const showSheet = !today.checkin.morning_done && !sheetClosed
 
   async function submitCheckin(body) {
     const updated = await api.postCheckin(CURRENT_CREW, body, lang) // backend recomputes the guide and returns /today
-    setData((d) => ({ ...d, today: updated }))
+    setData(updated)
   }
 
   return (
@@ -78,9 +77,7 @@ export default function Today() {
         </button>
       )}
       <h1>
-        {crew
-          ? t(mission ? greetingKey(mission.clock.time) : 'today.greeting.day', { name: crew.name })
-          : t('today.greeting.generic')}
+        {t(mission ? greetingKey(mission.clock.time) : 'today.greeting.day', { name: CURRENT_CREW.toUpperCase() })}
       </h1>
       <p className={`status lv-${level}`}>
         <span aria-hidden="true">{LEVEL_ICONS[level]}</span>

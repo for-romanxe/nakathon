@@ -28,6 +28,8 @@ export default {
   'nav.procedures': '절차서',
   'nav.crew': '승무원',
   'nav.settings': '설정',
+  'settings.viewer': '시연 승무원',
+  'settings.cmo_access': '의료 담당이 내 기록을 볼 수 있도록 허용',
   'page.event': '이벤트 상세',
   'page.warning': '경보',
   'placeholder.todo': '이 화면은 아직 만들지 않았어요.',

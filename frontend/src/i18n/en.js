@@ -1,5 +1,7 @@
 // English dictionary (primary). Every key here must also exist in ko.js.
 export default {
+  'settings.viewer': 'Demo crew member',
+  'settings.cmo_access': 'Allow the medical officer to view my records',
   'tx.title': 'Earth transmission queue',
   'tx.connect': 'Connect the demo backend to transmit and compare packets.',
   'tx.queue_daily': 'Queue daily summaries',
