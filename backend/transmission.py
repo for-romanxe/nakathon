@@ -85,7 +85,7 @@ def record_delivery(connection: sqlite3.Connection, seq: int, result: DeliveryRe
     cursor = connection.execute(
         """UPDATE tx_packet SET status = ?
            WHERE seq = ? AND attempts = ?
-             AND (status = 'sent' OR (status = 'missing' AND ? = 'acked') OR status = ?)""",
-        (result.status, seq, result.attempt, result.status, result.status),
+             AND (status = 'sent' OR (? = 'acked' AND status IN ('missing', 'acked')))""",
+        (result.status, seq, result.attempt, result.status),
     )
     return cursor.rowcount == 1

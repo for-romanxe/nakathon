@@ -29,8 +29,10 @@ class Checkin(BaseModel):
                 score = self.answers[key]
                 if type(score) is not int or not 1 <= score <= 5:
                     raise ValueError(f"{key} must be an integer from 1 to 5.")
-        if "symptoms" in self.answers and self.answers["symptoms"] not in ("none", "yes"):
-            raise ValueError("symptoms must be none or yes.")
+        if "symptoms" in self.answers:
+            symptoms = self.answers["symptoms"]
+            if not isinstance(symptoms, str) or symptoms not in ("none", "yes"):
+                raise ValueError("symptoms must be none or yes.")
         try:
             json.dumps(self.answers, allow_nan=False)
         except ValueError as error:

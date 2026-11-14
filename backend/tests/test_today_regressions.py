@@ -22,6 +22,33 @@ class TodayRegressions(TestCase):
         self.assertEqual(error["code"], "invalid_request")
         self.assertIsInstance(error["message"], str)
 
+    def test_yesterdays_outlier_does_not_raise_todays_status(self):
+        with closing(connect(self.db_path)) as db, db:
+            db.execute("UPDATE sample SET value = 75 WHERE crew_id = 'c2' AND metric = 'hr' AND mission_day = 15")
+        self.client.post("/demo/clock", json={"sol": 15, "time": "08:00"}).raise_for_status()
+        self.assertEqual(self.client.get("/crew/c2/today").json()["status"]["level"], "advisory")
+        self.client.post("/demo/clock", json={"sol": 16, "time": "08:00"}).raise_for_status()
+        self.assertEqual(self.client.get("/crew/c2/today").json()["status"]["level"], "normal")
+
+    def test_next_window_reports_next_opening(self):
+        for time, next_window in (
+            ("07:59", "08:00"), ("08:00", "20:00"), ("08:29", "20:00"),
+            ("08:30", "20:00"), ("19:59", "20:00"), ("20:00", "08:00"),
+        ):
+            with self.subTest(time=time):
+                self.client.post("/demo/clock", json={"sol": 16, "time": time}).raise_for_status()
+                self.assertEqual(self.client.get("/mission").json()["next_window"], next_window)
+
+    def test_checkin_rejects_non_string_symptoms(self):
+        for value in ([], {}, None, True, 1):
+            with self.subTest(value=value):
+                body = {"kind": "morning", "answers": {
+                    "sleep_quality": 3, "mood": 3, "fatigue": 3, "symptoms": value,
+                }}
+                response = self.client.post("/crew/c1/checkin", json=body)
+                self.assertEqual(response.status_code, 422)
+                self.assertEqual(response.json()["error"]["code"], "invalid_request")
+
     def test_event_day_is_excluded_only_while_inside_baseline(self):
         self.client.post("/demo/clock", json={"sol": 2, "time": "10:00"}).raise_for_status()
         self.client.post("/crew/c2/symptom", json={"text": "Dizzy", "lang": "en"}).raise_for_status()

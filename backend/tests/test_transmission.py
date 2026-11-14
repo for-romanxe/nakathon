@@ -25,7 +25,9 @@ class TransmissionTest(TestCase):
             self.assertEqual((sent["status"], sent["attempts"]), ("sent", 1))
             self.assertEqual(client.post("/tx/send").json(), [sent])
             receipt_path = f"/tx/{seq}/receipt"
-            missing, = client.post(receipt_path, json={"status": "missing", "attempt": 1}).json()
+            missing_receipt = {"status": "missing", "attempt": 1}
+            missing, = client.post(receipt_path, json=missing_receipt).raise_for_status().json()
+            self.assertEqual(client.post(receipt_path, json=missing_receipt).status_code, 409)
             self.assertEqual(client.post("/tx/send").json(), [missing])
 
             client.post("/demo/clock", json={"sol": 16, "time": "20:00"}).raise_for_status()

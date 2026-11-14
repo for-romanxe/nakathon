@@ -79,7 +79,9 @@ number are kept for retries.
   format as `POST /tx`.
 - `POST /tx/{seq}/receipt` accepts `{"status":"acked","attempt":1}` or
   `{"status":"missing","attempt":1}`. A missing packet can be sent again in
-  a later window. Use the packet's current `attempts` value when sending a receipt.
+  a later window. A duplicate missing receipt returns HTTP 409. An ACK can
+  still confirm the current attempt before a retry. Use the packet's current
+  `attempts` value when sending a receipt.
 
 The send and receipt routes simulate delivery; data stays in the local SQLite
 database.
