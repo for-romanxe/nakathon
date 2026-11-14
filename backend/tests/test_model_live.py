@@ -100,7 +100,8 @@ class LiveModel(unittest.TestCase):
                 user = Stub.seen[0][1]["messages"][1]["content"]
                 self.assertIn("[1] Stand up slowly.", user)
                 self.assertNotIn("eval:fluids#p1", user)
-        for cites in ([3], [0], ["fluids#p1"], [True]):
+        # "²", "①" 은 isdigit() 은 참이지만 int() 로 못 바꾼다. 그때도 ValueError 가 아니라 ModelOutputError 여야 한다.
+        for cites in ([3], [0], ["fluids#p1"], [True], ["²"], ["①"], ["1²"]):
             with self.subTest(cites=cites):
                 Stub.reply = completion(json.dumps({**reply, "cites": cites}))
                 with self.assertRaises(client.ModelOutputError):

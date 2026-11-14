@@ -125,7 +125,12 @@ def _among_candidates(out: dict, candidates: list) -> dict:
 
 def _cite_id(cite, paragraphs: list):
     """문단 번호(1부터, 정수나 숫자 문자열) → 문단 id. 범위 밖이거나 다른 값이면 그대로 두어 스키마 검사에서 걸리게 한다."""
-    number = int(cite) if isinstance(cite, str) and cite.isdigit() else cite
+    number = cite
+    if isinstance(cite, str) and cite.isdigit():
+        try:
+            number = int(cite)
+        except ValueError:      # "²", "①" 처럼 isdigit() 은 참이지만 정수로 못 바꾸는 글자
+            return cite
     if isinstance(number, int) and not isinstance(number, bool) and 1 <= number <= len(paragraphs):
         return paragraphs[number - 1]["id"]
     return cite
