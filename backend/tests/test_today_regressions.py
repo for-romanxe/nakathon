@@ -1,4 +1,5 @@
 from contextlib import closing
+from statistics import mean, pstdev
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
@@ -56,19 +57,40 @@ class TodayRegressions(TestCase):
         self.assertEqual(mission["clock"], {"sol": 17, "time": "08:00"})
         self.assertEqual(mission["next_window"], "20:00")
 
-    def test_event_day_is_excluded_only_while_inside_baseline(self):
-        self.client.post("/demo/clock", json={"sol": 2, "time": "10:00"}).raise_for_status()
-        self.client.post("/crew/c2/symptom", headers={"X-Demo-Viewer": "c2"}, json={"text": "Dizzy", "lang": "en"}).raise_for_status()
+    def test_baseline_backfills_event_days_and_keeps_current_readings(self):
+        viewer = {"X-Demo-Viewer": "c2"}
+        for sol in (15, 16):
+            self.client.post("/demo/clock", json={"sol": sol, "time": "10:00"}).raise_for_status()
+            self.client.post("/crew/c2/symptom", headers=viewer, json={"text": "Headache", "lang": "en"}).raise_for_status()
 
-        self.client.post("/demo/clock", json={"sol": 16, "time": "10:00"}).raise_for_status()
-        metric = self.client.get("/crew/c2/today", headers={"X-Demo-Viewer": "c2"}).json()["metrics"][0]
-        self.assertEqual(metric["hold_reason"], "insufficient_baseline")
-        self.assertIsNotNone(metric["value"])
-
+        with closing(connect(self.db_path)) as db, db:
+            db.execute(
+                """INSERT INTO sample (crew_id, metric, ts, mission_day, value, source)
+                   SELECT crew_id, metric, '2026-11-15T06:00:00+00:00', 17, value, 'test'
+                   FROM sample WHERE crew_id = 'c2' AND mission_day = 16"""
+            )
+            history = [
+                row["value"] for row in db.execute(
+                    "SELECT value FROM sample WHERE crew_id = 'c2' AND metric = 'hr' AND mission_day BETWEEN 1 AND 14"
+                )
+            ]
         self.client.post("/demo/clock", json={"sol": 17, "time": "10:00"}).raise_for_status()
-        metric = self.client.get("/crew/c2/today", headers={"X-Demo-Viewer": "c2"}).json()["metrics"][0]
-        self.assertIsNotNone(metric["baseline"])
-        self.assertEqual(metric["hold_reason"], "missing_reading")
+        today = self.client.get("/crew/c2/today", headers=viewer).raise_for_status().json()
+        self.assertEqual(today["status"]["level"], "normal")
+        self.assertTrue(all(metric["hold_reason"] is None for metric in today["metrics"]))
+        hr = next(metric for metric in today["metrics"] if metric["metric"] == "hr")
+        self.assertEqual(hr["baseline"], mean(history))
+        self.assertEqual(hr["sd"], pstdev(history))
+        self.assertEqual(today["events"], [])
+
+    def test_baseline_stays_on_hold_without_fourteen_eligible_sols(self):
+        viewer = {"X-Demo-Viewer": "c2"}
+        self.client.post("/demo/clock", json={"sol": 14, "time": "10:00"}).raise_for_status()
+        self.client.post("/crew/c2/symptom", headers=viewer, json={"text": "Headache", "lang": "en"}).raise_for_status()
+        self.client.post("/demo/clock", json={"sol": 15, "time": "10:00"}).raise_for_status()
+        today = self.client.get("/crew/c2/today", headers=viewer).raise_for_status().json()
+        self.assertEqual(today["status"]["level"], "hold")
+        self.assertTrue(all(metric["hold_reason"] == "insufficient_baseline" for metric in today["metrics"]))
 
     def test_missing_metric_does_not_hide_caution_or_warning(self):
         with closing(connect(self.db_path)) as db, db:

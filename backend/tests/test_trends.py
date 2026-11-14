@@ -1,5 +1,6 @@
 from contextlib import closing
 from pathlib import Path
+from statistics import mean, pstdev
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
@@ -46,7 +47,15 @@ class TrendsTest(TestCase):
         self.api.post("/demo/clock", json={"sol": 13, "time": "08:00"}).raise_for_status()
         event = self.api.post("/crew/c1/symptom", json={"text": "Chest pain", "lang": "en"}).raise_for_status().json()
         self.api.post("/demo/clock", json={"sol": 16, "time": "08:00"}).raise_for_status()
-        self.assertEqual(check(), {"mean": None, "sd": None})
+        with closing(connect(self.path)) as db:
+            history = [
+                row["value"] for row in db.execute(
+                    """SELECT value FROM sample WHERE crew_id = 'c1' AND metric = 'hr'
+                       AND mission_day < 16 AND mission_day != 13"""
+                )
+            ]
+        self.assertEqual(len(history), 14)
+        self.assertEqual(check(), {"mean": mean(history), "sd": pstdev(history)})
         self.assertEqual([row["id"] for row in self.read(7)["events"]], [event["event_id"]])
         self.assertEqual(self.read(2)["events"], [])
 

@@ -55,7 +55,7 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 
 **경보 계층** `level`: `normal` | `advisory` | `caution` | `warning` | `hold`
 - 색: normal=초록(`--normal`), caution=노랑, warning=빨강, advisory·hold=무색. 토큰은 `DESIGN.md`.
-- hold = 기준선 14일 미만 또는 검증 2회 실패("판단 보류").
+- hold = 기준선 14일 미만 또는 검증 2회 실패("판단 보류"). 기준선은 오늘 이전에 측정값이 있고 이벤트가 없었던 최근 14일로 계산한다.
 
 **증상 코드** `codes[]` (14개, ml 학습셋과 동일):
 `chest_pain, shortness_of_breath, dizziness, nausea, headache, fatigue, sleep_issue, musculoskeletal_pain, congestion, skin_rash, vision_change, low_mood, crisis, none`
