@@ -75,6 +75,11 @@ returns an event ID. Read the saved symptom report and its original readings
 with `GET /events/{id}`. Today's events appear in the Today response. Previous
 event days are excluded from the baseline window.
 
+Both event responses include a `locations` array for display. When available,
+the backend stores the extractor's locations in the existing event record.
+Events without known locations, including warnings that bypass extraction,
+return `["unknown"]`. Locations do not change the event level.
+
 The event endpoint returns `event_id`, `urgent`, and `needs_question`, with
 `question` when an answer is needed. A warning bypasses the model. `urgent`
 identifies a warning raised by the report's wording, independently of warnings
