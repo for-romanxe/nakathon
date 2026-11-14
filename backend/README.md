@@ -146,6 +146,21 @@ is disabled in this mode. Sessions expire after eight hours or on backend
 restart. This setup is for one local backend process; it is not a production
 identity system.
 
+### Medication intake records
+
+- `GET /crew/{id}/medication-intakes` returns up to 50 recent entries in
+  `entries`, newest first, with `id`, `name`, `amount`, `ts`, and `mission_day`.
+  The owner can read their records. The medical officer can read them when
+  the owner has enabled medical officer access.
+- `POST /crew/{id}/medication-intakes` accepts a UUID `request_id`, `name`, and
+  `amount`. The owner records a completed intake at the current mission
+  time. Retry with the same UUID and payload to retrieve the saved entry.
+  Reusing a UUID with different details returns HTTP 409.
+
+The Log page uses this API in backend mode. The amount is the crew member's
+reported text. Product guidance and interaction checks require a separate
+reviewed medication catalog.
+
 ### Event follow-up
 
 - `POST /events/{id}/share` persists the event's share flag for the crew medical

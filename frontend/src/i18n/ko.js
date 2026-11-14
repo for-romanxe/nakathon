@@ -327,4 +327,11 @@ export default {
   "trends.show_table": "일별 측정값 표 ({n})",
   "body.figure_unavailable": "여기서는 그림을 그릴 수 없어요. 부위 목록을 이용해 주세요.",
   "body.no_rows": "오늘 이 부위의 측정값이 없어요.",
+  "intake.title": "복용 기록",
+  "intake.name": "복용한 약 이름",
+  "intake.amount": "복용한 양",
+  "intake.save": "복용 기록 저장",
+  "intake.saved": "복용 기록을 저장했어요.",
+  "intake.empty": "복용 기록이 없어요.",
+  "intake.load_failed": "복용 기록을 불러오지 못했어요. 새로고침해서 다시 시도해 주세요.",
 }

@@ -18,6 +18,7 @@ from backend.docs import build_docs
 from backend import event_flow
 from backend.events import EventOverride, SymptomAnswer, SymptomInput, event_payload, save_event
 from backend.link_simulation import LinkSimulation, compare_packet
+from backend.medication import MedicationIntake, read_intakes, save_intake
 from backend.mission import ClockUpdate, DEMO_TIME, active_window, mission_sol, mission_status
 from backend.preflight import PreflightUpdate, read_preflight, save_preflight
 from backend.seed import CONTRACT, CREW, DEMO_DB, seed
@@ -243,6 +244,26 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             raise HTTPException(403, "Crew record write denied.")
         with closing(connect(db_path)) as connection, connection:
             return save_preflight(connection, crew_id, update)
+
+    @app.get("/crew/{crew_id}/medication-intakes")
+    def get_medication_intakes(crew_id: str, member=Depends(viewer)):
+        crew_id = crew_id.lower()
+        with closing(connect(db_path)) as connection, connection:
+            connection.execute("BEGIN")
+            if not can_read_crew(connection, crew_id, member):
+                return crew_not_found()
+            return {"entries": read_intakes(connection, crew_id)}
+
+    @app.post("/crew/{crew_id}/medication-intakes")
+    def post_medication_intake(crew_id: str, entry: MedicationIntake, member=Depends(viewer)):
+        crew_id = crew_id.lower()
+        if member["id"] != crew_id:
+            raise HTTPException(403, "Crew record write denied.")
+        with closing(connect(db_path)) as connection, connection:
+            saved = save_intake(connection, crew_id, entry, clock)
+        if saved is None:
+            return event_error("intake_conflict", "Request ID already used for a different intake.", 409)
+        return saved
 
     @app.get("/crew/{crew_id}/trends")
     def read_trends(crew_id: str, metric: str, days: int = Query(14, ge=1, le=90), member=Depends(viewer)):

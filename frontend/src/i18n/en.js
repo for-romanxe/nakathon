@@ -327,4 +327,11 @@ export default {
   "trends.show_table": "Daily readings table ({n})",
   "body.figure_unavailable": "The figure cannot be drawn here. Use the region list.",
   "body.no_rows": "No readings for this region today.",
+  "intake.title": "Medication intake",
+  "intake.name": "Medication taken",
+  "intake.amount": "Amount taken",
+  "intake.save": "Record intake",
+  "intake.saved": "Intake recorded.",
+  "intake.empty": "No intake records.",
+  "intake.load_failed": "Could not load intake records. Reload to try again.",
 }
