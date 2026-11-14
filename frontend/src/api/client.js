@@ -5,7 +5,7 @@ import todayFixture from './fixtures/today.json'
 import crewFixture from './fixtures/crew.json'
 import missionFixture from './fixtures/mission.json'
 
-const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES !== 'false'
+export const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES !== 'false'
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000' // CONTRACT §1
 
 // Fixture for POST /checkin: the updated /today with the check-in marked done
@@ -52,4 +52,13 @@ export const api = {
   getCrew: () => request('/crew', crewFixture),
   // GET /mission -> { clock:{sol,time}, environment, one_way_delay_min, next_window }
   getMission: () => request('/mission', missionFixture),
+  getTransmissions: () => request('/tx', []),
+  queueDailySummaries: () => request('/tx', [], { method: 'POST', body: JSON.stringify({ daily: true }) }),
+  sendTransmissions: () => request('/tx/send', [], { method: 'POST' }),
+  recordReceipt: (seq, status, attempt) =>
+    request(`/tx/${seq}/receipt`, [], { method: 'POST', body: JSON.stringify({ status, attempt }) }),
+  simulateTransmission: (seq, amplitude) =>
+    request(`/tx/${seq}/simulate`, null, { method: 'POST', body: JSON.stringify({ wide_amplitude: amplitude }) }),
+  setDemoClock: (clock) =>
+    request('/demo/clock', missionFixture, { method: 'POST', body: JSON.stringify(clock) }),
 }
