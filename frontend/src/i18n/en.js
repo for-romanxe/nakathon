@@ -195,4 +195,6 @@ export default {
   "warning.contact_body": "Go to them or use the intercom. This app cannot call anyone yet.",
   "warning.contact_done": "I have contacted the medical officer",
   "warning.contact_noted": "You noted contacting the medical officer at {time}",
+  "log.answer_not_saved": "Your answer could not be saved yet (the server does not take answers). The result below is what the rules decided without it.",
+  "warning.tx.failed": "Sending failed. Check the connection and try again.",
 }

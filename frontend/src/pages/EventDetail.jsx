@@ -121,8 +121,8 @@ function Guidance({ event }) {
                 ? t('event.possibility', { name: conditionLabel(ex.condition_id, lang) })
                 : t('event.condition_unlisted')}
             </b>
-            {ex.lines.map((line, i) => <p key={i}>{line}</p>)}
-            <div className="cites">{ex.cites.map((c) => <span key={c} className="cite">{c}</span>)}</div>
+            {(Array.isArray(ex.lines) ? ex.lines : []).map((line, i) => <p key={i}>{line}</p>)}
+            <div className="cites">{(Array.isArray(ex.cites) ? ex.cites : []).map((c) => <span key={c} className="cite">{c}</span>)}</div>
           </div>
         </li>
         <li>

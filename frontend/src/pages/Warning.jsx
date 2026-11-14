@@ -39,21 +39,21 @@ export default function Warning() {
   useEffect(() => {
     async function load() {
       // ?event=<id> from Log/Event; otherwise today's latest warning event; otherwise a metric at warning
-      let id = params.get('event')
-      let today = null
-      if (!id) {
-        today = await api.getToday(CURRENT_CREW, lang)
-        id = [...(today.events ?? [])].reverse().find((e) => e.level === 'warning')?.id
-      }
       const [firstSteps, tx] = await Promise.all([api.getFirstSteps(), api.getTx().catch(() => [])])
-      if (id) {
-        const ev = await api.getEvent(id)
+      const showEvent = (ev) => {
         const codes = ev.codes ?? [] // missing fields must not break the warning screen
         setWarning({ event: ev, findings: ev.findings ?? [], urgent: isUrgentReport(ev), codes })
         setSteps(firstSteps[codes.find((c) => firstSteps[c]) ?? 'default'])
         setPacket(tx.find((p) => p.event_id === ev.id) ?? null)
-        return
       }
+      const asked = params.get('event')
+      if (asked) {
+        const ev = await api.getEvent(asked).catch(() => null) // gone or unreadable: fall back to today below
+        if (ev?.level === 'warning') return showEvent(ev)
+      }
+      const today = await api.getToday(CURRENT_CREW, lang)
+      const id = [...(today.events ?? [])].reverse().find((e) => e.level === 'warning')?.id
+      if (id) return showEvent(await api.getEvent(id))
       if ((today.metrics ?? []).some((m) => m.level === 'warning')) {
         setWarning({ event: null, findings: today.metrics, urgent: false, codes: [] })
         setSteps(firstSteps.default)
@@ -98,16 +98,23 @@ export default function Warning() {
   }
 
   async function sendNow() {
-    // an event warning sends its event summary; a metrics-only warning goes with today's summary
-    const queue = packet ? await api.sendTx() : await (event ? api.queueTx(event.id) : api.queueDaily()).then(() => api.sendTx())
-    const p = queue.find((x) => (event ? x.event_id === event.id : x.kind === 'daily' && x.crew === CURRENT_CREW)) ?? null
-    setPacket(p)
-    setSendNote(p?.status === 'queued' ? t('warning.tx.no_window', { time: mission?.next_window ?? '–' }) : null)
-    refreshMission()
+    try {
+      // an event warning sends its event summary; a metrics-only warning goes with today's summary
+      const queue = packet ? await api.sendTx() : await (event ? api.queueTx(event.id) : api.queueDaily()).then(() => api.sendTx())
+      const p = queue.find((x) => (event ? x.event_id === event.id : x.kind === 'daily' && x.crew === CURRENT_CREW)) ?? null
+      setPacket(p)
+      setSendNote(p?.status === 'queued' ? t('warning.tx.no_window', { time: mission?.next_window ?? '–' }) : null)
+      refreshMission()
+    } catch {
+      setSendNote(t('warning.tx.failed')) // the send button stays, so it can be retried
+    }
   }
 
   // Earliest reply: a packet still waiting leaves at the next window; one already out left about now
-  const leavesAt = packet && packet.status !== 'queued' && packet.status !== 'missing' ? mission?.clock.time : mission?.next_window
+  const leavesAt = packet && packet.status !== 'queued' && packet.status !== 'missing' ? mission?.clock?.time : mission?.next_window
+  const hasTime = typeof leavesAt === 'string' && /^\d{2}:\d{2}$/.test(leavesAt)
+  // 3) step list for the current language, falling back to English, never undefined
+  const stepList = steps?.steps?.[lang] ?? steps?.steps?.en ?? []
 
   return (
     <div className="warning-screen" role="alertdialog" aria-labelledby="warning-title" aria-describedby="warning-report">
@@ -122,7 +129,7 @@ export default function Warning() {
         <section className="warning-block">
           <h2>{t('warning.first_steps')}</h2>
           <ol className="warning-steps">
-            {steps?.steps[lang].map((s, i) => <li key={i}>{s}</li>)}
+            {stepList.map((s, i) => <li key={i}>{s}</li>)}
           </ol>
           {steps && <span className="cite">{steps.doc}</span>}
         </section>
@@ -157,7 +164,7 @@ export default function Warning() {
               ? t(`warning.tx.${packet.status}`, { time: mission?.next_window ?? '–' })
               : t('warning.tx.none')}
           </p>
-          {mission && (
+          {mission && hasTime && (
             <p className="muted num">
               {t('warning.tx.delay', {
                 n: mission.one_way_delay_min,

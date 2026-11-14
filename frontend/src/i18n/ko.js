@@ -195,4 +195,6 @@ export default {
   "warning.contact_body": "직접 찾아가거나 인터컴을 쓰세요. 이 앱은 아직 호출 기능이 없어요.",
   "warning.contact_done": "의료 담당에게 연락했어요",
   "warning.contact_noted": "{time}에 의료 담당에게 연락했다고 기록했어요",
+  "log.answer_not_saved": "답변을 아직 저장할 수 없어요(서버가 답변을 받지 않아요). 아래 결과는 답변 없이 규칙이 판정한 내용이에요.",
+  "warning.tx.failed": "전송하지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
 }

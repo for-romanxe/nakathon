@@ -77,7 +77,8 @@ export default function Log() {
     setPhase('running')
     update(item.key, { answered: value })
     try {
-      await api.postAnswer(item.eventId, value)
+      const { saved } = await api.postAnswer(item.eventId, value)
+      if (!saved) push({ kind: 'note', text: t('log.answer_not_saved') }) // finish() then shows the event as it really is
       await finish(item.eventId, false)
     } catch {
       push({ kind: 'error' })
@@ -116,6 +117,7 @@ export default function Log() {
               )}
               {item.kind === 'pipeline' && <PipelineProgress stages={item.stages} final={item.final} />}
               {item.kind === 'result' && <ResultCard event={item.event} />}
+              {item.kind === 'note' && <p className="bubble-sys muted">{item.text}</p>}
               {item.kind === 'error' && <p className="bubble-sys error">{t('log.error')}</p>}
             </li>
           ))}
