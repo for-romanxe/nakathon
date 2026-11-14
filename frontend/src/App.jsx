@@ -6,11 +6,11 @@ import Footer from './components/Footer.jsx'
 import Topbar from './components/Topbar.jsx'
 import Today from './pages/Today.jsx'
 import Crew from './pages/Crew.jsx'
-import Placeholder from './pages/Placeholder.jsx'
 import Log from './pages/Log.jsx'
 import EventDetail from './pages/EventDetail.jsx'
 import Warning from './pages/Warning.jsx'
 import Procedures from './pages/Procedures.jsx'
+import Body from './pages/Body.jsx'
 import Settings from './pages/Settings.jsx'
 import { CURRENT_CREW, setSignedInCrew, CREW_IDS } from './session.js'
 import { api } from './api/client.js'
@@ -73,7 +73,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/today" replace />} />
           <Route path="/today" element={<Today />} />
-          <Route path="/body" element={<Placeholder titleKey="nav.body" />} />
+          <Route path="/body" element={<Body />} />
           <Route path="/trends" element={<Suspense fallback={<p role="status">{t('common.loading')}</p>}><Trends /></Suspense>} />
           <Route path="/log" element={<Log />} />
           <Route path="/procedures" element={<Procedures />} />
