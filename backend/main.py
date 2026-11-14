@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager, closing
 from threading import Lock
 from typing import Literal
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -16,8 +16,9 @@ from backend import event_flow
 from backend.events import EventOverride, SymptomAnswer, SymptomInput, event_payload, save_event
 from backend.link_simulation import LinkSimulation, compare_packet
 from backend.mission import ClockUpdate, DEMO_TIME, active_window, mission_sol, mission_status
-from backend.seed import CREW, DEMO_DB, seed
+from backend.seed import CONTRACT, CREW, DEMO_DB, seed
 from backend.today import today
+from backend.trends import trends
 from backend.transmission import (
     DeliveryResult, QueueRequest, dispatch, enqueue_daily, enqueue_event, packets, record_delivery, visible_packet,
 )
@@ -118,6 +119,12 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
         if event is not None and not may_access(member, get_crew_member(event["crew_id"]), write=write):
             raise HTTPException(403, "Event access denied.")
 
+    def can_read_crew(connection, crew_id, member):
+        crew = connection.execute("SELECT id, cmo_access FROM crew WHERE id = ?", (crew_id,)).fetchone()
+        if crew is not None and not may_access(member, crew):
+            raise HTTPException(403, "Crew record access denied.")
+        return crew is not None
+
     @app.exception_handler(HTTPException)
     async def http_error(request, error: HTTPException):
         code = {401: "unauthorized", 403: "forbidden"}.get(error.status_code, "http_error")
@@ -200,12 +207,20 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
     def read_today(crew_id: str, lang: Literal["en", "ko"] = "en", member=Depends(viewer)):
         crew_id = crew_id.lower()
         with closing(connect(db_path)) as connection:
-            crew = connection.execute("SELECT id, cmo_access FROM crew WHERE id = ?", (crew_id,)).fetchone()
-            if crew is None:
+            if not can_read_crew(connection, crew_id, member):
                 return crew_not_found()
-            if not may_access(member, crew):
-                raise HTTPException(403, "Crew record access denied.")
             return today(connection, crew_id, mission_sol(clock), lang)
+
+    @app.get("/crew/{crew_id}/trends")
+    def read_trends(crew_id: str, metric: str, days: int = Query(14, ge=1, le=90), member=Depends(viewer)):
+        if metric not in CONTRACT["metrics"]:
+            return event_error("invalid_request", "Unknown metric.", 422)
+        crew_id = crew_id.lower()
+        with closing(connect(db_path)) as connection, connection:
+            connection.execute("BEGIN")
+            if not can_read_crew(connection, crew_id, member):
+                return crew_not_found()
+            return trends(connection, crew_id, metric, days, mission_sol(clock))
 
     @app.post("/crew/{crew_id}/checkin")
     def submit_checkin(crew_id: str, checkin: Checkin, lang: Literal["en", "ko"] = "en", member=Depends(viewer)):

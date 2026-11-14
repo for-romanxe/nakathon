@@ -30,6 +30,12 @@ thresholds reproduce the team's demo rules.
 Display names are C1 through C4. Crew IDs remain `c1` through `c4` in storage
 and both spellings work in these URLs.
 
+`GET /crew/{id}/trends?metric=hr&days=7` returns daily mean readings,
+the current 14-sol baseline as `baseline.mean` and `baseline.sd`, and
+events within the requested window. The window ends at the current
+mission sol and defaults to 14 sols (range: 1–90). Days without measurements
+have no point. The read permissions are the same as Today.
+
 `POST /crew/c1/checkin` saves a check-in and returns the updated Today response.
 Example morning request:
 
