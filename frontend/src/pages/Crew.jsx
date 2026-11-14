@@ -231,7 +231,7 @@ export default function Crew() {
         {queueError && <p className="panel-empty error">{t('crew.tx.error')}</p>}
         {!queueError && queue?.length === 0 && <p className="panel-empty muted">{t('tx.empty')}</p>}
         {!queueError && !queue && <p className="panel-empty muted">{t('common.loading')}</p>}
-        {queue?.length > 0 && (
+        {!queueError && queue?.length > 0 && ( /* a failed reload must not leave the old queue on screen */
           <table className="facts-table">
             <thead>
               <tr>
