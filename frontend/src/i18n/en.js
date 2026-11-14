@@ -303,6 +303,8 @@ export default {
   "body.legend.caution": "Caution",
   "body.legend.warning": "Warning",
   "body.legend.hold": "Not judged yet (hold)",
+  "body.legend.no_sensor": "No sensor (right arm)",
+  "body.no_sensor": "No sensor on the right arm. The band is on the left wrist (EDA).",
   "body.region.head": "Head · Sleep",
   "body.region.heart": "Heart · Circulation",
   "body.region.core": "Torso · Temperature",

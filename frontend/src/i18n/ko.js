@@ -303,6 +303,8 @@ export default {
   "body.legend.caution": "주의",
   "body.legend.warning": "경보",
   "body.legend.hold": "아직 판정 전 (보류)",
+  "body.legend.no_sensor": "센서 없음 (오른팔)",
+  "body.no_sensor": "오른팔에는 센서가 없어요. 밴드는 왼쪽 손목(EDA)에 있어요.",
   "body.region.head": "머리 · 수면",
   "body.region.heart": "심장 · 순환",
   "body.region.core": "몸통 · 체온",

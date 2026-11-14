@@ -337,7 +337,8 @@ a.cite:hover { text-decoration: underline; }
 .cell-caution, .body-legend .cell-caution { fill: var(--caution); background: var(--caution); }
 .cell-warning, .body-legend .cell-warning { fill: var(--warning); background: var(--warning); }
 .cell-hold, .body-legend .cell-hold { fill: color-mix(in srgb, var(--hold) 25%, transparent); background: color-mix(in srgb, var(--hold) 25%, transparent); }
-.cell-selected { stroke: var(--accent); stroke-width: 0.8; }
+.cell-selected { stroke: var(--accent); stroke-width: 0.5; }
+.body-legend .cell-base { background: var(--line); }
 @media (prefers-reduced-motion: no-preference) {
   .cell-warning { animation: cell-pulse 1.6s ease-in-out infinite; }
   @keyframes cell-pulse { 50% { opacity: 0.55; } }

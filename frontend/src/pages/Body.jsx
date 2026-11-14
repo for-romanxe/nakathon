@@ -52,6 +52,7 @@ export default function Body() {
   const sol = mission?.clock?.sol
   const [result, setResult] = useState(null)
   const [picked, setPicked] = useState(null)
+  const [noSensor, setNoSensor] = useState(false) // the last figure click was on the right arm (no sensor)
   const [openable, setOpenable] = useState({}) // "doc#pN" -> true when that paragraph exists on this device
   const key = `${lang}:${sol}`
 
@@ -129,7 +130,7 @@ export default function Body() {
             {regions.map((r) => (
               <li key={r.id}>
                 <button type="button" className={r.id === selectedId ? 'on' : ''} aria-pressed={r.id === selectedId}
-                  onClick={() => setPicked(r.id)}>
+                  onClick={() => { setNoSensor(false); setPicked(r.id) }}>
                   <span className={`badge ${badgeClass(r.level)}`}>{LEVEL_ICONS[r.level]} {t(`level.${r.level}`)}</span>
                   <span>{t(`body.region.${r.id}`)}</span>
                 </button>
@@ -141,6 +142,7 @@ export default function Body() {
             <li><i className="sw cell-caution" aria-hidden="true" />{t('body.legend.caution')}</li>
             <li><i className="sw cell-warning" aria-hidden="true" />{t('body.legend.warning')}</li>
             <li><i className="sw cell-hold" aria-hidden="true" />{t('body.legend.hold')}</li>
+            <li><i className="sw cell-base" aria-hidden="true" />{t('body.legend.no_sensor')}</li>
           </ul>
         </section>
 
@@ -149,8 +151,10 @@ export default function Body() {
             <h2>{t('body.figure')}</h2>
             <span className="muted small">{t('body.figure_hint')}</span>
           </div>
-          <BodyFigure levels={levels} selected={selectedId} onSelect={setPicked} label={t('body.figure_label')}
+          <BodyFigure levels={levels} selected={selectedId} label={t('body.figure_label')}
+            onSelect={(id) => { setNoSensor(false); setPicked(id) }} onNoSensor={() => setNoSensor(true)}
             unavailableText={t('body.figure_unavailable')} />
+          {noSensor && <p className="panel-empty muted small" role="status">{t('body.no_sensor')}</p>}
         </section>
 
         <section className={`panel body-detail lv-${sel.level}`}>
