@@ -163,6 +163,13 @@ p { margin: 0; }
   background: color-mix(in srgb, var(--status) 10%, transparent);
 }
 
+/* With the side rail, five columns need about 880px; below 960px the gauge moves to its own line under the row */
+@media (max-width: 960px) {
+  .readout { grid-template-columns: minmax(0, 1fr) auto auto auto; row-gap: 6px; }
+  .readout .dev-scale { grid-column: 1 / -1; grid-row: 2; min-width: 0; }
+  .readout-name { overflow-wrap: anywhere; }
+}
+
 @media (max-width: 760px) {
   .app { grid-template-columns: 1fr; }
   .rail { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
