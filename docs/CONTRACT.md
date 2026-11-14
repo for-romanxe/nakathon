@@ -145,10 +145,13 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 | `fatigue` | 정수 1~5 | `morning` 필수 | 없음 → 탈진 |
 | `symptoms` | `"none"` \| `"yes"` | 선택 (프론트 기본 `none`) | `yes`면 프론트가 증상 대화를 열고, 문장은 `POST /crew/{id}/symptom`으로 따로 보낸다 |
 | `stress` | 정수 1~5 | `evening` | 없음 → 매우 높음 (모델 ② `MoodScore.stress`와 같은 방향) |
-| `day_rating` | 정수 1~5 | `evening` **[제안, 미구현]** | 매우 나쁨 → 매우 좋음 (명세 §8 "오늘 어땠는지") |
-| `hydration_ok` | bool | `evening` **[제안, 미구현]** | 물을 충분히 마셨는지 (명세 §8) |
+| `day_rating` | 정수 1~5 | `evening` | 매우 나쁨 → 매우 좋음 (명세 §8 "오늘 어땠는지") |
+| `hydration_ok` | bool | `evening` | 물을 충분히 마셨는지 (명세 §8) |
 
 - 척도 키는 **정수만** 받는다. 문자열 `"3"`, 소수, 범위 밖 값은 422 `invalid_request`.
+- `hydration_ok`는 JSON `true` 또는 `false`만 허용한다. 저녁 응답은 기록으로 저장한다.
+- Today responses include `checkin.morning_prefill` with valid scores from the previous sol's morning check-in and `sleep_hours` from the current sol's band readings. Missing scores are omitted and missing sleep is null.
+- `baseline_progress` reports `collected_days` and `target_days`. Each metric's `baseline_days` counts prior eligible sols for that metric, capped at the target. The overall count is the smallest metric count.
 - `free_text`는 선택, 최대 4000자.
 - 같은 승무원·같은 sol·같은 `kind`로 다시 보내면 덮어쓴다(하루 한 건).
 - 표에 없는 키도 백엔드가 막지는 않지만, **새 키를 쓰려면 먼저 이 표에 추가한다.** `weekly`·`monthly`·`quarterly`의 키는 만들 때 여기에 적는다.

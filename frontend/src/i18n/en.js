@@ -1,5 +1,7 @@
 // English dictionary (primary). Every key here must also exist in ko.js.
 export default {
+  "today.baseline_progress": "Baseline collection · {collected_days} of {target_days} days",
+  "checkin.band_sleep": "Band sleep duration · {hours} h",
   'preflight.title': 'Preflight values',
   'preflight.metric': 'Metric',
   'preflight.value': 'Value',
@@ -108,7 +110,8 @@ export default {
   "common.saving": "Saving",
   "checkin.title": "Morning check-in",
   "checkin.open": "Morning check-in",
-  "checkin.hint": "Pre-filled from your band and yesterday. Tap only what is wrong.",
+  "checkin.hint": "Check the selected answers and change them to match how you feel today.",
+  "checkin.previous_answers": "Yesterday’s answers are pre-filled where available.",
   "checkin.sleep_quality": "Sleep quality",
   "checkin.sleep_quality.low": "Very poor",
   "checkin.sleep_quality.high": "Very good",

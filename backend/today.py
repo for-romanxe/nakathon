@@ -2,6 +2,7 @@ import json
 import sqlite3
 from statistics import mean, pstdev
 
+from backend.checkin import MORNING_SCALES, valid_score
 from backend.events import event_payload, readings_level
 from backend.seed import CONTRACT
 
@@ -43,7 +44,8 @@ def metric_at(days: dict[int, float], sol: int, excluded_days: frozenset[int] = 
         hold_reason = "missing_reading"
     elif sd == 0:
         hold_reason = "zero_variance"
-    return {"value": value, "baseline": baseline, "sd": sd, "z": z, "hold_reason": hold_reason}
+    return {"value": value, "baseline": baseline, "sd": sd, "z": z,
+            "hold_reason": hold_reason, "baseline_days": len(history)}
 
 
 def today(connection: sqlite3.Connection, crew_id: str, sol: int, lang: str = "en") -> dict:
@@ -98,6 +100,16 @@ def today(connection: sqlite3.Connection, crew_id: str, sol: int, lang: str = "e
     ).fetchall()
     kinds = {row["kind"] for row in checkins if row["mission_day"] == sol}
     morning_days = {row["mission_day"] for row in checkins if row["kind"] == "morning"}
+    previous_morning = connection.execute(
+        "SELECT answers FROM checkin WHERE crew_id = ? AND mission_day = ? AND kind = 'morning'",
+        (crew_id, sol - 1),
+    ).fetchone()
+    previous_answers = json.loads(previous_morning["answers"]) if previous_morning else {}
+    if not isinstance(previous_answers, dict):
+        previous_answers = {}
+    suggested_answers = {
+        key: previous_answers[key] for key in MORNING_SCALES if valid_score(previous_answers.get(key))
+    }
     streak_day = sol if sol in morning_days else sol - 1
     streak = 0
     while streak_day in morning_days:
@@ -125,6 +137,11 @@ def today(connection: sqlite3.Connection, crew_id: str, sol: int, lang: str = "e
         "guide": guide,
         "metrics": metrics,
         "events": events,
-        "checkin": {"morning_done": "morning" in kinds, "evening_done": "evening" in kinds},
+        "checkin": {
+            "morning_done": "morning" in kinds, "evening_done": "evening" in kinds,
+            "morning_prefill": {"answers": suggested_answers, "sleep_hours": readings["sleep"].get(sol)},
+        },
+        "baseline_progress": {"collected_days": min(metric["baseline_days"] for metric in metrics),
+                              "target_days": BASELINE_DAYS},
         "streak": streak,
     }

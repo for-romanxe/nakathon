@@ -67,6 +67,16 @@ and stored as entered.
 
 The three morning scores are integers from 1 to 5. Optional `symptoms`
 accepts `none` or `yes`. Symptom details are submitted to the symptom endpoint.
+Evening check-outs store `day_rating` and `stress` as integers from 1 to 5
+and `hydration_ok` as a JSON boolean when supplied. Evening answers are
+stored as self-reports.
+
+Today includes `checkin.morning_prefill`. Its `answers` object includes
+available scores from the previous sol's morning check-in. Its `sleep_hours`
+comes from the current sol's band readings and is displayed separately.
+`baseline_progress.collected_days` is the smallest count of prior eligible
+sols across the metrics, capped at `baseline_progress.target_days` (14).
+Each metric also returns its own `baseline_days` count.
 
 - `GET /crew` returns the synthetic roster with `id`, `name`, `role`, and `cmo`.
 - Today metrics include `level` and `hold_reason` (`insufficient_baseline`,

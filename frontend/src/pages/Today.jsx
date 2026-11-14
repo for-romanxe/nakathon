@@ -87,8 +87,9 @@ export default function Today() {
     <section className="page">
       {showSheet && (
         <CheckinSheet
-          key={due}
+          key={sheetKey}
           kind={due}
+          prefill={today.checkin?.morning_prefill}
           onSubmit={submitCheckin}
           onSymptoms={() => navigate('/log')}
           onClose={() => closeSheet(true)}
@@ -109,6 +110,8 @@ export default function Today() {
         </span>
         <p className="annunciator-text">{statusText}</p>
       </div>
+      {today.baseline_progress && today.baseline_progress.collected_days < today.baseline_progress.target_days &&
+        <p className="muted">{t('today.baseline_progress', today.baseline_progress)}</p>}
 
       <section className="panel">
         <div className="panel-head"><h2>{t('today.guide')}</h2></div>
