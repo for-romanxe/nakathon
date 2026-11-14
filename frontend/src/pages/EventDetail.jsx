@@ -55,9 +55,9 @@ function Facts({ event }) {
         <h2>{t('event.facts')}</h2>
         <span className="muted small">{t('event.facts_by')}</span>
       </div>
-      {event.codes.length > 0 && (
+      {(event.codes ?? []).length > 0 && (
         <div className="codes">
-          {event.codes.map((c) => <span key={c} className="code-chip">{t(`symptom.${c}`)}</span>)}
+          {(event.codes ?? []).map((c) => <span key={c} className="code-chip">{t(`symptom.${c}`)}</span>)}
         </div>
       )}
       <table className="facts-table">
@@ -71,7 +71,7 @@ function Facts({ event }) {
           </tr>
         </thead>
         <tbody>
-          {event.findings.map((f) => (
+          {(event.findings ?? []).map((f) => (
             <tr key={f.metric} className={f.level === 'caution' || f.level === 'warning' ? `lv-${f.level} off` : ''}>
               <td>{metricLabel(f.metric, lang)}</td>
               <td className="num right">{formatMetric(f.metric, f.value)} <span className="muted">{METRICS[f.metric]?.unit}</span></td>

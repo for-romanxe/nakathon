@@ -44,6 +44,7 @@ export class ApiError extends Error {
 }
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms))
+const STREAM_LIMIT_MS = 60000 // longest a pipeline may take before the UI stops waiting
 
 async function request(path, fixture, options = {}) {
   if (USE_FIXTURES) {
@@ -102,25 +103,32 @@ export function runPipeline(eventId, { urgent, onStage }) {
     return stages.reduce((p, stage) => p.then(() => wait(450)).then(() => onStage(stage)), Promise.resolve()).then(() => 'done')
   }
   return new Promise((resolve) => {
-    const source = new EventSource(`${API_BASE}/events/${eventId}/stream`)
+    let source
+    try {
+      source = new EventSource(`${API_BASE}/events/${eventId}/stream`)
+    } catch {
+      resolve('unavailable')
+      return
+    }
     let seen = 0
+    const finish = (result) => {
+      clearTimeout(timer)
+      source.close()
+      resolve(result)
+    }
+    // a stream that never sends done/hold must not keep the chat waiting forever
+    const timer = setTimeout(() => finish(seen === 0 ? 'unavailable' : 'interrupted'), STREAM_LIMIT_MS)
     source.onmessage = (msg) => {
       seen += 1
       try {
         const { stage } = JSON.parse(msg.data)
         onStage(stage)
-        if (stage === 'done' || stage === 'hold') {
-          source.close()
-          resolve(stage)
-        }
+        if (stage === 'done' || stage === 'hold') finish(stage)
       } catch {
-        source.close()
-        resolve('interrupted')
+        finish('interrupted')
       }
     }
-    source.onerror = () => {
-      source.close()
-      resolve(seen === 0 ? 'unavailable' : 'interrupted')
-    }
+    // also covers the server closing the stream before done/hold (EventSource reports it as an error)
+    source.onerror = () => finish(seen === 0 ? 'unavailable' : 'interrupted')
   })
 }
