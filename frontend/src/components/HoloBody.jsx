@@ -126,15 +126,6 @@ function letterTexture(text) {
   return new THREE.CanvasTexture(c)
 }
 
-function webglAvailable() {
-  try {
-    const c = document.createElement('canvas')
-    return !!(c.getContext('webgl2') || c.getContext('webgl'))
-  } catch {
-    return false
-  }
-}
-
 function token(name, fallback) {
   const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
   return new THREE.Color(v || fallback)
@@ -166,8 +157,8 @@ export default function HoloBody({ levels, selected, onSelect, marks, label, una
     const host = hostRef.current
     if (!host) return undefined
     let renderer
+    // Creating the renderer is the WebGL check itself: no separate test canvas that would hold a second context
     try {
-      if (!webglAvailable()) throw new Error('no WebGL')
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     } catch {
       queueMicrotask(() => setFailed(true)) // WebGL refused after all: show the note; the region list still works
@@ -281,8 +272,10 @@ export default function HoloBody({ levels, selected, onSelect, marks, label, una
       const box = renderer.domElement.getBoundingClientRect()
       ndc.set(((ev.clientX - box.left) / box.width) * 2 - 1, -((ev.clientY - box.top) / box.height) * 2 + 1)
       ray.setFromCamera(ndc, camera)
+      // intersectObjects returns every part along the ray (front to back), not only the first one, so the heart is
+      // in the list even behind the torso. The heart sits inside the see-through torso: a click over it picks the
+      // heart, not the torso in front of it.
       const hits = ray.intersectObjects(meshes, false)
-      // the heart sits inside the see-through torso: a click over it picks the heart, not the torso in front
       return (hits.find((h) => h.object.userData.heart) ?? hits[0])?.object ?? null
     }
     // The canvas captures the pointer on press, so move / release / cancel reach it even outside the canvas
@@ -294,7 +287,8 @@ export default function HoloBody({ levels, selected, onSelect, marks, label, una
     function onMove(ev) {
       if (down) {
         const dx = ev.clientX - down.x
-        if (Math.abs(dx) > 4) down.moved = true
+        // any movement past a few pixels (either direction) makes it a drag: releasing then selects nothing
+        if (Math.hypot(dx, ev.clientY - down.y) > 4) down.moved = true
         if (down.moved) { turn = down.turn + dx * 0.01; lastDrag = performance.now() }
         return
       }
