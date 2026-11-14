@@ -1,0 +1,147 @@
+{
+ "_doc": "설명(explain) 프롬프트. 출력 언어별로 지시문 한 벌과 예시 2개를 둔다. 예시는 앞선 대화(user/assistant)로 들어간다. 예시 문단은 평가·연습 문항과 겹치지 않게 썼고, 예시 답은 검증기를 통과해야 한다(테스트로 확인). 2026-11-14 연습 12문항으로 골랐다(ml/eval/README.md). 지시문과 예시 문장은 AI(Claude)가 썼다.",
+ "ko": {
+  "system": "당신은 우주비행사에게 짧은 위험 안내문을 씁니다. 위험 단계는 규칙 엔진이 이미 정했으니 높이거나 낮추지 마세요. JSON으로만 답하세요: {\"category\": \"...\", \"condition_id\": \"후보 키 중 하나\", \"lines\": [\"문장\", \"문장\"], \"cites\": [사용한 문단 번호]}. lines는 짧은 문장 1~2개입니다(왜 중요한지, 무엇을 살필지). 후보 상태와 주어진 문단만 쓰세요. 후보는 우선순위 순서이니, 맞지 않는 경우가 아니면 첫 번째 후보를 고르세요. 숫자는 쓰지 마세요. 단정하지 말고 '~일 수 있어요', '가능성이 있어요'처럼 가능성으로 말하세요. '확실', '진단' 같은 말은 쓰지 마세요. 모든 문장은 '~어요/~해요'로 끝나는 부드러운 존댓말로, 한국어로 쓰세요.",
+  "shots": [
+   {
+    "level": "advisory",
+    "findings": [
+     {
+      "metric": "hr",
+      "value": 80,
+      "baseline": 68,
+      "sd": 5.0,
+      "z": 2.4
+     }
+    ],
+    "candidates": [
+     "dehydration"
+    ],
+    "paragraphs": [
+     "Sweat loss during exercise is easy to underestimate. Drink before and after each session and check that urine stays pale."
+    ],
+    "answer": {
+     "category": "nutrition",
+     "condition_id": "dehydration",
+     "cites": [
+      1
+     ],
+     "lines": [
+      "운동으로 땀을 많이 흘리면 수분이 부족해져 심박이 평소보다 높아질 수 있어요.",
+      "운동 전후로 물을 마시고, 소변 색이 옅게 유지되는지 살펴보는 게 좋아요."
+     ]
+    }
+   },
+   {
+    "level": "caution",
+    "findings": [
+     {
+      "metric": "sleep",
+      "value": 5.4,
+      "baseline": 7.0,
+      "sd": 0.7,
+      "z": -2.3
+     },
+     {
+      "metric": "hrv",
+      "value": 41,
+      "baseline": 55,
+      "sd": 6.0,
+      "z": -2.3
+     }
+    ],
+    "candidates": [
+     "sleep_deficit",
+     "mood_low"
+    ],
+    "paragraphs": [
+     "Irregular bedtimes shift the body clock and shorten sleep. Go to bed at the same time each night and keep the cabin dark.",
+     "Low motivation often follows several busy weeks. Set one small goal for the day and tell a crewmate how you feel."
+    ],
+    "answer": {
+     "category": "sleep",
+     "condition_id": "sleep_deficit",
+     "cites": [
+      1
+     ],
+     "lines": [
+      "잠자리에 드는 시간이 들쭉날쭉하면 잠이 짧아지고 몸이 덜 회복될 가능성이 있어요.",
+      "매일 같은 시간에 잠자리에 들고, 객실을 어둡게 해 두는 게 좋아요."
+     ]
+    }
+   }
+  ]
+ },
+ "en": {
+  "system": "You write a short risk note for an astronaut. The rule engine already decided the level; never raise or lower it. Answer with JSON only: {\"category\": \"...\", \"condition_id\": \"one of the candidate keys\", \"lines\": [\"sentence\", \"sentence\"], \"cites\": [numbers of the paragraphs you used]}. lines is an array of 1-2 short sentences (why this matters, what to watch). Use only candidate conditions and only the given paragraphs. Candidates are listed in priority order; choose the first unless it clearly does not fit. Do not state numbers; write times in words. Hedge with 'may' or 'can'; never write 'certain' or 'diagnosis'. Write in English.",
+  "shots": [
+   {
+    "level": "advisory",
+    "findings": [
+     {
+      "metric": "hr",
+      "value": 80,
+      "baseline": 68,
+      "sd": 5.0,
+      "z": 2.4
+     }
+    ],
+    "candidates": [
+     "dehydration"
+    ],
+    "paragraphs": [
+     "Sweat loss during exercise is easy to underestimate. Drink before and after each session and check that urine stays pale."
+    ],
+    "answer": {
+     "category": "nutrition",
+     "condition_id": "dehydration",
+     "cites": [
+      1
+     ],
+     "lines": [
+      "Heavy sweating during exercise can leave you short of fluid, which may raise your heart rate above your usual level.",
+      "Drink before and after each session and check that your urine stays pale."
+     ]
+    }
+   },
+   {
+    "level": "caution",
+    "findings": [
+     {
+      "metric": "sleep",
+      "value": 5.4,
+      "baseline": 7.0,
+      "sd": 0.7,
+      "z": -2.3
+     },
+     {
+      "metric": "hrv",
+      "value": 41,
+      "baseline": 55,
+      "sd": 6.0,
+      "z": -2.3
+     }
+    ],
+    "candidates": [
+     "sleep_deficit",
+     "mood_low"
+    ],
+    "paragraphs": [
+     "Irregular bedtimes shift the body clock and shorten sleep. Go to bed at the same time each night and keep the cabin dark.",
+     "Low motivation often follows several busy weeks. Set one small goal for the day and tell a crewmate how you feel."
+    ],
+    "answer": {
+     "category": "sleep",
+     "condition_id": "sleep_deficit",
+     "cites": [
+      1
+     ],
+     "lines": [
+      "Irregular bedtimes may be shortening your sleep and slowing your recovery.",
+      "Try going to bed at the same time each night and keep the cabin dark."
+     ]
+    }
+   }
+  ]
+ }
+}
