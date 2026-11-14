@@ -1,0 +1,6 @@
+[
+  { "id": "c1", "name": "Crew A", "role": "Flight engineer", "cmo": false },
+  { "id": "c2", "name": "Crew B", "role": "Commander", "cmo": true },
+  { "id": "c3", "name": "Crew C", "role": "Scientist", "cmo": false },
+  { "id": "c4", "name": "Crew D", "role": "Pilot", "cmo": false }
+]

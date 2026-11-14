@@ -1,0 +1,25 @@
+/* Design tokens — "spacecraft glass cockpit" direction.
+   Dark blue-gray cabin background, spacecraft caution & warning colors (red = warning, yellow = caution),
+   one accent (cyan) used only for things you can press. Sources in blue, numbers in mono (spec §7).
+   TODO: reconcile with the team DESIGN.md. */
+:root {
+  --bg: #121a23;          /* cabin background */
+  --bezel: #19222d;       /* panels */
+  --bezel-2: #212c39;     /* hover, inner emphasis */
+  --well: #0e141b;        /* inputs, recessed areas */
+  --line: #2e3a48;        /* hairline */
+  --text: #e2e7ed;
+  --text-2: #c3ccd6;
+  --muted: #8a98a9;
+  --accent: #5cc8e0;      /* pressable things only */
+  --accent-ink: #0a1a20;  /* text on accent */
+  --cite: #7fb2ff;        /* sources in blue */
+  --ok: #43c97a;          /* normal */
+  --caution: #f2c230;     /* caution */
+  --warning: #f0524a;     /* warning */
+  --hold: #c9d2dc;        /* hold / re-measure */
+  --radius: 6px;
+  --font: "IBM Plex Sans", "IBM Plex Sans KR", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --rail-w: 220px;
+}
