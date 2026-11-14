@@ -159,10 +159,34 @@ def score_mood(text: str, lang: str) -> dict:
     return _validated(_chat(system, text, 60), "mood")
 
 
-def explain(level: str, findings: list, condition_candidates: list, paragraphs: list, lang: str) -> dict:
+# 재생성 때 모델에게 알려 주는 말: 검증기 검사 이름 → 고칠 점. 걸린 표현(verify 의 detail)이 있으면 뒤에 붙인다.
+RETRY_HINTS = {
+    "numbers": "the sentences contained a number, a clock time or a duration; write no digits at all",
+    "cites": "cites must be numbers of the given paragraphs",
+    "level": "the wording was stronger than the level allows; use calmer wording and avoid these words",
+    "schema": "the JSON did not have the required shape; return exactly the keys shown above",
+    "wording": "the sentences sounded certain or named another condition; say it is possible "
+               "(Korean: end with '~일 수 있어요' or '가능성이 있어요', never '입니다'), never write 'certain', "
+               "'definitely' or 'diagnosis', and do not name any condition other than the one you chose",
+}
+ECHO = ("numbers", "level", "wording")     # 이 검사들은 걸린 표현을 그대로 알려 준다 (숫자, 금지어, 상태 이름)
+
+
+def _retry_note(rejected: dict) -> str:
+    parts = []
+    for check, found in rejected.items():
+        part = RETRY_HINTS[check]
+        if check in ECHO and found:
+            part += f" (you wrote: {', '.join(str(x) for x in found[:5])})"
+        parts.append(part)
+    return "\nYour previous answer was rejected by the checker. Fix this in the new answer: " + "; ".join(parts) + "."
+
+
+def explain(level: str, findings: list, condition_candidates: list, paragraphs: list, lang: str, rejected=None) -> dict:
     """③ 규칙 판정 + findings + 검색 문단 → Explanation (category, condition_id, lines[≤3], cites[]).
     숫자 문장은 템플릿이 쓴다. 모델은 '왜·무엇을 조심' 1~2문장만. 반드시 verify.verify() 를 거친다.
-    condition_id 는 condition_candidates 중 하나여야 한다(순서가 우선순위). 목록 밖 후보를 넘기면 ValueError."""
+    condition_id 는 condition_candidates 중 하나여야 한다(순서가 우선순위). 목록 밖 후보를 넘기면 ValueError.
+    rejected 는 직전 실행의 verify()["detail"] (검사 이름 → 걸린 표현). 주면 프롬프트에 고칠 점을 덧붙인다(재생성, pipeline.py)."""
     conds = _conditions()
     unknown = [c for c in condition_candidates if c not in conds]
     if unknown:
@@ -181,6 +205,8 @@ def explain(level: str, findings: list, condition_candidates: list, paragraphs: 
               "Say 'possible' / '가능성', never 'certain' or 'diagnosis'. "
               f"Write in {'Korean' if lang == 'ko' else 'English'}.")
     user = f"level: {level}\nfindings: {json.dumps(findings, ensure_ascii=False)}\ncandidates: {json.dumps(cand, ensure_ascii=False)}\nparagraphs:\n{paras}"
+    if rejected:
+        user += _retry_note(rejected)
     out = _chat(system, user, 220)
     if isinstance(out.get("cites"), list):   # 모델은 문단 번호만 쓴다. id 는 코드가 붙인다(잘못된 id 를 쓸 수 없게).
         out["cites"] = [_cite_id(c, paragraphs) for c in out["cites"]]

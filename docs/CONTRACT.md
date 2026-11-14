@@ -84,6 +84,7 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
   - `score_mood(text, lang) -> MoodScore` (`contracts/mood.schema.json`)
   - `explain(level, findings, condition_candidates, paragraphs, lang) -> Explanation` (`contracts/explanation.schema.json`)
 - 모델 출력은 **항상 검증기(`backend/verify.py`)를 거친다.** 검사 5개의 이름 고정: `numbers, cites, level, schema, wording`. 결과는 `runs[].fails[]`에 이 이름으로 기록.
+- **설명은 `backend/model/pipeline.py`의 `explain_verified(level, findings, condition_candidates, paragraphs, lang)`로 만든다** **[추가 11/14]**. 생성 → 검증 → 폐기되면 한 번 더(상한 2회) → 두 번 폐기되면 판단 보류까지 이 함수가 한다. 반환 `{explanation | null, hold, verified(0~5), runs:[{n, ok, fails[], note}]}`을 이벤트의 `explanation`·`runs`·`verified`에 그대로 넣는다. `hold`가 true면 `explanation`은 null이고 화면에는 수치와 절차서만 보여 준다. `runs[].note`는 폐기 이유를 한 줄로 적은 것이다(예: `numbers: 12`). 모델 서버에 닿지 못해도 예외 없이 `hold`로 돌아온다.
 - 파이프라인 단계 이름(SSE `stage` 값) 고정: `collect → rules → symptom → question → retrieve → generate → verify → done | hold`.
 
 ## 5. API (백엔드 담당 구현, 명세 §18 초안 확정) **[결정 11/14]**

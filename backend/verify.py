@@ -1,6 +1,6 @@
 """설명(Explanation) 검증기 (CONTRACT §4, 명세 §12). 검사 5개, 이름 고정: numbers, cites, level, schema, wording.
 
-verify(expl, findings, level, doc_ids, lang) -> {"ok": bool, "fails": [검사 이름...], "note": str}
+verify(expl, findings, level, doc_ids, lang) -> {"ok": bool, "fails": [검사 이름...], "note": str, "detail": {검사 이름: [걸린 표현...]}}
 파이프라인은 실패 시 최대 2회 재생성, 그래도 실패면 level=hold 로 '판단 보류'.
 """
 import math, re
@@ -35,12 +35,13 @@ def _references(findings):
     return refs
 
 
-def _numbers_ok(lines, findings):
+def _bad_numbers(lines, findings):
     """문장 속 숫자는 findings 값을 '그 숫자가 적힌 자릿수'로 반올림한 것이어야 하고,
     그 지표의 화면 표시 자릿수보다 거칠게 적으면 안 된다 (z=2.7 을 3 으로 쓰면 실패).
     부호를 적었으면 부호도 맞아야 한다 (z=-2.5 를 +2.5 로 쓰면 실패). 부호 없이 적은 숫자는 크기만 본다:
-    "기준보다 2.5σ 낮아요" 처럼 방향을 말로 쓰는 문장이 있기 때문이다."""
+    "기준보다 2.5σ 낮아요" 처럼 방향을 말로 쓰는 문장이 있기 때문이다. 걸린 숫자를 돌려준다."""
     refs = _references(findings)
+    bad = []
     for line in lines:
         for sign, number in NUM.findall(CITE.sub(" ", line)):
             written = len(number.partition(".")[2])
@@ -48,55 +49,45 @@ def _numbers_ok(lines, findings):
             negative = None if not sign else sign != "+"
             if not any(written >= decimals and abs(x - abs(v)) <= 0.5 * 10 ** -written + 1e-9
                        and (negative is None or v == 0 or negative == (v < 0)) for v, decimals in refs):
-                return False
-    return True
+                bad.append(sign + number)
+    return bad
 
 
-def _cites_ok(cites, doc_ids):
-    return bool(cites) and all(c in doc_ids for c in cites)
+def _bad_cites(cites, doc_ids):
+    return [str(c) for c in cites if c not in doc_ids] if cites else ["no cite"]
 
 
-def _level_ok(lines, level):
+def _too_strong(lines, level):
     rank = LEVEL_RANK.get(level, 0)
     text = " ".join(lines).lower()
-    for lv, pats in STRONG.items():
-        if rank < LEVEL_RANK[lv] and any(re.search(p, text) for p in pats):
-            return False
-    return True
+    return [m.group(0) for lv, pats in STRONG.items() if rank < LEVEL_RANK[lv] for p in pats if (m := re.search(p, text))]
 
 
-def _wording_ok(expl, lines):
+def _bad_wording(expl, lines):
     text = " ".join(lines).lower()
-    if any(re.search(p, text) for p in BANNED):
-        return False
+    bad = [m.group(0) for p in BANNED if (m := re.search(p, text))]
     conds = {k: v for k, v in contracts.enums()["conditions"].items() if isinstance(v, dict)}
     if expl.get("condition_id") not in conds:
-        return False
+        return bad + [f"condition_id {expl.get('condition_id')!r}"]
     # 목록 밖 상태 이름: 다른 condition 의 표시명이 문장에 나오면 안 됨
     for cid, c in conds.items():
         if cid in ("none", expl.get("condition_id")):
             continue
-        for name in (c.get("ko"), c.get("en")):
-            if name and name.lower() in text:
-                return False
-    return True
+        bad += [name for name in (c.get("ko"), c.get("en")) if name and name.lower() in text]
+    return bad
 
 
 def verify(expl: dict, findings: list, level: str, doc_ids, lang: str = "ko") -> dict:
     doc_ids = set(doc_ids or [])
-    fails = []
-    schema_fails = contracts.check_schema(expl, contracts.schema("explanation"))
-    if schema_fails:
-        fails.append("schema")
     lines = [str(x) for x in (expl.get("lines") or [])]
-    if not _numbers_ok(lines, findings):
-        fails.append("numbers")
-    if not _cites_ok(expl.get("cites") or [], doc_ids):
-        fails.append("cites")
-    if not _level_ok(lines, level):
-        fails.append("level")
-    if not _wording_ok(expl, lines):
-        fails.append("wording")
-    order = contracts.enums()["verify_check"]
-    fails.sort(key=order.index)
-    return {"ok": not fails, "fails": fails, "note": "; ".join(schema_fails)[:200]}
+    caught = {
+        "schema": contracts.check_schema(expl, contracts.schema("explanation")),
+        "numbers": _bad_numbers(lines, findings),
+        "cites": _bad_cites(expl.get("cites") or [], doc_ids),
+        "level": _too_strong(lines, level),
+        "wording": _bad_wording(expl, lines),
+    }
+    fails = [check for check in contracts.enums()["verify_check"] if caught[check]]
+    detail = {check: caught[check] for check in fails}      # 검사 이름 → 걸린 표현들
+    note = "; ".join(f"{check}: {', '.join(found)}" for check, found in detail.items())[:200]
+    return {"ok": not fails, "fails": fails, "note": note, "detail": detail}

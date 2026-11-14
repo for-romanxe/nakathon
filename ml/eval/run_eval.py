@@ -4,14 +4,14 @@
   python3 ml/eval/run_eval.py --check                               # 질문셋 자체 점검 + 학습셋과 겹치는 문장 찾기 (모델 불필요)
 
 증상은 키워드(mock)와 모델(live)을 같은 문장으로 비교한다. 기분·설명은 모델만 잰다.
-설명은 파이프라인대로 생성 → 검증, 실패하면 한 번 더, 두 번 실패하면 판단 보류로 센다.
+설명은 백엔드가 쓰는 pipeline.explain_verified() 를 그대로 돈다: 생성 → 검증, 실패하면 이유를 알려 주고 한 번 더, 두 번 실패하면 판단 보류.
 """
 import argparse, datetime, json, os, pathlib, statistics, sys, time
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from backend import contracts, verify            # noqa: E402
-from backend.model import client                 # noqa: E402
+from backend import contracts                    # noqa: E402
+from backend.model import client, pipeline       # noqa: E402
 
 HERE = pathlib.Path(__file__).resolve().parent
 Q = json.loads((HERE / "questions.json").read_text(encoding="utf-8"))
@@ -88,17 +88,23 @@ def run(repeat):
     for it in Q["explain"]:
         paras = [{"id": p, "text": Q["paragraphs"][p]} for p in it["paragraphs"]]
         for n in range(1, repeat + 1):
-            attempts, sec_total = [], 0.0
-            for _ in range(2):                       # 명세 §11: 실패하면 재생성, 2회 실패면 판단 보류
-                out, err, sec = call(client.explain, it["level"], it["findings"], it["candidates"], paras, it["lang"])
-                sec_total += sec
-                v = verify.verify(out, it["findings"], it["level"], it["paragraphs"], it["lang"]) if out else \
-                    {"ok": False, "fails": ["output_error"], "note": err}
-                attempts.append({"out": out, "ok": v["ok"], "fails": v["fails"], "note": v["note"]})
-                if v["ok"]:
-                    break
+            outs, real = [], client.explain
+
+            def spy(*args, **kwargs):                # 폐기된 문장도 결과 파일에 남긴다
+                outs.append(None)
+                outs[-1] = real(*args, **kwargs)
+                return outs[-1]
+
+            client.explain = spy
+            try:
+                result, _, sec = call(pipeline.explain_verified, it["level"], it["findings"], it["candidates"], paras, it["lang"])
+            finally:
+                client.explain = real
+            if result["runs"][0]["note"].startswith("model unavailable"):
+                sys.exit(f"ERROR {result['runs'][0]['note']}. Fix: start mlx_lm.server (backend/model/README.md) or set MODEL_URL.")
+            attempts = [{"out": out, **{k: r[k] for k in ("ok", "fails", "note")}} for out, r in zip(outs, result["runs"])]
             rows.append({"section": "explain", "id": it["id"], "by": "model", "run": n, "attempts": attempts,
-                         "sec": round(sec_total, 2), "ok": attempts[-1]["ok"], "hold": not attempts[-1]["ok"]})
+                         "sec": round(sec, 2), "ok": not result["hold"], "hold": result["hold"]})
     return rows
 
 
@@ -118,9 +124,11 @@ def summary(rows):
     lines.append(f"mood    model   in range {rate(mood, 'ok')}  schema errors {sum(r['error'] is not None for r in mood)}")
     exp = [r for r in rows if r["section"] == "explain"]
     first = [r["attempts"][0] for r in exp]
-    by_check = {c: sum(c in a["fails"] for a in first) for c in contracts.enums()["verify_check"] + ["output_error"]}
+    by_check = {c: sum(c in a["fails"] for a in first) for c in contracts.enums()["verify_check"]}
+    retried = [r for r in exp if len(r["attempts"]) > 1]
     lines.append(f"explain model   first run rejected {sum(not a['ok'] for a in first)}/{len(first)} "
-                 f"({', '.join(f'{c} {n}' for c, n in by_check.items() if n) or 'none'})  hold {rate(exp, 'hold')}")
+                 f"({', '.join(f'{c} {n}' for c, n in by_check.items() if n) or 'none'})  "
+                 f"second run passed {rate(retried, 'ok') if retried else '0/0'}  hold {rate(exp, 'hold')}")
     for sec in ("symptom", "mood", "explain"):
         t = [r["sec"] for r in rows if r["section"] == sec and "sec" in r]
         lines.append(f"latency {sec:7} median {statistics.median(t):.1f}s  mean {statistics.mean(t):.1f}s  max {max(t):.1f}s  (n={len(t)})")
