@@ -1,0 +1,96 @@
+{
+  "_note": "Frontend fixture shaped like backend/today.py (branch seung, 3364353) for GET /crew/c1/today. metrics[].level is the backend rule verdict per metric. Guide items are placeholders.",
+  "status": {
+    "level": "caution",
+    "text": "Some readings are outside your baseline."
+  },
+  "guide": [
+    {
+      "key": "exercise",
+      "target": "Exercise 2 h 30 min",
+      "adjustment": "Low intensity, 1 h",
+      "why": "HR +2.5σ, HRV -2.5σ",
+      "cites": [
+        "hrp:sm-03#p5"
+      ],
+      "progress": 0,
+      "done": false
+    },
+    {
+      "key": "sleep",
+      "target": "Sleep review",
+      "adjustment": "Precision work late morning, caffeine before noon",
+      "why": "Sleep 6.1 h, 1.4 h below baseline",
+      "cites": [
+        "hrp:sleep-02#p2"
+      ],
+      "progress": 0,
+      "done": false
+    },
+    {
+      "key": "mood",
+      "target": "Mood and fatigue check-in",
+      "adjustment": null,
+      "why": null,
+      "cites": [],
+      "progress": 1,
+      "done": true
+    }
+  ],
+  "metrics": [
+    {
+      "metric": "hr",
+      "value": 73,
+      "baseline": 68,
+      "sd": 2,
+      "z": 2.5,
+      "level": "caution"
+    },
+    {
+      "metric": "hrv",
+      "value": 44.5,
+      "baseline": 52,
+      "sd": 3,
+      "z": -2.5,
+      "level": "caution"
+    },
+    {
+      "metric": "eda",
+      "value": 2,
+      "baseline": 2,
+      "sd": 0.2,
+      "z": 0,
+      "level": "normal"
+    },
+    {
+      "metric": "temp",
+      "value": 33,
+      "baseline": 33,
+      "sd": 0.2,
+      "z": 0,
+      "level": "normal"
+    },
+    {
+      "metric": "sleep",
+      "value": 7.5,
+      "baseline": 7.5,
+      "sd": 0.3,
+      "z": 0,
+      "level": "normal"
+    },
+    {
+      "metric": "act",
+      "value": 150,
+      "baseline": 150,
+      "sd": 8,
+      "z": 0,
+      "level": "normal"
+    }
+  ],
+  "events": [],
+  "checkin": {
+    "morning_done": false,
+    "evening_done": false
+  },
+  "streak": 15
+}
