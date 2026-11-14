@@ -236,6 +236,18 @@ p { margin: 0; }
 .right { text-align: right; }
 a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text-decoration: none; }
 .back-link { color: var(--accent); text-decoration: none; align-self: flex-start; }
+
+/* ---- "Why?" on a guide item: answers only from on-device documents ---- */
+.why { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.why-btn {
+  min-height: 36px; padding: 4px 12px; font: inherit; font-size: 0.86rem; color: var(--accent);
+  background: transparent; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: var(--radius); cursor: pointer;
+}
+.why-btn:hover, .why-btn[aria-expanded="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.why-answer { width: 100%; padding: 10px 12px; background: var(--well); border: 1px solid var(--line); border-radius: var(--radius); display: flex; flex-direction: column; gap: 8px; font-size: 0.92rem; }
+.why-quote { margin: 0; padding: 2px 0 2px 12px; border-left: 2px solid var(--cite); display: flex; flex-direction: column; gap: 4px; }
+.why-quote p { color: var(--text-2); line-height: 1.6; }
+.why-answer .btn-ghost { min-height: 0; padding: 0; color: var(--accent); text-decoration: underline; }
 .notice { margin: 14px 16px; padding: 12px 14px; border-left: 3px solid var(--status); background: color-mix(in srgb, var(--status) 8%, transparent); border-radius: 0 var(--radius) var(--radius) 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 
 /* ---- Log: symptom chat ---- */
