@@ -1,7 +1,0 @@
-{
-  "_note": "Frontend-only fixture for the mission status strip (spec §16: one-way delay, next window). Not in CONTRACT §5 yet — requested from backend. Sol 16 matches backend DEMO_SOL.",
-  "clock": { "sol": 16, "time": "06:12" },
-  "environment": "mars_base",
-  "one_way_delay_min": 12,
-  "next_window": "14:20"
-}
