@@ -17,10 +17,16 @@
 python3 -m unittest discover -s backend/tests -t .
 # mock 지연 끄기
 MOCK_DELAY=0 python3 -c "from backend.model import client; print(client.extract_symptoms('어지러워요','ko'))"
-# live: 모델 서버를 띄우고(ml/.venv, 포트 8080) MODEL=live 로 호출. 모델은 Gemma 4 12B(4비트, 어댑터 없음), thinking 은 끈다
-(cd ml && .venv/bin/python -m mlx_lm server --model models/gemma-4-12B-it-qat-OptiQ-4bit --chat-template-args '{"enable_thinking":false}' --port 8080)
+# live: 모델 서버를 띄우고(ml/.venv, 포트 8080) MODEL=live 로 호출. 모델은 Gemma 4 12B(4비트) + 행사 중 학습한 어댑터, thinking 은 끈다
+(cd ml && .venv/bin/python -m mlx_lm server --model models/gemma-4-12B-it-qat-OptiQ-4bit --adapter-path adapters/gemma-12b-v2 --chat-template-args '{"enable_thinking":false}' --port 8080)
 MODEL=live python3 -c "from backend.model import client; print(client.extract_symptoms('어지러워요','ko'))"
 # MODEL_URL 기본 http://127.0.0.1:8080 (끝에 /v1 을 붙여도 된다). MODEL_NAME 기본 default_model = mlx_lm.server 가 띄울 때 받은 모델
 ```
+
+어댑터 `ml/adapters/gemma-12b-v2`(42MB)는 2026-11-14에 쓰기로 정했고 저장소에는 없다. 근거와 측정값은 `ml/eval/v2/README.md`에 있다. 파일이 없으면 둘 중 하나로 한다.
+- `--adapter-path adapters/gemma-12b-v2`를 빼고 띄운다. 코드는 그대로 동작한다. 그때의 측정값은 `ml/eval/v2/README.md`의 "규칙 지시문" 열이다.
+- 직접 학습한다: `python3 ml/data/build_v2.py` 뒤에 `(cd ml && .venv/bin/python train_v2.py -c train_v2.yaml)`. 모델 서버를 먼저 내린다. M5 Pro 24GB에서 약 80분 걸렸다. 다시 학습한 결과가 같은 값을 내는지는 확인하지 않았다.
+
+어댑터는 지금 코드의 지시문(`client.py`)으로 학습했다. 지시문을 바꾸면 어댑터와 어긋날 수 있으니 `ml/eval/run_eval2.py`로 다시 잰다.
 
 모델 파일은 Hugging Face `mlx-community/gemma-4-12B-it-qat-OptiQ-4bit`(디스크 8.4GB)를 `ml/models/` 아래에 받는다. 서버 프로세스는 M5 Pro 24GB에서 메모리 약 12GB(최대 13GB)를 썼다(2026-11-14 측정). 모델을 고른 근거는 `ml/eval/README.md`.
