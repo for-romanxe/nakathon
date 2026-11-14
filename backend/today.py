@@ -2,7 +2,7 @@ import json
 import sqlite3
 from statistics import mean, pstdev
 
-from backend.events import event_payload
+from backend.events import event_payload, readings_level
 from backend.seed import CONTRACT
 
 
@@ -29,10 +29,9 @@ HOLD_TEXT = {
 
 
 def metric_at(days: dict[int, float], sol: int, excluded_days: frozenset[int] = frozenset()) -> dict:
-    history = [
-        days[day] for day in range(sol - BASELINE_DAYS, sol)
-        if day in days and day not in excluded_days
-    ]
+    # Use the most recent measured sols without reports, even when some recent sols were excluded.
+    eligible = sorted(day for day in days if day < sol and day not in excluded_days)
+    history = [days[day] for day in eligible[-BASELINE_DAYS:]]
     value = days.get(sol)
     baseline = mean(history) if len(history) == BASELINE_DAYS else None
     sd = pstdev(history) if baseline is not None else None
@@ -49,18 +48,18 @@ def metric_at(days: dict[int, float], sol: int, excluded_days: frozenset[int] = 
 
 def today(connection: sqlite3.Connection, crew_id: str, sol: int, lang: str = "en") -> dict:
     event_rows = connection.execute(
-        """SELECT * FROM event WHERE crew_id = ? AND mission_day BETWEEN ? AND ?
+        """SELECT * FROM event WHERE crew_id = ? AND mission_day <= ?
            ORDER BY id DESC""",
-        (crew_id, sol - BASELINE_DAYS - 1, sol),
+        (crew_id, sol),
     ).fetchall()
     excluded_days = frozenset(row["mission_day"] for row in event_rows if row["mission_day"] < sol)
     events = [event_payload(row) for row in event_rows if row["mission_day"] == sol]
     rows = connection.execute(
         """SELECT metric, mission_day, AVG(value) AS value
-           FROM sample WHERE crew_id = ? AND mission_day BETWEEN ? AND ?
+           FROM sample WHERE crew_id = ? AND mission_day <= ?
              AND value IS NOT NULL
            GROUP BY metric, mission_day""",
-        (crew_id, sol - BASELINE_DAYS - 1, sol),
+        (crew_id, sol),
     )
     readings = {metric: {} for metric in CONTRACT["metrics"]}
     for row in rows:
@@ -90,17 +89,8 @@ def today(connection: sqlite3.Connection, crew_id: str, sol: int, lang: str = "e
             metric["level"] = "caution"
         else:
             metric["level"] = "advisory"
-    event_levels = {event["level"] for event in events}
-    if "warning" in event_levels or any(abs(metric["z"]) >= warning_limit for metric in outliers):
-        level = "warning"
-    elif "caution" in event_levels or len(outliers) >= 2 or repeated:
-        level = "caution"
-    elif outliers:
-        level = "advisory"
-    elif any(metric["z"] is None for metric in metrics):
-        level = "hold"
-    else:
-        level = "normal"
+    active_levels = {event["level"] for event in events if event["status"] == "open"}
+    level = readings_level(active_levels | {metric["level"] for metric in metrics})
 
     checkins = connection.execute(
         "SELECT mission_day, kind FROM checkin WHERE crew_id = ? AND mission_day <= ?",

@@ -13,8 +13,8 @@ class TransmissionTest(TestCase):
     def test_signal_comparison_uses_the_same_packet_and_noise(self):
         directory = self.enterContext(TemporaryDirectory())
         path = Path(directory) / "demo.sqlite3"
-        with TestClient(create_app(path)) as client:
-            client.post("/crew/c1/symptom", json={"text": "I have chest pain", "lang": "en"}).raise_for_status()
+        with TestClient(create_app(path), headers={"X-Demo-Viewer": "c2"}) as client:
+            client.post("/crew/c2/symptom", json={"text": "I have chest pain", "lang": "en"}).raise_for_status()
             packet, = client.get("/tx").json()
             route = f"/tx/{packet['seq']}/simulate"
             result = client.post(route, json={}).raise_for_status().json()
@@ -33,8 +33,8 @@ class TransmissionTest(TestCase):
     def test_warning_summary_retry_and_receipt(self):
         directory = self.enterContext(TemporaryDirectory())
         path = Path(directory) / "demo.sqlite3"
-        with TestClient(create_app(path)) as client:
-            report = client.post("/crew/c1/symptom", json={"text": "I have chest pain", "lang": "en"})
+        with TestClient(create_app(path), headers={"X-Demo-Viewer": "c2"}) as client:
+            report = client.post("/crew/c2/symptom", json={"text": "I have chest pain", "lang": "en"})
             event_id = report.raise_for_status().json()["event_id"]
             packet, = client.post("/tx", json={"event_id": event_id}).raise_for_status().json()
             seq = packet["seq"]
@@ -70,5 +70,5 @@ class TransmissionTest(TestCase):
             ack, = client.post(receipt_path, json={"status": "acked", "attempt": 2}).raise_for_status().json()
             self.assertEqual(ack["status"], "acked")
 
-        with TestClient(create_app(path)) as client:
+        with TestClient(create_app(path), headers={"X-Demo-Viewer": "c2"}) as client:
             self.assertEqual(client.get("/tx").json(), [ack])

@@ -30,6 +30,8 @@ def packets(connection: sqlite3.Connection) -> list[dict]:
     rows = connection.execute(
         """SELECT tx_packet.*, COALESCE(tx_packet.crew_id, event.crew_id) AS crew
            FROM tx_packet LEFT JOIN event ON event.id = tx_packet.event_id
+           JOIN crew ON crew.id = COALESCE(tx_packet.crew_id, event.crew_id)
+           WHERE crew.cmo_access = 1 OR crew.cmo = 1
            ORDER BY CASE priority WHEN 'warning' THEN 0 WHEN 'caution' THEN 1 ELSE 2 END, seq"""
     )
     return [
@@ -39,6 +41,15 @@ def packets(connection: sqlite3.Connection) -> list[dict]:
          "payload": json.loads(row["payload"])}
         for row in rows
     ]
+
+
+def visible_packet(connection: sqlite3.Connection, seq: int):
+    return connection.execute(
+        """SELECT tx_packet.payload FROM tx_packet LEFT JOIN event ON event.id = tx_packet.event_id
+           JOIN crew ON crew.id = COALESCE(tx_packet.crew_id, event.crew_id)
+           WHERE tx_packet.seq = ? AND (crew.cmo_access = 1 OR crew.cmo = 1)""",
+        (seq,),
+    ).fetchone()
 
 
 def enqueue_event(connection: sqlite3.Connection, event: sqlite3.Row) -> None:
@@ -76,8 +87,12 @@ def _enqueue(connection, kind, sol, priority, summary, *, event_id=None, crew_id
 def dispatch(connection: sqlite3.Connection, window_id: str) -> None:
     connection.execute(
         """UPDATE tx_packet SET status = 'sent', attempts = attempts + 1, window_id = ?
-           WHERE status = 'queued'
-              OR (status = 'missing' AND julianday(window_id) < julianday(?))""",
+           WHERE (status = 'queued' OR (status = 'missing' AND julianday(window_id) < julianday(?)))
+             AND EXISTS (
+                 SELECT 1 FROM crew WHERE id = COALESCE(
+                     tx_packet.crew_id, (SELECT crew_id FROM event WHERE id = tx_packet.event_id)
+                 ) AND (cmo_access = 1 OR cmo = 1)
+             )""",
         (window_id, window_id),
     )
 

@@ -1,0 +1,14 @@
+[
+  {
+    "seq": 1,
+    "crew": "c1",
+    "event_id": 102,
+    "kind": "event",
+    "priority": "warning",
+    "hash": "fixture",
+    "status": "queued",
+    "attempts": 0,
+    "window_id": null,
+    "payload": { "event_id": 102, "crew": "c1", "level": "warning", "codes": ["chest_pain"], "readings": [] }
+  }
+]
