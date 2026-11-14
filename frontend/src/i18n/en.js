@@ -15,6 +15,8 @@ export default {
   'login.code': 'Access code',
   'login.invalid': 'Invalid crew member or access code.',
   'login.logout': 'Sign out',
+  'start.title': 'Who is using Crew Health?',
+  'start.hint': 'Demo mode: pick a crew member to see their records. You can switch later in Settings.',
   'settings.viewer': 'Demo crew member',
   'settings.cmo_access': 'Allow the medical officer to view my records',
   'tx.title': 'Earth transmission queue',

@@ -2,6 +2,8 @@
 export const CREW_IDS = ['c1', 'c2', 'c3', 'c4']
 const storedViewer = sessionStorage.getItem('crew-health-viewer')
 export let CURRENT_CREW = CREW_IDS.includes(storedViewer) ? storedViewer : 'c1'
+// demo mode: false until a crew member is picked in this tab (start screen or Settings)
+export const VIEWER_CHOSEN = CREW_IDS.includes(storedViewer)
 
 export function setSignedInCrew(id) {
   CURRENT_CREW = id

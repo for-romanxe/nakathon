@@ -15,6 +15,8 @@ export default {
   'login.code': '접근 코드',
   'login.invalid': '승무원 또는 접근 코드가 올바르지 않아요.',
   'login.logout': '로그아웃',
+  'start.title': '누가 Crew Health를 쓰나요?',
+  'start.hint': '데모 모드예요. 기록을 볼 승무원을 골라 주세요. 나중에 설정에서 바꿀 수 있어요.',
   'tx.title': '지구 전송 큐',
   'tx.connect': '패킷 전송과 비교를 하려면 시연 백엔드를 연결하세요.',
   'tx.queue_daily': '일일 요약 대기열에 추가',
