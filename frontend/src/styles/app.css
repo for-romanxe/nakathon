@@ -311,3 +311,30 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
 a.cite { text-decoration: none; }
 a.cite:hover { text-decoration: underline; }
 @media (max-width: 760px) { .proc-layout { grid-template-columns: 1fr; } }
+
+/* ---- Trends ---- */
+.trend-page { max-width: 1100px; }
+.trend-controls { display: flex; flex-wrap: wrap; gap: 10px 16px; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.seg button {
+  min-height: 44px; padding: 6px 14px; font: inherit; font-size: 0.92rem; color: var(--text);
+  background: var(--well); border: 0; border-right: 1px solid var(--line); cursor: pointer;
+}
+.seg button:last-child { border-right: 0; }
+.seg button:hover { background: var(--bezel-2); }
+.seg button[aria-pressed="true"] { color: var(--accent-ink); background: var(--accent); font-weight: 600; }
+.trend-chart { position: relative; height: 320px; padding: 12px 12px 4px; }
+.trend-legend { list-style: none; margin: 0; padding: 4px 16px 12px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.82rem; color: var(--text-2); }
+.trend-legend li { display: flex; align-items: center; gap: 6px; }
+.sw { display: inline-block; width: 18px; height: 10px; border-radius: 2px; font-style: normal; }
+.sw-line { height: 2px; background: var(--text); }
+.sw-baseline { height: 0; border-top: 1px dashed var(--muted); }
+.sw-caution { background: color-mix(in srgb, var(--caution) 18%, transparent); border: 1px dashed color-mix(in srgb, var(--caution) 60%, transparent); }
+.sw-warning { background: color-mix(in srgb, var(--warning) 12%, transparent); border: 1px dashed color-mix(in srgb, var(--warning) 60%, transparent); }
+.sw-event { width: auto; height: auto; color: var(--accent); font-size: 0.8rem; }
+.trend-summary { margin: 0; padding: 12px 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px 16px; border-top: 1px solid var(--line); }
+.trend-summary dt { font-size: 0.8rem; color: var(--muted); }
+.trend-summary dd { margin: 2px 0 0; font-size: 1.15rem; font-weight: 600; }
+.trend-summary dd > .muted:only-child { font-size: 0.9rem; font-weight: 400; }
+.trend-table { border-top: 1px solid var(--line); }
+.trend-table summary { padding: 10px 16px; min-height: 44px; display: flex; align-items: center; color: var(--accent); cursor: pointer; }

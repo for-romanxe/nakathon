@@ -282,4 +282,13 @@ export default {
   "proc.doc_missing": "{id} is not among the on-device documents yet.",
   "proc.para_missing": "{id} is not in this document. The whole document is shown.",
   "proc.korean_only": "Document paragraphs are in Korean only.",
+  "trends.zone_caution": "±{a}σ to ±{b}σ from baseline (caution zone)",
+  "trends.zone_warning": "Beyond ±{b}σ (warning zone)",
+  "trends.event_marker": "Event",
+  "trends.latest": "Latest",
+  "trends.avg": "Average",
+  "trends.min": "Lowest",
+  "trends.max": "Highest",
+  "trends.count": "Days with readings",
+  "trends.show_table": "Daily readings table ({n})",
 }
