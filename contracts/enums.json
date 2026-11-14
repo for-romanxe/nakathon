@@ -92,6 +92,15 @@
   "none",
   "unknown"
  ],
+ "body_location": [
+  "head",
+  "chest",
+  "abdomen",
+  "left_arm",
+  "right_arm",
+  "left_leg",
+  "right_leg"
+ ],
  "checkin_kind": [
   "morning",
   "evening",

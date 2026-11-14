@@ -62,6 +62,7 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 - `onset`: `now | hours | today | days | unknown`
 - `worse_when`: `standing | after_meal | exercise | lying | none | unknown`
 - `severity`: 정수 1~5, `needs_question`: bool
+- `locations`(선택): 보고가 말한 부위. `body_location` 값의 배열이다 — `head, chest, abdomen, left_arm, right_arm, left_leg, right_leg`. 표시에만 쓴다(§5.5).
 - **즉시 경보 코드**(규칙이 모델보다 먼저 키워드로 잡음): `chest_pain, shortness_of_breath, crisis` + 의식 변화 키워드. 걸리면 그 이벤트는 `urgent: true` (§5.4).
 
 **체크인 종류** `checkin.kind`: `morning | evening | weekly | monthly | quarterly`
@@ -217,6 +218,17 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 | ③ `동료가 의식이 없어요` (단독) | `warning` | `[]` | 긴급 증상 보고 | `urgent: true`, `warning` |
 
 ②는 ① 때문에 그날 상태가 `warning`이 된 것을 물려받았다(두통만 보고하면 `normal`). ②와 ③은 `level`과 `codes`가 같아서 지금 응답으로는 구분할 수 없다.
+
+### 5.5 부위 `locations` — 표시 전용 **[추가 11/14, 모델·백엔드 미구현]**
+
+증상 보고가 말한 부위를 몸 화면에 표시하기 위한 값이다. **`level`·`urgent`·제목·경보 판정에 쓰지 않는다.**
+
+- **값**: `body_location`의 배열. 좌우는 승무원 본인 기준이다. 어깨에서 손까지는 팔, 고관절에서 발까지는 다리다. 얼굴·눈·귀·코는 `head`, 배·속은 `abdomen`이다.
+- **좌우를 말하지 않은 팔·다리**는 양쪽을 다 넣는다(`["left_arm", "right_arm"]`). 응답에는 "좌우를 말하지 않았다"를 따로 적을 칸이 없다.
+- **넣지 않는 것**: 목록에 없는 부위(목·허리·등), 부위를 말하지 않은 증상(피로·어지럼), 부정한 부위, 이미 나은 부위, 남의 부위. 증상 코드와 같은 규칙이다.
+- **모델**: `extract_symptoms`의 결과(`contracts/symptom.schema.json`)에 `locations`가 선택 칸으로 들어온다. 목록 밖 값은 그 값만 버린다. 표시용 칸 때문에 증상 보고 전체를 버리지 않는다.
+- **백엔드**: 받은 값을 이벤트에 저장하고 `/today`의 `events[]`와 `GET /events/{id}`에 그대로 싣는다.
+- **키가 없을 때와 `[]`는 다르다.** 키가 없으면 모델이 부위를 보지 않은 것이다(모의 모델, 모델 단계를 돌리지 않는 `warning` 이벤트). 프론트는 이때만 `symptom_text`에서 직접 찾는다. `[]`는 모델이 봤고 부위가 없다는 뜻이라 프론트는 아무것도 표시하지 않는다.
 
 ## 6. 작업 분담과 넘겨주는 것 (초안, 팀 미팅에서 확정)
 

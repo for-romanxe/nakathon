@@ -61,6 +61,21 @@
   },
   "needs_question": {
    "type": "boolean"
+  },
+  "locations": {
+   "type": "array",
+   "items": {
+    "enum": [
+     "head",
+     "chest",
+     "abdomen",
+     "left_arm",
+     "right_arm",
+     "left_leg",
+     "right_leg"
+    ]
+   },
+   "uniqueItems": true
   }
  }
 }
