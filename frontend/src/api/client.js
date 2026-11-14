@@ -1,7 +1,9 @@
 // client.js — the only place the UI gets data from.
 // VITE_USE_FIXTURES=true (default) reads fixtures/*.json; false calls the FastAPI backend (CONTRACT §5).
 // API fields are snake_case and are used as-is (CONTRACT §0-4).
+import trendsFixture from './fixtures/trends.json'
 import todayFixture from './fixtures/today.json'
+import todayOthersFixture from './fixtures/today_others.json'
 import crewFixture from './fixtures/crew.json'
 import firstStepsFixture from './fixtures/first_steps.json'
 import docsFixture from './fixtures/docs.json'
@@ -14,6 +16,10 @@ import { CURRENT_CREW } from '../session.js'
 
 export const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES !== 'false'
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000' // CONTRACT §1
+
+// Korean status.text for c1–c4 in fixture mode (what the backend sends with ?lang=ko). A top-level map of its own,
+// separate from the per-crew /today objects, so every crew id including c1 has an entry
+const STATUS_TEXT_KO = todayOthersFixture.status_text_ko
 
 // Fixture for POST /checkin: the updated /today with the check-in marked done
 function checkinFixture(body) {
@@ -30,11 +36,11 @@ let fixtureNextId = 101
 // Same phrases as backend/events.py WARNING_PHRASES + CONSCIOUSNESS_CHANGE, so rehearsed demo lines behave the same
 const FIXTURE_URGENT = /\bchest pain\b|흉통|가슴 통증|가슴이 아파|\bshortness of breath\b|\b(can't|cannot) breathe\b|호흡곤란|숨을 못 쉬|\bkill myself\b|\bwant to die\b|죽고 싶|\bloss of consciousness\b|\bunresponsive\b|의식 소실|의식이 없/i
 
-function fixtureSymptom({ text }) {
+function fixtureSymptom({ crewId, text }) {
   const urgent = FIXTURE_URGENT.test(text)
   const base = urgent ? eventWarningFixture : eventCautionFixture
   const id = fixtureNextId++
-  fixtureEvents[id] = { ...structuredClone(base), id, symptom_text: text }
+  fixtureEvents[id] = { ...structuredClone(base), id, crew: crewId, symptom_text: text } // the reporter owns it
   return urgent
     ? { event_id: id, needs_question: false }
     : { event_id: id, needs_question: true, question: 'Is it worse when you stand up?' }
@@ -74,12 +80,9 @@ export const api = {
   getTrends: (crewId, metric, days) => request(
     `/crew/${crewId}/trends?${new URLSearchParams({ metric, days })}`,
     () => {
-      const reading = todayFixture.metrics.find(row => row.metric === metric)
-      return {
-        points: reading?.value == null ? [] : [{ ts: '2026-11-14T06:12:00Z', value: reading.value }],
-        baseline: { mean: reading?.baseline ?? null, sd: reading?.sd ?? null },
-        events: [],
-      }
+      // c1's real readings copied from the backend; keep the last `days` of them
+      const series = trendsFixture[metric] ?? { points: [], baseline: { mean: null, sd: null }, events: [] }
+      return { ...series, points: series.points.slice(-days) }
     },
   ),
   getSession: () => request('/session', { login_required: false, crew_id: null }),
@@ -98,17 +101,22 @@ export const api = {
   // GET /crew/{id}/today -> { status:{level,text}, guide, metrics:[{metric,value,baseline,sd,z}], events, checkin, streak }
   // ?lang=ko localises status.text (guide lines are English for now)
   getToday: (crewId, lang) =>
-    request(`/crew/${crewId}/today?lang=${lang}`, () => ({
-      ...todayFixture,
-      events: [...todayFixture.events, ...Object.values(fixtureEvents)].sort((a, b) => b.id - a.id),
-    })),
+    request(`/crew/${crewId}/today?lang=${lang}`, () => {
+      const base = todayOthersFixture[crewId] ?? todayFixture
+      // this session's fixture reports go only to the crew member who sent them
+      const mine = Object.values(fixtureEvents).filter((e) => e.crew === crewId)
+      const today = { ...base, events: [...base.events, ...mine].sort((a, b) => b.id - a.id) }
+      // the backend localises status.text via ?lang; the fixtures are English, so swap in its Korean sentence
+      const ko = lang === 'ko' && STATUS_TEXT_KO[crewId]
+      return ko ? { ...today, status: { ...today.status, text: ko } } : today
+    }),
   // POST /crew/{id}/checkin {kind, answers, free_text?} -> updated /today (CONTRACT §5)
   // answers (agreed with backend): { sleep_quality, mood, fatigue: 1-5 ints, symptoms?: "none"|"yes" }
   postCheckin: (crewId, body, lang) =>
     request(`/crew/${crewId}/checkin?lang=${lang}`, checkinFixture(body), { method: 'POST', body: JSON.stringify(body) }),
   // POST /crew/{id}/symptom {text, lang} -> { event_id, needs_question, question? } (CONTRACT §5)
   postSymptom: (crewId, text, lang) =>
-    request(`/crew/${crewId}/symptom`, () => fixtureSymptom({ text }), {
+    request(`/crew/${crewId}/symptom`, () => fixtureSymptom({ crewId, text }), {
       method: 'POST',
       body: JSON.stringify({ text, lang }),
     }),
@@ -162,9 +170,6 @@ export const api = {
   getCrew: () => request('/crew', crewFixture),
   // GET /mission -> { clock:{sol,time}, environment, one_way_delay_min, next_window }
   getMission: () => request('/mission', missionFixture),
-  getTransmissions: () => request('/tx', []),
-  queueDailySummaries: () => request('/tx', [], { method: 'POST', body: JSON.stringify({ daily: true }) }),
-  sendTransmissions: () => request('/tx/send', [], { method: 'POST' }),
   recordReceipt: (seq, status, attempt) =>
     request(`/tx/${seq}/receipt`, [], { method: 'POST', body: JSON.stringify({ status, attempt }) }),
   simulateTransmission: (seq, amplitude) =>
