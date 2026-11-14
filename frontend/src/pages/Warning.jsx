@@ -24,6 +24,7 @@ export default function Warning() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const { mission, refresh: refreshMission } = useMission()
+  const canTransmit = CURRENT_CREW === 'c2'
   // undefined = loading, null = no active warning,
   // otherwise { event (or null for a metrics-only warning), findings, urgent, codes }
   const [warning, setWarning] = useState(undefined)
@@ -32,6 +33,8 @@ export default function Warning() {
   const [cmoCalledAt, setCmoCalledAt] = useState(null)
   const [closing, setClosing] = useState(false)
   const [reason, setReason] = useState('')
+  const [closeError, setCloseError] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [sendNote, setSendNote] = useState(null)
   const [loadError, setLoadError] = useState(false)
   const [attempt, setAttempt] = useState(0) // bump to retry the load
@@ -39,7 +42,7 @@ export default function Warning() {
   useEffect(() => {
     async function load() {
       // ?event=<id> from Log/Event; otherwise today's latest warning event; otherwise a metric at warning
-      const [firstSteps, tx] = await Promise.all([api.getFirstSteps(), api.getTx().catch(() => [])])
+      const [firstSteps, tx] = await Promise.all([api.getFirstSteps(), canTransmit ? api.getTx().catch(() => []) : []])
       const showEvent = (ev) => {
         const codes = ev.codes ?? [] // missing fields must not break the warning screen
         setWarning({ event: ev, findings: ev.findings ?? [], urgent: isUrgentReport(ev), codes })
@@ -52,7 +55,7 @@ export default function Warning() {
         if (ev?.level === 'warning') return showEvent(ev)
       }
       const today = await api.getToday(CURRENT_CREW, lang)
-      const id = (today.events ?? []).find((e) => e.level === 'warning')?.id
+      const id = (today.events ?? []).find((e) => e.level === 'warning' && e.status !== 'closed')?.id
       if (id) return showEvent(await api.getEvent(id))
       if ((today.metrics ?? []).some((m) => m.level === 'warning')) {
         setWarning({ event: null, findings: today.metrics, urgent: false, codes: [] })
@@ -63,7 +66,7 @@ export default function Warning() {
       setWarning(null)
     }
     load().catch(() => setLoadError(true)) // unknown is not the same as "no warning"
-  }, [params, lang, attempt])
+  }, [params, lang, attempt, canTransmit])
 
   if (loadError) {
     return (
@@ -93,8 +96,23 @@ export default function Warning() {
   const { event, findings, urgent, codes } = warning
   const flagged = findings.filter((f) => f.level === 'caution' || f.level === 'warning')
   const done = () => {
-    ackWarning(warningKey(CURRENT_CREW, mission?.clock.sol))
+    ackWarning(warningKey(CURRENT_CREW, mission?.clock?.sol))
     navigate(event ? `/events/${event.id}` : '/today')
+  }
+
+  async function closeWarning(e) {
+    e.preventDefault()
+    if (!event || !reason || saving) return
+    setSaving(true)
+    setCloseError(false)
+    try {
+      await api.overrideEvent(event.id, reason)
+      done()
+    } catch {
+      setCloseError(true)
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function sendNow() {
@@ -160,11 +178,11 @@ export default function Warning() {
         <section className="warning-block">
           <h2>{t('warning.tx')}</h2>
           <p>
-            {packet
+            {!canTransmit ? t('warning.tx.cmo_only') : packet
               ? t(`warning.tx.${packet.status}`, { time: mission?.next_window ?? '–' })
               : t('warning.tx.none')}
           </p>
-          {mission && hasTime && (
+          {canTransmit && mission && hasTime && (
             <p className="muted num">
               {t('warning.tx.delay', {
                 n: mission.one_way_delay_min,
@@ -172,7 +190,7 @@ export default function Warning() {
               })}
             </p>
           )}
-          {(!packet || packet.status === 'queued' || packet.status === 'missing') && (
+          {canTransmit && (!packet || packet.status === 'queued' || packet.status === 'missing') && (
             <button type="button" className="btn-secondary align-start" onClick={sendNow}>{t('warning.tx.send')}</button>
           )}
           {sendNote && <p className="muted">{sendNote}</p>}
@@ -182,24 +200,21 @@ export default function Warning() {
           <button type="button" className="btn-primary" onClick={done}>
             {t('warning.ack')}
           </button>
-          {!closing && (
+          {event?.crew === CURRENT_CREW && event.status !== 'closed' && !closing && (
             <button type="button" className="btn-ghost" onClick={() => setClosing(true)}>{t('event.override')}</button>
           )}
           {closing && (
             <form
               className="override"
-              onSubmit={(e) => {
-                e.preventDefault()
-                // TODO: POST /events/{id}/override {reason} when the backend has it
-                if (reason) done()
-              }}
+              onSubmit={closeWarning}
             >
               <label htmlFor="warning-close-reason">{t('event.override_reason')}</label>
               <select id="warning-close-reason" value={reason} onChange={(e) => setReason(e.target.value)} required>
                 <option value="">{t('event.override_pick')}</option>
                 {OVERRIDE_REASONS.map((r) => <option key={r} value={r}>{t(`override.${r}`)}</option>)}
               </select>
-              <button type="submit" className="btn-secondary" disabled={!reason}>{t('event.override_confirm')}</button>
+              <button type="submit" className="btn-secondary" disabled={!reason || saving}>{t('event.override_confirm')}</button>
+              {closeError && <p role="alert">{t('common.error')}</p>}
             </form>
           )}
         </div>

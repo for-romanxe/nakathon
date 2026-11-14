@@ -38,6 +38,20 @@ class SymptomAnswer(BaseModel):
     answer: Literal["yes", "no"]
 
 
+class EventOverride(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    reason: str
+    note: str | None = Field(default=None, max_length=4000)
+
+    @field_validator("reason")
+    @classmethod
+    def validate_reason(cls, reason: str) -> str:
+        if reason not in CONTRACT["override_reason"]:
+            raise ValueError("Unsupported override reason.")
+        return reason
+
+
 def urgent_symptoms(text: str) -> tuple[list[str], bool]:
     codes = [
         code for code in CONTRACT["immediate_warning_codes"]
@@ -76,6 +90,9 @@ def event_payload(row: sqlite3.Row) -> dict:
     )
     state = json.loads(row["pipeline"]) if row["pipeline"] else {}
     stage = state["stages"][-1] if state else ("done" if row["level"] == "warning" else "hold")
+    override = None
+    if row["closed_reason"] in CONTRACT["override_reason"]:
+        override = {"reason": row["closed_reason"], "note": row["override_note"], "ts": row["closed_at"]}
     return {
         "id": row["id"], "crew": row["crew_id"], "ts": row["ts"], "title": title,
         "symptom_text": row["symptom_text"], "codes": json.loads(row["codes"]),
@@ -83,5 +100,7 @@ def event_payload(row: sqlite3.Row) -> dict:
         "risk": None, "explanation": state.get("explanation"), "runs": state.get("runs", []),
         "verified": state.get("verified", 0), "stage": stage, "hold_reason": state.get("hold_reason"),
         "question": state.get("question"), "answer": state.get("answer"),
-        "status": "open", "closed_reason": None, "shared": False, "tx_ref": None,
+        "status": "closed" if row["closed_at"] else "open",
+        "closed_reason": row["closed_reason"], "closed_at": row["closed_at"],
+        "override": override, "shared": bool(row["shared"]), "tx_ref": None,
     }

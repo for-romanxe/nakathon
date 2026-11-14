@@ -25,7 +25,7 @@ class EventFlowTest(TestCase):
         self.enterContext(patch.dict(os.environ, {"MODEL": "mock", "MOCK_DELAY": "0", "CREW_HEALTH_EVIDENCE": ""}))
 
     def test_warning_bypasses_model_and_does_not_leak_to_next_report(self):
-        with TestClient(create_app(self.db)) as api:
+        with TestClient(create_app(self.db), headers={"X-Demo-Viewer": "c2"}) as api:
             with patch.object(model, "extract_symptoms", side_effect=AssertionError("unexpected inference")):
                 report = api.post("/crew/c2/symptom", json={"text": "동료가 의식이 없어요", "lang": "ko"}).json()
                 url = f"/events/{report['event_id']}"
@@ -58,13 +58,45 @@ class EventFlowTest(TestCase):
             self.assertIsNone(event["explanation"])
 
     def test_reading_warning_bypasses_model_but_is_not_urgent_symptom(self):
-        with TestClient(create_app(self.db)) as api, closing(connect(self.db)) as db:
+        with TestClient(create_app(self.db), headers={"X-Demo-Viewer": "c2"}) as api, closing(connect(self.db)) as db:
             with db:
                 db.execute("UPDATE sample SET value = 95 WHERE crew_id = 'c2' AND metric = 'hr' AND mission_day = 16")
             with patch.object(model, "extract_symptoms", side_effect=AssertionError("unexpected inference")):
                 report = api.post("/crew/c2/symptom", json={"text": "Headache", "lang": "en"}).raise_for_status().json()
             event = api.get(f"/events/{report['event_id']}").raise_for_status().json()
             self.assertEqual((event["urgent"], event["level"], event["title"]), (False, "warning", "Symptom report"))
+            api.post(f"/events/{event['id']}/override", json={"reason": "wear_fault"}).raise_for_status()
+            self.assertEqual(api.get("/crew/c2/today").raise_for_status().json()["status"]["level"], "warning")
+
+    def test_warning_override_preserves_history_and_queued_packet(self):
+        with TestClient(create_app(self.db), headers={"X-Demo-Viewer": "c2"}) as api:
+            report = api.post("/crew/c2/symptom", json={"text": "Chest pain", "lang": "en"}).raise_for_status().json()
+            url = f"/events/{report['event_id']}"
+            self.assertEqual(api.post(f"{url}/close").status_code, 409)
+            self.assertEqual(api.post(f"{url}/override", json={"reason": "invalid"}).status_code, 422)
+            before = api.get("/tx").raise_for_status().json()
+            self.assertTrue(api.post(f"{url}/share").raise_for_status().json()["shared"])
+            body = {"reason": "action_done", "note": "Synthetic scenario completed."}
+            closed = api.post(f"{url}/override", json=body).raise_for_status().json()
+            self.assertEqual(api.post(f"{url}/override", json=body).json(), closed)
+            self.assertEqual(api.post(f"{url}/override", json={"reason": "other"}).status_code, 409)
+            self.assertEqual(api.get("/tx").json(), before)
+        with TestClient(create_app(self.db), headers={"X-Demo-Viewer": "c2"}) as api:
+            self.assertEqual(api.get(url).raise_for_status().json(), closed)
+            self.assertEqual((closed["status"], closed["level"], closed["closed_reason"]), ("closed", "warning", "action_done"))
+            self.assertEqual(closed["override"]["note"], body["note"])
+            current = api.get("/crew/c2/today").raise_for_status().json()
+            self.assertEqual(current["status"]["level"], "normal")
+            self.assertEqual(current["events"], [closed])
+
+    def test_non_warning_can_close_without_an_override(self):
+        with TestClient(create_app(self.db), headers={"X-Demo-Viewer": "c2"}) as api:
+            report = api.post("/crew/c2/symptom", json={"text": "I feel nauseous", "lang": "en"}).raise_for_status().json()
+            url = f"/events/{report['event_id']}"
+            event = api.post(f"{url}/close").raise_for_status().json()
+            self.assertEqual((event["status"], event["closed_reason"], event["override"]), ("closed", "resolved", None))
+            self.assertEqual(api.post(f"{url}/close").json(), event)
+            self.assertEqual(api.post("/events/999/share").status_code, 404)
 
     def test_upgrade_keeps_warning_event_and_packet(self):
         with closing(connect(self.db)) as db:
@@ -76,7 +108,7 @@ class EventFlowTest(TestCase):
                            "'I have chest pain', '[\"chest_pain\"]', 'warning', '[]')")
                 db.execute("INSERT INTO tx_packet (event_id, kind, mission_day, priority, payload, hash) "
                            "VALUES (1, 'event', 16, 'warning', '{}', ?)", ("0" * 64,))
-        with TestClient(create_app(self.db)) as api:
+        with TestClient(create_app(self.db), headers={"X-Demo-Viewer": "c2"}) as api:
             self.assertTrue(api.get("/events/1").raise_for_status().json()["urgent"])
             self.assertEqual(stages(api.get("/events/1/stream")), ["collect", "rules", "done"])
             self.assertEqual(api.get("/tx").raise_for_status().json()[0]["event_id"], 1)
