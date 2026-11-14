@@ -3,11 +3,13 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client.js'
 import CheckinSheet from '../components/CheckinSheet.jsx'
+import GuideWhy from '../components/GuideWhy.jsx'
 import { useMission } from '../mission.jsx'
 import { isWarningAcked, warningKey } from '../warningAck.js'
 import { METRICS, metricLabel, formatMetric } from '../api/contract.js'
 import { CURRENT_CREW } from '../session.js'
 import Cite from '../components/Cite.jsx'
+import DeviationScale from '../components/DeviationScale.jsx'
 import { useT } from '../i18n/index.jsx'
 
 // Status is never shown by color alone: icon + word + color
@@ -88,10 +90,13 @@ export default function Today() {
       <h1>
         {t(mission ? greetingKey(mission.clock.time) : 'today.greeting.day', { name: CURRENT_CREW.toUpperCase() })}
       </h1>
-      <p className={`status lv-${level}`}>
-        <span aria-hidden="true">{LEVEL_ICONS[level]}</span>
-        {statusText}
-      </p>
+      {/* Annunciator: a lit lamp with the level word, then the sentence */}
+      <div className={`annunciator lv-${level}`}>
+        <span className="annunciator-lamp">
+          <span aria-hidden="true">{LEVEL_ICONS[level]}</span> {t(`level.${level}`)}
+        </span>
+        <p className="annunciator-text">{statusText}</p>
+      </div>
 
       <section className="panel">
         <div className="panel-head"><h2>{t('today.guide')}</h2></div>
@@ -110,6 +115,7 @@ export default function Today() {
                   {g.cites.map((c) => <Cite key={c} id={c} />)}
                 </div>
               )}
+              {!g.done && <GuideWhy cites={g.cites} />}
             </li>
           ))}
         </ul>
@@ -133,6 +139,7 @@ export default function Today() {
                   {metricLabel(m.metric, lang)}
                   {lv === 'hold' && m.hold_reason && <span className="readout-note">{t(`hold.${m.hold_reason}`)}</span>}
                 </span>
+                <DeviationScale z={lv === 'hold' ? null : m.z} level={lv} />
                 <span className="readout-value">{formatMetric(m.metric, m.value)}</span>
                 <span className="readout-unit">{METRICS[m.metric]?.unit}</span>
                 <span className={`badge ${badgeClass}`}>
