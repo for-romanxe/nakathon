@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api/client.js'
-import { METRICS, VERIFY_CHECKS, OVERRIDE_REASONS, metricLabel, formatMetric, conditionLabel, isUrgentReport } from '../api/contract.js'
+import { METRICS, VERIFY_CHECKS, OVERRIDE_REASONS, metricLabel, formatMetric, conditionLabel, isUrgentReport, formatTs } from '../api/contract.js'
 import { useT } from '../i18n/index.jsx'
 
 const ICONS = { normal: '✔', advisory: '•', caution: '▲', warning: '✖', hold: '↻' }
@@ -34,7 +34,7 @@ export default function EventDetail() {
       <div className="event-head">
         <span className={`badge lv-${event.level}`}>{ICONS[event.level]} {t(`level.${event.level}`)}</span>
         <h1>{event.title}</h1>
-        <span className="num muted">{event.ts.slice(0, 16).replace('T', ' ')}</span>
+        <span className="num muted">{formatTs(event.ts)}</span>
       </div>
       <blockquote className="report">“{event.symptom_text}”</blockquote>
 

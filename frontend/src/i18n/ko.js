@@ -168,4 +168,5 @@ export default {
   "event.measured_skip": "측정값이 경보 기준(3σ)을 넘었어요. 경보에는 모델을 쓰지 않아요.",
   "event.condition_unlisted": "기기 안 목록에 있는 상태가 아니에요.",
   "event.local_only": "지금은 이 화면에만 저장돼요. 백엔드가 지원하면 의료 담당이 볼 수 있게 기록돼요.",
+  "log.answer_first": "위 질문에 먼저 답해 주세요.",
 }
