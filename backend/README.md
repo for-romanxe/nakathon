@@ -11,6 +11,14 @@ The server creates and seeds `data/crew-health.sqlite3` on startup. It keeps
 existing rows across restarts. The demo clock starts at Sol 16, 06:12 and exposes
 synthetic crew data on localhost. Use only synthetic data with this demo endpoint.
 
+Existing databases keep their original synthetic readings. To see the latest
+series in a separate database, set `CREW_HEALTH_DB` from the repository root:
+
+```powershell
+$env:CREW_HEALTH_DB = 'data/crew-health-trends.sqlite3'
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
 Use the corresponding crew ID in the `X-Demo-Viewer` header for each request.
 
 | Request | Expected status level |
@@ -78,7 +86,8 @@ event days are excluded from the baseline window.
 Both event responses include a `locations` array for display. When available,
 the backend stores the extractor's locations in the existing event record.
 Events without known locations, including warnings that bypass extraction,
-return `["unknown"]`. Locations do not change the event level.
+return `["unknown"]`. An explicit empty array means the extractor found no body
+location and is returned unchanged. Locations do not change the event level.
 
 The event endpoint returns `event_id`, `urgent`, and `needs_question`, with
 `question` when an answer is needed. A warning bypasses the model. `urgent`
@@ -142,6 +151,69 @@ The server derives the viewer from an HttpOnly cookie. Demo viewer selection
 is disabled in this mode. Sessions expire after eight hours or on backend
 restart. This setup is for one local backend process; it is not a production
 identity system.
+
+### Medication intake records
+
+- `GET /crew/{id}/medication-intakes` returns up to 50 recent entries in
+  `entries`, newest first, with `id`, `name`, `amount`, `ts`, and `mission_day`.
+  Entries with the same mission timestamp are ordered by descending record ID.
+  Preserve record IDs when copying intake history to retain that order.
+  The owner can read their records. The medical officer can read them when
+  the owner has enabled medical officer access.
+- `POST /crew/{id}/medication-intakes` accepts a UUID `request_id`, `name`, and
+  `amount`. The owner records a completed intake at the current mission
+  time. Retry with the same UUID and payload to retrieve the saved entry.
+  A retry confirms the original write even after catalog changes. New writes
+  always use the current catalog.
+  Reusing a UUID with different details returns HTTP 409.
+
+The Log page uses this API in backend mode. The amount is the crew member's
+reported text. Product guidance and interaction checks require a separate
+reviewed medication catalog.
+
+In backend mode, the Log page also shows label references from
+`GET /medication-references`. Set `CREW_HEALTH_MEDICATION_REFERENCES` to a
+local UTF-8 JSON array of team-reviewed references and restart the server.
+Each row has a unique lowercase `id`, exact `product` and `strength`,
+`directions`, `warnings`, `label_revision`, and a standard-port HTTPS
+`label_url` on DailyMed or FDA.
+The API returns an empty array when the catalog is unconfigured. Label text is
+available offline after loading the file. The original URL is provided for
+verification when connected. Match each row to the exact stocked product.
+
+For products counted in whole units, set the optional `count_unit` to a unit
+label such as `tablet`. The intake endpoint then also accepts `request_id`,
+`product_id`, and a positive integer `unit_count`. It stores the product ID,
+count, and the product name, strength, and unit label as shown when recorded.
+Text-only entries remain available and return null for the structured fields.
+Keep a product ID tied to the same formulation, strength, and count unit across
+catalog updates. Use a new ID when the formulation, strength, active
+ingredients, or count unit changes.
+
+`GET /crew/{id}/medication-intake-summary?product_id=...` returns the last
+matching intake timestamp, elapsed mission minutes, and recorded unit count
+in the preceding 24 hours. It uses the full saved history, even when the Log
+list shows only 50 entries. Text-only entries are counted separately and
+records later than the current mission time are omitted.
+
+A reviewed catalog entry with a `count_unit` may also include
+`intake_limits` with positive integer `minimum_interval_minutes` and
+`maximum_units_24h`. The summary compares recorded history against those
+values. It withholds comparison if limits are absent or any text-only
+intakes fall inside the longer of the two lookback windows. The comparison
+covers the selected product only.
+The summary also flags the shortest below-minimum gap between recorded
+intakes when the later intake is in the last 24 hours. Confirmed gaps and
+recorded totals above the limit remain visible when comparison is withheld.
+
+An entry may declare `active_ingredients` as an array of consistent lowercase
+ingredient IDs and `pair_cautions` as reviewed rules with another catalog
+`product_id`, a positive integer `lookback_minutes`, and caution `text`.
+The summary reports shared ingredients in the last 24 hours and cautions from
+either product's label within their configured windows. It withholds limit
+comparison when recent product or ingredient data is incomplete, an active
+pair caution applies, or a shared ingredient falls within the limit lookback.
+The catalog covers only the supplied rules.
 
 ### Event follow-up
 
