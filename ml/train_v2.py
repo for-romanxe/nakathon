@@ -8,7 +8,7 @@ mlx-lm 의 기본 학습은 Gemma 4 에서 서비스와 입력이 어긋난다. 
 사용 (ml 폴더에서): .venv/bin/python train_v2.py -c train_v2.yaml
 점검:              .venv/bin/python train_v2.py --show data/v2/train.jsonl
 """
-import json, sys
+import json, re, sys
 
 from mlx_lm import lora
 from mlx_lm.tuner import datasets
@@ -17,8 +17,16 @@ TEMPLATE_ARGS = {"enable_thinking": False}   # backend/model/README.md 의 서�
 TURN_END = "<turn|>"                         # Gemma 4 의 턴 끝 토큰. 서버는 여기서 생성을 멈춘다
 
 
+ASKED = re.compile(r"([a-z_]+): (?:array from|one of|integer|true or false)")      # 지시문이 답에 넣으라고 한 칸 이름
+
+
 def process(self, d):
     messages = d[self.chat_key]
+    # 지시문이 묻는 칸이 정답에 없으면 멈춘다. 그대로 학습하면 모델이 그 칸을 쓰지 않도록 배운다.
+    asked = ASKED.findall(messages[0]["content"]) if messages[0]["role"] == "system" else []
+    if asked and (missing := [k for k in asked if k not in json.loads(messages[-1]["content"])]):
+        sys.exit(f"ERROR training answers lack {missing}, which the instruction asks for. Add them to the labels (ml/data/v2) and rebuild, "
+                 "or build the set at the commit the adapter was trained from (1cde53e).")
     prompt = list(self.tokenizer.apply_chat_template(messages[:-1], add_generation_prompt=True, return_dict=False, **TEMPLATE_ARGS))
     answer = self.tokenizer.encode(messages[-1]["content"] + TURN_END, add_special_tokens=False)
     return (prompt + answer, len(prompt) if self.mask_prompt else 0)

@@ -156,6 +156,7 @@ def _symptom_system() -> str:
     return ("You extract symptom codes from a crew member's free-text report. Answer with JSON only. "
             f"codes: array from {json.dumps(e['symptom_codes'])}. onset: one of {json.dumps(e['onset'])}. "
             f"worse_when: one of {json.dumps(e['worse_when'])}. severity: integer 1-5. needs_question: true or false. "
+            f"locations: array from {json.dumps([p for p in e['body_location'] if p != 'unknown'])}. "
             "Never invent codes outside the list. "
             "Code only what the writer has now: not a denied symptom, one that is over, another person's symptom, or a figure of speech. "
             "If nothing remains, codes is [\"none\"]. A wish to die, to disappear or to end it all is always crisis, even next to other symptoms. "
@@ -165,7 +166,12 @@ def _symptom_system() -> str:
             "none = the writer says nothing changes it; unknown = not stated. "
             "severity follows the intensity words: 1 slight, 2 no intensity word, 3 quite or bothersome, 4 severe or hard to work, 5 unbearable; "
             "at least 3 with chest_pain or shortness_of_breath, at least 4 with crisis, 1 with none. "
-            "needs_question: true only when the report is too vague to tell which symptom it is (\"I feel off\"); otherwise false.")
+            "needs_question: true only when the report is too vague to tell which symptom it is (\"I feel off\"); otherwise false. "
+            "locations: the body parts the report says are affected now; [] when it names none. "
+            "A headache is head, chest pain is chest, a stomach ache is abdomen. head includes face, eyes, ears and nose (\"my right eye\" is head); neck includes the throat; "
+            "abdomen includes stomach and belly; back includes the lower back. Left and right are the writer's own and apply only to arms and legs: "
+            "an arm runs from shoulder to hand, a leg from hip to foot, and an arm or leg named without a side counts as both sides "
+            "(\"my knee\" is left_leg and right_leg). Leave out any part that is denied, over or someone else's.")
 
 
 MOOD_SYSTEM = ("Convert the crew member's free-text mood report into scales. Answer with JSON only: "
@@ -178,7 +184,7 @@ MOOD_SYSTEM = ("Convert the crew member's free-text mood report into scales. Ans
 
 
 def extract_symptoms(text: str, lang: str, recent_summary: str = "") -> dict:
-    """① 증상 문장 → SymptomReport (codes[], onset, worse_when, severity, needs_question)."""
+    """① 증상 문장 → SymptomReport (codes[], onset, worse_when, severity, needs_question, 선택 locations[])."""
     if _mode() == "mock":
         _delay()
         return _validated(_mock_pick("symptom", text), "symptom")
@@ -188,14 +194,7 @@ def extract_symptoms(text: str, lang: str, recent_summary: str = "") -> dict:
     for key in ("onset", "worse_when"):      # 보조 필드를 지어내면 unknown 으로 둔다. codes 는 건드리지 않는다(목록 밖이면 거부).
         if key in out and out[key] not in e[key]:
             out[key] = "unknown"
-    if "locations" in out:
-        raw = out["locations"]
-        allowed = contracts.schema("symptom")["properties"]["locations"]["items"]["enum"]
-        locations = dict.fromkeys(
-            location for location in raw if isinstance(location, str) and location in allowed and location != "unknown"
-        ) if isinstance(raw, list) else {}
-        out["locations"] = [] if raw == [] else list(locations) or ["unknown"]
-    return _validated(finish_symptom(out), "symptom")
+    return _validated(finish_symptom(out), "symptom")      # locations 정리도 finish_symptom 에서 한다
 
 
 URGENT_CODES = ("crisis", "chest_pain", "shortness_of_breath")
@@ -206,10 +205,17 @@ def finish_symptom(out: dict) -> dict:
     """모델 출력에 정해진 규칙을 적용한다. 모델은 문장을 읽는 일만 하고, 계산할 수 있는 것은 여기서 계산한다.
     - severity: 척도 밖 숫자는 끝값으로(증상이 없으면 모델이 0 을 쓴다). 가슴 통증·호흡 곤란은 3 이상, 위기는 4 이상, 증상 없음은 1.
     - needs_question: 모델은 '모호한가'만 답한다. 여기에 '어지러움·두통·메스꺼움·피로인데 언제부터인지도 언제 심해지는지도 없다'를 더하고,
-      급한 증상이면 묻지 않는다."""
+      급한 증상이면 묻지 않는다.
+    - locations(몸 화면 표시용, 판정에 안 쓴다, CONTRACT §5.5): 목록 밖 값·겹친 값은 그 값만 버린다. [] 는 '봤고 부위가 없다'라 그대로 둔다.
+      쓸 수 있는 값이 하나도 없거나 배열이 아니면 ["unknown"](프론트가 문장에서 찾는다). 증상이 없으면 []. 모델이 칸을 안 쓰면 키를 만들지 않는다."""
     codes = out.get("codes")
     if not isinstance(codes, list):
         return out
+    if "locations" in out:
+        raw = out["locations"] if isinstance(out["locations"], list) else ["?"]
+        known = [p for p in contracts.enums()["body_location"] if p != "unknown"]
+        named = list(dict.fromkeys(x for x in raw if isinstance(x, str) and x in known))
+        out["locations"] = [] if codes == ["none"] or not raw else named or ["unknown"]
     if isinstance(out.get("severity"), str) and out["severity"].strip().isdigit():      # "4" 나 2.0 처럼 쓴 숫자는 정수로 맞춘다
         out["severity"] = int(out["severity"])
     if type(out.get("severity")) is float:
