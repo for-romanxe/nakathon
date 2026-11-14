@@ -29,10 +29,9 @@ HOLD_TEXT = {
 
 
 def metric_at(days: dict[int, float], sol: int, excluded_days: frozenset[int] = frozenset()) -> dict:
-    history = [
-        days[day] for day in range(sol - BASELINE_DAYS, sol)
-        if day in days and day not in excluded_days
-    ]
+    # Use the most recent measured sols without reports, even when some recent sols were excluded.
+    eligible = sorted(day for day in days if day < sol and day not in excluded_days)
+    history = [days[day] for day in eligible[-BASELINE_DAYS:]]
     value = days.get(sol)
     baseline = mean(history) if len(history) == BASELINE_DAYS else None
     sd = pstdev(history) if baseline is not None else None
@@ -49,18 +48,18 @@ def metric_at(days: dict[int, float], sol: int, excluded_days: frozenset[int] = 
 
 def today(connection: sqlite3.Connection, crew_id: str, sol: int, lang: str = "en") -> dict:
     event_rows = connection.execute(
-        """SELECT * FROM event WHERE crew_id = ? AND mission_day BETWEEN ? AND ?
+        """SELECT * FROM event WHERE crew_id = ? AND mission_day <= ?
            ORDER BY id DESC""",
-        (crew_id, sol - BASELINE_DAYS - 1, sol),
+        (crew_id, sol),
     ).fetchall()
     excluded_days = frozenset(row["mission_day"] for row in event_rows if row["mission_day"] < sol)
     events = [event_payload(row) for row in event_rows if row["mission_day"] == sol]
     rows = connection.execute(
         """SELECT metric, mission_day, AVG(value) AS value
-           FROM sample WHERE crew_id = ? AND mission_day BETWEEN ? AND ?
+           FROM sample WHERE crew_id = ? AND mission_day <= ?
              AND value IS NOT NULL
            GROUP BY metric, mission_day""",
-        (crew_id, sol - BASELINE_DAYS - 1, sol),
+        (crew_id, sol),
     )
     readings = {metric: {} for metric in CONTRACT["metrics"]}
     for row in rows:

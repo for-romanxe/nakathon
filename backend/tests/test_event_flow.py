@@ -40,6 +40,28 @@ class EventFlowTest(TestCase):
             self.assertEqual((later["level"], later["urgent"], later["codes"]), ("normal", False, ["headache"]))
             self.assertEqual(api.get("/crew/c2/today").json()["status"]["level"], "warning")
 
+    def test_urgent_phrase_variants_bypass_model(self):
+        with TestClient(create_app(self.db), headers={"X-Demo-Viewer": "c2"}) as api:
+            with patch.object(model, "extract_symptoms", side_effect=AssertionError("unexpected inference")):
+                for text, lang, code in (
+                    ("죽고 싶어요", "ko", "crisis"),
+                    ("죽고싶어", "ko", "crisis"),
+                    ("다 끝내고 싶어요", "ko", "crisis"),
+                    ("I want to end it all", "en", "crisis"),
+                    ("가슴통증", "ko", "chest_pain"),
+                    ("가슴이아파요", "ko", "chest_pain"),
+                    ("숨을못쉬어요", "ko", "shortness_of_breath"),
+                    ("숨이 안 쉬어져요", "ko", "shortness_of_breath"),
+                ):
+                    with self.subTest(text=text):
+                        payload = {"text": text, "lang": lang}
+                        report = api.post("/crew/c2/symptom", json=payload).raise_for_status().json()
+                        event = api.get(f"/events/{report['event_id']}").raise_for_status().json()
+                        self.assertTrue(report["urgent"])
+                        self.assertFalse(report["needs_question"])
+                        self.assertEqual((event["level"], event["codes"]), ("warning", [code]))
+                self.assertEqual(len(api.get("/tx").raise_for_status().json()), 8)
+
     def test_question_survives_restart_and_missing_evidence_blocks_generation(self):
         with TestClient(create_app(self.db)) as api:
             report = api.post("/crew/c1/symptom", json={"text": "I feel dizzy", "lang": "en"}).json()
