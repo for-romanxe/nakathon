@@ -117,10 +117,19 @@ def _among_candidates(out: dict, candidates: list) -> dict:
     allowed = candidates or ["none"]
     if out["condition_id"] not in allowed:
         raise ModelOutputError(f"explanation: condition_id {out['condition_id']!r} is not among the candidates {allowed}")
+    out["category"] = _conditions()[out["condition_id"]]["hrp"]     # 범주는 상태 목록이 정한다. 모델이 쓴 값은 쓰지 않는다.
     return out
 
 
 # ---- 공개 함수 3개 -------------------------------------------------------
+
+def _cite_id(cite, paragraphs: list):
+    """문단 번호(1부터, 정수나 숫자 문자열) → 문단 id. 범위 밖이거나 다른 값이면 그대로 두어 스키마 검사에서 걸리게 한다."""
+    number = int(cite) if isinstance(cite, str) and cite.isdigit() else cite
+    if isinstance(number, int) and not isinstance(number, bool) and 1 <= number <= len(paragraphs):
+        return paragraphs[number - 1]["id"]
+    return cite
+
 
 def extract_symptoms(text: str, lang: str, recent_summary: str = "") -> dict:
     """① 증상 문장 → SymptomReport (codes[], onset, worse_when, severity, needs_question)."""
@@ -133,7 +142,11 @@ def extract_symptoms(text: str, lang: str, recent_summary: str = "") -> dict:
               f"worse_when: one of {json.dumps(e['worse_when'])}. severity: integer 1-5. "
               "needs_question: true when a single follow-up question would change the codes. Never invent codes outside the list.")
     user = text if not recent_summary else f"{text}\n\n[recent metrics] {recent_summary}"
-    return _validated(_chat(system, user), "symptom")
+    out = _chat(system, user)
+    for key in ("onset", "worse_when"):      # 보조 필드를 지어내면 unknown 으로 둔다. codes 는 건드리지 않는다(목록 밖이면 거부).
+        if key in out and out[key] not in e[key]:
+            out[key] = "unknown"
+    return _validated(out, "symptom")
 
 
 def score_mood(text: str, lang: str) -> dict:
@@ -159,13 +172,16 @@ def explain(level: str, findings: list, condition_candidates: list, paragraphs: 
         out = _mock_explanation(list(condition_candidates), paragraphs, lang)
         return _among_candidates(_validated(out, "explanation"), condition_candidates)
     cand = {c: conds[c] for c in condition_candidates}
-    paras = "\n".join(f"[{p['id']}] {p['text']}" for p in paragraphs)
+    paras = "\n".join(f"[{n}] {p['text']}" for n, p in enumerate(paragraphs, 1))
     system = ("You write a short risk note for an astronaut. The rule engine already decided the level; never raise or lower it. "
               "Answer with JSON only: {\"category\": \"...\", \"condition_id\": \"one of the candidate keys\", "
-              "\"lines\": [\"sentence\", \"sentence\"], \"cites\": [\"paragraph id you used\"]}. "
+              "\"lines\": [\"sentence\", \"sentence\"], \"cites\": [numbers of the paragraphs you used]}. "
               "lines is an array of 1-2 short sentences (why this matters, what to watch). "
               "Use only candidate conditions and only the given paragraphs. Do not state numbers. "
               "Say 'possible' / '가능성', never 'certain' or 'diagnosis'. "
               f"Write in {'Korean' if lang == 'ko' else 'English'}.")
     user = f"level: {level}\nfindings: {json.dumps(findings, ensure_ascii=False)}\ncandidates: {json.dumps(cand, ensure_ascii=False)}\nparagraphs:\n{paras}"
-    return _among_candidates(_validated(_chat(system, user, 220), "explanation"), condition_candidates)
+    out = _chat(system, user, 220)
+    if isinstance(out.get("cites"), list):   # 모델은 문단 번호만 쓴다. id 는 코드가 붙인다(잘못된 id 를 쓸 수 없게).
+        out["cites"] = [_cite_id(c, paragraphs) for c in out["cites"]]
+    return _among_candidates(_validated(out, "explanation"), condition_candidates)

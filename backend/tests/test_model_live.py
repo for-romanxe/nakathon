@@ -87,6 +87,41 @@ class LiveModel(unittest.TestCase):
         client.explain("caution", [], ["dehydration"], [{"id": "hrp:oi-01#p2", "text": "Drink fluids."}], "en")
         self.assertIn('"lines": [', Stub.seen[0][1]["messages"][0]["content"])
 
+    def test_explain_cites_come_back_as_paragraph_numbers(self):
+        # 실제 모델이 'eval:fluids#p1' 을 'fluids#p1' 로 줄여 써서 10문항 중 8개가 폐기됐다. id 를 쓰게 하지 않고 번호로 받는다.
+        paras = [{"id": "eval:orthostatic#p1", "text": "Stand up slowly."}, {"id": "eval:fluids#p1", "text": "Drink fluids."}]
+        reply = {"category": "nutrition", "condition_id": "dehydration", "lines": ["Fluid loss is possible."]}
+        for cites, want in (([2], ["eval:fluids#p1"]), (["1", 2], ["eval:orthostatic#p1", "eval:fluids#p1"]),
+                            (["eval:fluids#p1"], ["eval:fluids#p1"])):
+            with self.subTest(cites=cites):
+                Stub.seen = []
+                Stub.reply = completion(json.dumps({**reply, "cites": cites}))
+                self.assertEqual(client.explain("caution", [], ["dehydration"], paras, "en")["cites"], want)
+                user = Stub.seen[0][1]["messages"][1]["content"]
+                self.assertIn("[1] Stand up slowly.", user)
+                self.assertNotIn("eval:fluids#p1", user)
+        for cites in ([3], [0], ["fluids#p1"], [True]):
+            with self.subTest(cites=cites):
+                Stub.reply = completion(json.dumps({**reply, "cites": cites}))
+                with self.assertRaises(client.ModelOutputError):
+                    client.explain("caution", [], ["dehydration"], paras, "en")
+
+    def test_category_follows_the_condition_not_the_model(self):
+        # 실제 모델이 category 에 "advisory"(판정 단계)나 상태 이름을 써 넣었다(10문항 중 4개). 범주는 상태 목록이 정한다.
+        Stub.reply = completion(json.dumps({"category": "advisory", "condition_id": "sleep_deficit",
+                                            "lines": ["Short sleep is possible."], "cites": [1]}))
+        out = client.explain("advisory", [], ["sleep_deficit"], [{"id": "eval:sleep#p1", "text": "Sleep."}], "en")
+        self.assertEqual(out["category"], "sleep")
+
+    def test_made_up_onset_or_worse_when_becomes_unknown(self):
+        # 실제 모델이 "hurts when I bend it" 에 worse_when "bending" 을 지어내 맞는 코드까지 버려졌다.
+        Stub.reply = completion(json.dumps({**SYMPTOM, "codes": ["musculoskeletal_pain"], "worse_when": "bending", "onset": "yesterday"}))
+        out = client.extract_symptoms("My left knee hurts when I bend it", "en")
+        self.assertEqual((out["codes"], out["worse_when"], out["onset"]), (["musculoskeletal_pain"], "unknown", "unknown"))
+        Stub.reply = completion(json.dumps({**SYMPTOM, "codes": ["knee_pain"]}))      # 목록 밖 코드는 그대로 거부
+        with self.assertRaises(client.ModelOutputError):
+            client.extract_symptoms("My left knee hurts when I bend it", "en")
+
     def test_first_json_object_is_used_when_the_model_says_more(self):
         one = json.dumps(SYMPTOM, ensure_ascii=False)
         for content in (
