@@ -1,0 +1,2873 @@
+{
+ "label": "gemma-12b-base-rules",
+ "split": "test",
+ "date": "2026-11-14T15:22",
+ "model_url": "http://127.0.0.1:8080",
+ "summary": [
+  "symptom  model 57/60 (exact 57/60)  keyword 18/60  | ko 33/34  en 24/26",
+  "  by kind: context 6/6  hard_negative 9/10  indirect 7/7  mixed 8/8  multi 7/8  negation 5/6  none 5/5  paraphrase 6/6  plain 4/4",
+  "  urgent codes (chest pain, breathlessness, crisis) caught: model 18/18  keyword 5/18",
+  "  schema errors: 0",
+  "mood     in range 24/24  schema errors 0",
+  "latency  symptom median 2.5s  max 3.0s  (n=60)",
+  "latency  mood median 1.8s  max 2.4s  (n=24)"
+ ],
+ "rows": [
+  {
+   "section": "symptom",
+   "id": "ST-001",
+   "lang": "ko",
+   "kind": "none",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-001",
+   "lang": "ko",
+   "kind": "none",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "none",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.86,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-002",
+   "lang": "ko",
+   "kind": "none",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-002",
+   "lang": "ko",
+   "kind": "none",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "none",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.37,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-003",
+   "lang": "ko",
+   "kind": "none",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-003",
+   "lang": "ko",
+   "kind": "none",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.79,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-004",
+   "lang": "en",
+   "kind": "none",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "sleep_issue"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-004",
+   "lang": "en",
+   "kind": "none",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "none",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.08,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-005",
+   "lang": "en",
+   "kind": "none",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-005",
+   "lang": "en",
+   "kind": "none",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.82,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-006",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-006",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "today",
+    "worse_when": "none",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.4,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-007",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-007",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.43,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-008",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-008",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "none",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.41,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-009",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "congestion"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-009",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.38,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-010",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "headache"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-010",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "days",
+    "worse_when": "none",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.39,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-011",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-011",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.38,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-012",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "congestion"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-012",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "congestion"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.4,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-013",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-013",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "none",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.1,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-014",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-014",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "today",
+    "worse_when": "none",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.36,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-015",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-015",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "congestion"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.35,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-016",
+   "lang": "ko",
+   "kind": "negation",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "headache"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-016",
+   "lang": "ko",
+   "kind": "negation",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "vision_change"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.39,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-017",
+   "lang": "ko",
+   "kind": "negation",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 5,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-017",
+   "lang": "ko",
+   "kind": "negation",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "low_mood"
+    ],
+    "onset": "days",
+    "worse_when": "none",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.37,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-018",
+   "lang": "ko",
+   "kind": "negation",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-018",
+   "lang": "ko",
+   "kind": "negation",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "none",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.44,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-019",
+   "lang": "en",
+   "kind": "negation",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "nausea"
+    ],
+    "onset": "today",
+    "worse_when": "after_meal",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-019",
+   "lang": "en",
+   "kind": "negation",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "vision_change"
+    ],
+    "onset": "now",
+    "worse_when": "none",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.43,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-020",
+   "lang": "en",
+   "kind": "negation",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-020",
+   "lang": "en",
+   "kind": "negation",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "unknown",
+    "worse_when": "none",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.51,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-021",
+   "lang": "en",
+   "kind": "negation",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "sleep_issue"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-021",
+   "lang": "en",
+   "kind": "negation",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "fatigue"
+    ],
+    "onset": "today",
+    "worse_when": "none",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.34,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-022",
+   "lang": "ko",
+   "kind": "multi",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-022",
+   "lang": "ko",
+   "kind": "multi",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "chest_pain",
+     "shortness_of_breath"
+    ],
+    "onset": "now",
+    "worse_when": "exercise",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.83,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-023",
+   "lang": "ko",
+   "kind": "multi",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "sleep_issue"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-023",
+   "lang": "ko",
+   "kind": "multi",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "sleep_issue",
+     "crisis"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 5,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.65,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-024",
+   "lang": "ko",
+   "kind": "multi",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "low_mood"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-024",
+   "lang": "ko",
+   "kind": "multi",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "sleep_issue",
+     "fatigue",
+     "low_mood"
+    ],
+    "onset": "days",
+    "worse_when": "none",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.96,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-025",
+   "lang": "ko",
+   "kind": "multi",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "headache"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-025",
+   "lang": "ko",
+   "kind": "multi",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "musculoskeletal_pain",
+     "headache"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "sec": 2.65,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-026",
+   "lang": "en",
+   "kind": "multi",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "headache"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-026",
+   "lang": "en",
+   "kind": "multi",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "headache",
+     "nausea",
+     "vision_change"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.85,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-027",
+   "lang": "en",
+   "kind": "multi",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-027",
+   "lang": "en",
+   "kind": "multi",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "chest_pain",
+     "dizziness"
+    ],
+    "onset": "now",
+    "worse_when": "standing",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.68,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-028",
+   "lang": "en",
+   "kind": "multi",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "sleep_issue"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-028",
+   "lang": "en",
+   "kind": "multi",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "low_mood",
+     "sleep_issue"
+    ],
+    "onset": "days",
+    "worse_when": "lying",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.64,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-029",
+   "lang": "en",
+   "kind": "multi",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "congestion"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-029",
+   "lang": "en",
+   "kind": "multi",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "fatigue"
+    ],
+    "onset": "days",
+    "worse_when": "none",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.41,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-030",
+   "lang": "ko",
+   "kind": "context",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-030",
+   "lang": "ko",
+   "kind": "context",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "congestion"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.42,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-031",
+   "lang": "ko",
+   "kind": "context",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-031",
+   "lang": "ko",
+   "kind": "context",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "dizziness",
+     "nausea"
+    ],
+    "onset": "days",
+    "worse_when": "standing",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.69,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-032",
+   "lang": "ko",
+   "kind": "context",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "headache"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-032",
+   "lang": "ko",
+   "kind": "context",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "headache"
+    ],
+    "onset": "today",
+    "worse_when": "none",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.47,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-033",
+   "lang": "en",
+   "kind": "context",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "sleep_issue"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-033",
+   "lang": "en",
+   "kind": "context",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "days",
+    "worse_when": "lying",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.47,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-034",
+   "lang": "en",
+   "kind": "context",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-034",
+   "lang": "en",
+   "kind": "context",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "vision_change"
+    ],
+    "onset": "unknown",
+    "worse_when": "none",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.45,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-035",
+   "lang": "en",
+   "kind": "context",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-035",
+   "lang": "en",
+   "kind": "context",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "skin_rash"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.45,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-036",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-036",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.47,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-037",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-037",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "now",
+    "worse_when": "lying",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.59,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-038",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 5,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-038",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.43,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-039",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "dizziness"
+    ],
+    "onset": "today",
+    "worse_when": "standing",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-039",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "dizziness",
+     "nausea"
+    ],
+    "onset": "hours",
+    "worse_when": "exercise",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.72,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-040",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "vision_change"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-040",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "vision_change"
+    ],
+    "onset": "unknown",
+    "worse_when": "none",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.52,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-041",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "skin_rash"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-041",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "skin_rash"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.53,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-042",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-042",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "fatigue"
+    ],
+    "onset": "today",
+    "worse_when": "none",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.5,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-043",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-043",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.49,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-044",
+   "lang": "ko",
+   "kind": "plain",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "skin_rash"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-044",
+   "lang": "ko",
+   "kind": "plain",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "skin_rash"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.56,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-045",
+   "lang": "ko",
+   "kind": "plain",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-045",
+   "lang": "ko",
+   "kind": "plain",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "nausea"
+    ],
+    "onset": "hours",
+    "worse_when": "after_meal",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.6,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-046",
+   "lang": "en",
+   "kind": "plain",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-046",
+   "lang": "en",
+   "kind": "plain",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.48,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-047",
+   "lang": "en",
+   "kind": "plain",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "skin_rash"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-047",
+   "lang": "en",
+   "kind": "plain",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "skin_rash"
+    ],
+    "onset": "days",
+    "worse_when": "none",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.56,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-048",
+   "lang": "ko",
+   "kind": "paraphrase",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-048",
+   "lang": "ko",
+   "kind": "paraphrase",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "now",
+    "worse_when": "none",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.67,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-049",
+   "lang": "ko",
+   "kind": "paraphrase",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-049",
+   "lang": "ko",
+   "kind": "paraphrase",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.46,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-050",
+   "lang": "ko",
+   "kind": "paraphrase",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-050",
+   "lang": "ko",
+   "kind": "paraphrase",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "low_mood"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.53,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-051",
+   "lang": "en",
+   "kind": "paraphrase",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "days",
+    "worse_when": "exercise",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-051",
+   "lang": "en",
+   "kind": "paraphrase",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "exercise",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.56,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-052",
+   "lang": "en",
+   "kind": "paraphrase",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "headache"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-052",
+   "lang": "en",
+   "kind": "paraphrase",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "none",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.59,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-053",
+   "lang": "en",
+   "kind": "paraphrase",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-053",
+   "lang": "en",
+   "kind": "paraphrase",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "sleep_issue"
+    ],
+    "onset": "days",
+    "worse_when": "none",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.63,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-054",
+   "lang": "ko",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-054",
+   "lang": "ko",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.75,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-055",
+   "lang": "ko",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-055",
+   "lang": "ko",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "now",
+    "worse_when": "none",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.79,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-056",
+   "lang": "ko",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "dizziness"
+    ],
+    "onset": "today",
+    "worse_when": "standing",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-056",
+   "lang": "ko",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.52,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-057",
+   "lang": "en",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-057",
+   "lang": "en",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.57,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-058",
+   "lang": "en",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-058",
+   "lang": "en",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "now",
+    "worse_when": "none",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.7,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-059",
+   "lang": "en",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-059",
+   "lang": "en",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.55,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "ST-060",
+   "lang": "en",
+   "kind": "indirect",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "ST-060",
+   "lang": "en",
+   "kind": "indirect",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "headache",
+     "vision_change"
+    ],
+    "onset": "now",
+    "worse_when": "none",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.79,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "mood",
+   "id": "MT-001",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 5,
+    "fatigue": 4,
+    "stress": 2,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 2.37,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-002",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 5,
+    "fatigue": 1,
+    "stress": 1,
+    "confidence": 0.9
+   },
+   "error": null,
+   "sec": 1.83,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-003",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 2,
+    "fatigue": 2,
+    "stress": 2,
+    "confidence": 0.3
+   },
+   "error": null,
+   "sec": 1.84,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-004",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 4,
+    "fatigue": 5,
+    "stress": 1,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 1.87,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-005",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 2,
+    "fatigue": 2,
+    "stress": 4,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.86,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-006",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 3,
+    "fatigue": 4,
+    "stress": 2,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.91,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-007",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 5,
+    "fatigue": 2,
+    "stress": 4,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 1.83,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-008",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 2,
+    "fatigue": 2,
+    "stress": 4,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.91,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-009",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 5,
+    "fatigue": 1,
+    "stress": 2,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 1.92,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-010",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 4,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.84,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-011",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 2,
+    "fatigue": 2,
+    "stress": 3,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.87,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-012",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 2,
+    "fatigue": 4,
+    "stress": 5,
+    "confidence": 0.8
+   },
+   "error": null,
+   "sec": 1.86,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-013",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 5,
+    "fatigue": 5,
+    "stress": 2,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 1.91,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-014",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 3,
+    "fatigue": 2,
+    "stress": 1,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.82,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-015",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 3,
+    "fatigue": 4,
+    "stress": 1,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.84,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-016",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 2,
+    "fatigue": 3,
+    "stress": 2,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.82,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-017",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 1,
+    "fatigue": 1,
+    "stress": 4,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.9,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-018",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 5,
+    "fatigue": 2,
+    "stress": 1,
+    "confidence": 0.8
+   },
+   "error": null,
+   "sec": 1.43,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-019",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 5,
+    "fatigue": 2,
+    "stress": 2,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.82,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-020",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 3,
+    "fatigue": 3,
+    "stress": 3,
+    "confidence": 0.9
+   },
+   "error": null,
+   "sec": 1.83,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-021",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 4,
+    "fatigue": 2,
+    "stress": 3,
+    "confidence": 0.9
+   },
+   "error": null,
+   "sec": 1.82,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-022",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 5,
+    "fatigue": 2,
+    "stress": 4,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.83,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-023",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 2,
+    "fatigue": 4,
+    "stress": 4,
+    "confidence": 0.9
+   },
+   "error": null,
+   "sec": 1.82,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MT-024",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 3,
+    "fatigue": 3,
+    "stress": 2,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.81,
+   "ok": true,
+   "out_of_range": []
+  }
+ ]
+}

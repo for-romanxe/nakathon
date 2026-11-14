@@ -1,0 +1,300 @@
+{"id": "MN-0001", "lang": "ko", "text": "운동하고 씻었더니 몸이 가뿐하고 기운이 나요. 기분도 좋고요.", "label": {"mood": 4, "fatigue": 1, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0002", "lang": "en", "text": "Rested and sharp, but the argument with my crewmate left me irritable and very tense.", "label": {"mood": 2, "fatigue": 1, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0003", "lang": "en", "text": "Nothing left in the tank after nine hours outside.", "label": {"mood": 3, "fatigue": 5, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0004", "lang": "ko", "text": "모든 system nominal, 보고할 사항 없음.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0005", "lang": "ko", "text": "피로 중간 정도. 스트레스도 중간인데 아직은 버티는 중.", "label": {"mood": 3, "fatigue": 3, "stress": 3, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0006", "lang": "en", "text": "Wide awake and overwhelmed; too many tasks landed at once.", "label": {"mood": 3, "fatigue": 1, "stress": 5, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0007", "lang": "ko", "text": "오늘은 calm한 하루였고 기분도 good이에요.", "label": {"mood": 4, "fatigue": 2, "stress": 1, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0008", "lang": "ko", "text": "기분은 딱 보통. 평소처럼 조금 피곤함. 스트레스는 꽤 있지만 감당 가능.", "label": {"mood": 3, "fatigue": 2, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0009", "lang": "en", "text": "A bit tired, slightly tense, ordinary day.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0010", "lang": "ko", "text": "잠은 푹 자서 개운한데 매일 똑같은 하루라 기분이 처져요. 딱히 스트레스받는 건 없어요.", "label": {"mood": 2, "fatigue": 1, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0011", "lang": "ko", "text": "운동하고 났더니 적당히 피곤하네.", "label": {"mood": 3, "fatigue": 3, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0012", "lang": "ko", "text": "기분은 좋았다 나빴다 했고, 몸은 적당히 피곤해요. 긴장은 살짝 되는 정도.", "label": {"mood": 3, "fatigue": 3, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0013", "lang": "ko", "text": "너무 피곤해서 멍한데, 다행히 급한 일은 없어서 긴장은 전혀 안 돼요.", "label": {"mood": 3, "fatigue": 4, "stress": 1, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0014", "lang": "en", "text": "Overwhelmed and miserable. I can't see how we recover the timeline.", "label": {"mood": 1, "fatigue": 2, "stress": 5, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0015", "lang": "ko", "text": "정신은 또렷한데 마감 압박이 심해서 신경이 곤두서 있어요.", "label": {"mood": 3, "fatigue": 1, "stress": 4, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0016", "lang": "ko", "text": "꽤 피곤하지만 움직이는 데는 문제없습니다.", "label": {"mood": 3, "fatigue": 3, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0017", "lang": "ko", "text": "기분은 그저 그렇고, 긴장은 약간 됩니다.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0018", "lang": "ko", "text": "매일 똑같은 일상이 지겨워서 아무 감흥이 없어요.", "label": {"mood": 2, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0019", "lang": "ko", "text": "비참한 기분이야. 일도 도저히 감당이 안 돼.", "label": {"mood": 1, "fatigue": 2, "stress": 5, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0020", "lang": "ko", "text": "마음이 울적하긴 한데 스트레스받는 일은 딱히 없어요.", "label": {"mood": 2, "fatigue": 2, "stress": 1, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0021", "lang": "ko", "text": "푹 자고 일어나서 몸이 가뿐하고 기분도 아주 좋아요. 마음도 편안합니다.", "label": {"mood": 5, "fatigue": 1, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0022", "lang": "ko", "text": "그냥 그런 기분이에요. 피곤하긴 한데 일하는 데 지장은 없는 정도예요.", "label": {"mood": 3, "fatigue": 3, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0023", "lang": "ko", "text": "특이사항 없음. 일과 정상 진행.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0024", "lang": "ko", "text": "너무 슬프고 서러워서 한참 울었어요. 울고 나니 완전히 지쳐서 아무것도 못 하겠어요.", "label": {"mood": 1, "fatigue": 5, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0025", "lang": "en", "text": "Mood: neutral. Fatigue: moderate.", "label": {"mood": 3, "fatigue": 3, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0026", "lang": "ko", "text": "평소만큼만 피곤해요. 별다를 건 없고요.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0027", "lang": "ko", "text": "experiment 성공해서 기분 최고고 energy도 넘쳐요. deadline 때문에 pressure는 좀 있지만 manageable해요.", "label": {"mood": 5, "fatigue": 1, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0028", "lang": "ko", "text": "완전히 방전됐고 스트레스도 심해.", "label": {"mood": 3, "fatigue": 5, "stress": 4, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0029", "lang": "ko", "text": "오늘은 stress가 전혀 없고 relaxed한 하루였어요.", "label": {"mood": 3, "fatigue": 2, "stress": 1, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0030", "lang": "en", "text": "I'm miserable. Nothing about today went right.", "label": {"mood": 1, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0031", "lang": "en", "text": "Mixed mood, completely shattered after back-to-back shifts.", "label": {"mood": 3, "fatigue": 5, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0032", "lang": "en", "text": "Best day of the mission so far, I'm elated.", "label": {"mood": 5, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0033", "lang": "ko", "text": "완전히 방전됐어요. 아무것도 못 하겠어요.", "label": {"mood": 3, "fatigue": 5, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0034", "lang": "en", "text": "Irritable and highly stressed after the argument over the task split.", "label": {"mood": 2, "fatigue": 2, "stress": 4, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0035", "lang": "en", "text": "Felt energetic all day; the new sleep schedule is working.", "label": {"mood": 3, "fatigue": 1, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0036", "lang": "en", "text": "Routine sol. All tasks completed as planned.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0037", "lang": "ko", "text": "workload가 너무 많아서 완전 overwhelmed됐어요.", "label": {"mood": 3, "fatigue": 2, "stress": 5, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0038", "lang": "ko", "text": "체크인 완료. 변동 사항 없음.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0039", "lang": "en", "text": "Skipped movie night; feeling too low to be around anyone.", "label": {"mood": 2, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0040", "lang": "en", "text": "Okay mood. Very tired, kept nodding off in the briefing.", "label": {"mood": 3, "fatigue": 4, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0041", "lang": "ko", "text": "신나긴 하는데 할 일이 한꺼번에 몰려서 어쩔 줄 모르겠어요.", "label": {"mood": 5, "fatigue": 2, "stress": 5, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0042", "lang": "ko", "text": "요즘은 웃을 일이 통 없네요. 마음이 좀 무거워요.", "label": {"mood": 2, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0043", "lang": "ko", "text": "기분은 좀 처졌고 몸은 기진맥진. 그래도 쫓기는 일은 없어서 마음은 평온함.", "label": {"mood": 2, "fatigue": 5, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0044", "lang": "ko", "text": "기분 보통. 스트레스 중간 수준, 감당할 만함.", "label": {"mood": 3, "fatigue": 2, "stress": 3, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0045", "lang": "ko", "text": "오늘 표면 작업이 길어서 녹초 상태. 그래도 기분 좋고 스트레스 없음.", "label": {"mood": 4, "fatigue": 5, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0046", "lang": "en", "text": "Completely exhausted from the EVA but over the moon about how it went, and totally calm now.", "label": {"mood": 5, "fatigue": 5, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0047", "lang": "ko", "text": "기분도 좋고 여유로운 하루. 다만 어젯밤 수면 스테이션이 시끄러워서 못 잔 탓에 꽤 피곤함.", "label": {"mood": 4, "fatigue": 3, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0048", "lang": "ko", "text": "몸은 파김치인데 시료 채취가 잘돼서 뿌듯해요. 다만 밀린 보고서가 너무 많아서 감당이 안 돼요.", "label": {"mood": 4, "fatigue": 5, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0049", "lang": "ko", "text": "기분 좋음. 피로감 약간.", "label": {"mood": 4, "fatigue": 2, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0050", "lang": "ko", "text": "실험 결과가 잘 나와서 신나는데 마감이 코앞이라 압박감이 커요. 피곤한 건 조금뿐이에요.", "label": {"mood": 5, "fatigue": 2, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0051", "lang": "en", "text": "A little tired, nothing out of the ordinary.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0052", "lang": "ko", "text": "기분은 진짜 최고인데 몸이 많이 피곤해요. 어제 늦게까지 maintenance 했거든요.", "label": {"mood": 5, "fatigue": 4, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0053", "lang": "ko", "text": "좀 anxious하고 pressure가 심해서 overwhelmed된 느낌이에요.", "label": {"mood": 2, "fatigue": 2, "stress": 5, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0054", "lang": "ko", "text": "잠을 푹 자서 머리가 맑고 몸이 가볍다.", "label": {"mood": 3, "fatigue": 1, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0055", "lang": "en", "text": "Feeling upbeat, a bit tired, moderately stressed by the timeline, but it's under control.", "label": {"mood": 5, "fatigue": 2, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0056", "lang": "ko", "text": "오늘 좀 down되고 energy가 바닥이에요. 완전 drained됐어요.", "label": {"mood": 2, "fatigue": 5, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0057", "lang": "en", "text": "Mood's nothing special. I'm fairly tired, and the workload has me moderately stressed, but I'm coping.", "label": {"mood": 3, "fatigue": 3, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0058", "lang": "en", "text": "Happy and well rested, feeling energetic.", "label": {"mood": 4, "fatigue": 1, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0059", "lang": "en", "text": "Good mood, a little tired.", "label": {"mood": 4, "fatigue": 2, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0060", "lang": "en", "text": "Checking in. No changes since yesterday.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0061", "lang": "en", "text": "Did the filter swap and inventory. That's about it.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0062", "lang": "ko", "text": "꽤 피곤한 것 같고 스트레스도 많이 받고 있어요.", "label": {"mood": 3, "fatigue": 3, "stress": 4, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0063", "lang": "ko", "text": "몸은 완전 녹초인데 오늘 채취한 시료 생각하면 웃음이 나와. 기분 최고야 ㅎㅎ", "label": {"mood": 5, "fatigue": 5, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0064", "lang": "en", "text": "Energetic this morning, but under heavy pressure from the revised plan.", "label": {"mood": 3, "fatigue": 1, "stress": 4, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0065", "lang": "ko", "text": "피곤함은 조금 있고, 스트레스는 꽤 받지만 버틸 만합니다.", "label": {"mood": 3, "fatigue": 2, "stress": 3, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0066", "lang": "en", "text": "For once nothing is chasing me. Calm day.", "label": {"mood": 3, "fatigue": 2, "stress": 1, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0067", "lang": "ko", "text": "오늘 기분 좋고 기운도 넘쳐요. 스트레스받는 일도 전혀 없었어요.", "label": {"mood": 4, "fatigue": 1, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0068", "lang": "ko", "text": "동료랑 크게 다투고 나서 너무 속상하고 비참해요. 한숨도 못 자서 머리가 멍하고, 신경은 잔뜩 곤두서 있어요.", "label": {"mood": 1, "fatigue": 4, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0069", "lang": "ko", "text": "선외활동이 여덟 시간 넘게 이어져서 완전히 녹초예요. 일정은 또 밀렸고 감당이 안 돼서 기분도 바닥이에요.", "label": {"mood": 1, "fatigue": 5, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0070", "lang": "en", "text": "Slightly tense ahead of the rover checkout.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0071", "lang": "ko", "text": "landing sim 결과가 좋아서 기분은 good인데, 연속 shift 때문에 완전히 방전됐고 stress도 한계예요.", "label": {"mood": 4, "fatigue": 5, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0072", "lang": "en", "text": "A little tired. Worried about the dust storm and strained by constant replanning.", "label": {"mood": 2, "fatigue": 2, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0073", "lang": "en", "text": "Excited about the experiment, though I'm overwhelmed by everything due this week.", "label": {"mood": 5, "fatigue": 2, "stress": 5, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0074", "lang": "ko", "text": "마음이 편안하고 기분도 좋아요.", "label": {"mood": 4, "fatigue": 2, "stress": 1, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0075", "lang": "ko", "text": "오전에 필터 교체하고 오후엔 재고 정리했어요. 그게 전부예요.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0076", "lang": "ko", "text": "treadmill session 끝나고 기분 상쾌, 살짝 tired, 마음은 relaxed.", "label": {"mood": 4, "fatigue": 2, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0077", "lang": "ko", "text": "가족 call을 놓쳐서 정말 비참한 기분이에요. 너무 피곤해서 집중도 안 되고요. 업무 stress는 평소 정도예요.", "label": {"mood": 1, "fatigue": 4, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0078", "lang": "en", "text": "Completely exhausted after the long EVA, miserable about the botched sample run, and overwhelmed by tomorrow's task list.", "label": {"mood": 1, "fatigue": 5, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0079", "lang": "ko", "text": "완전히 지쳐서 손가락 하나 까딱 못 하겠고 기분도 영 울적하네요.", "label": {"mood": 2, "fatigue": 5, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0080", "lang": "en", "text": "Homesick and a bit blue tonight.", "label": {"mood": 2, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0081", "lang": "en", "text": "So-so mood, slightly tired, a little tense.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0082", "lang": "en", "text": "Mood flat. Moderately tired. Stress moderate, coping.", "label": {"mood": 2, "fatigue": 3, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0083", "lang": "en", "text": "Great mood, wide awake, and totally calm.", "label": {"mood": 5, "fatigue": 1, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0084", "lang": "en", "text": "Nominal. Nothing new on my end.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0085", "lang": "en", "text": "Honestly miserable today. Fairly tired, and stressed but managing.", "label": {"mood": 1, "fatigue": 3, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0086", "lang": "en", "text": "Totally spent after the EVA and still very stressed about the glove issue.", "label": {"mood": 3, "fatigue": 5, "stress": 4, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0087", "lang": "ko", "text": "기분은 좋아요. 다만 일정이 계속 밀려서 스트레스가 심하고, 꽤 피곤하네요.", "label": {"mood": 4, "fatigue": 3, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0088", "lang": "en", "text": "I'm in a good mood, honestly, but so exhausted I can barely function; tomorrow's plan stresses me a fair bit, though I'm managing.", "label": {"mood": 4, "fatigue": 5, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0089", "lang": "en", "text": "In good spirits despite being totally wiped out from the EVA.", "label": {"mood": 4, "fatigue": 5, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0090", "lang": "en", "text": "No stress to speak of, just very tired and feeling a bit flat.", "label": {"mood": 2, "fatigue": 4, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0091", "lang": "ko", "text": "하루 종일 축 처져 있었어요. 기분도 가라앉고 많이 피곤해서 계속 멍했어요.", "label": {"mood": 2, "fatigue": 4, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0092", "lang": "en", "text": "Mood okay, too tired to concentrate, a little tense.", "label": {"mood": 3, "fatigue": 4, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0093", "lang": "ko", "text": "오늘은 기분이 오락가락했어요. 잠은 푹 자서 몸은 쌩쌩해요.", "label": {"mood": 3, "fatigue": 1, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0094", "lang": "ko", "text": "정신은 말똥말똥한데 기분은 영 아니야. 사소한 일에도 욱해.", "label": {"mood": 2, "fatigue": 1, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0095", "lang": "ko", "text": "통신 복구가 또 실패해서 절망적인 기분입니다. 많이 피곤해서 집중도 되지 않습니다.", "label": {"mood": 1, "fatigue": 4, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0096", "lang": "ko", "text": "착륙 리허설을 완벽하게 마쳐서 기분 최고! 근데 몸은 완전 방전이고 다음 일정은 도저히 감당이 안 될 것 같아.", "label": {"mood": 5, "fatigue": 5, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0097", "lang": "en", "text": "Anxious about the landing, moderately stressed but coping.", "label": {"mood": 2, "fatigue": 2, "stress": 3, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0098", "lang": "ko", "text": "어제 네 시간밖에 못 자서 focus가 안 되고 stress도 심해요.", "label": {"mood": 3, "fatigue": 4, "stress": 4, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0099", "lang": "ko", "text": "오늘 EVA 여섯 시간 하고 완전 exhausted인데 mood는 진짜 좋아요. stress도 없고요.", "label": {"mood": 5, "fatigue": 5, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0100", "lang": "ko", "text": "불안해서 잠을 거의 못 잤더니 완전히 방전됐어. 내일 도킹 점검 생각하면 스트레스가 너무 심해 ㅠㅠ", "label": {"mood": 2, "fatigue": 5, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0101", "lang": "en", "text": "On top of the world today, mildly tense before the EVA briefing.", "label": {"mood": 5, "fatigue": 2, "stress": 2, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0102", "lang": "ko", "text": "의욕이 넘치고 기분도 최고인데 할 일이 너무 많아서 벅차. 피곤한 줄은 전혀 모르겠어.", "label": {"mood": 5, "fatigue": 1, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0103", "lang": "en", "text": "Moderately tired after the resistive workout.", "label": {"mood": 3, "fatigue": 3, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0104", "lang": "ko", "text": "기분은 좋은데 일정이 빠듯해서 압박감이 커요.", "label": {"mood": 4, "fatigue": 2, "stress": 4, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0105", "lang": "en", "text": "Totally relaxed this evening.", "label": {"mood": 3, "fatigue": 2, "stress": 1, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0106", "lang": "ko", "text": "피곤해서 집중이 안 되는데 일정은 계속 밀려서 스트레스가 심해요.", "label": {"mood": 3, "fatigue": 4, "stress": 4, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0107", "lang": "en", "text": "Fully rested and alert this morning.", "label": {"mood": 3, "fatigue": 1, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0108", "lang": "ko", "text": "매일 같은 routine이라 기분이 처지고 아무 감흥이 없어요. 잠은 잘 자서 머리는 맑고 stress도 없어요.", "label": {"mood": 2, "fatigue": 1, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0109", "lang": "ko", "text": "기분은 그럭저럭이고 피곤함은 조금. 일정 때문에 스트레스가 꽤 있지만 잘 버티고 있어요.", "label": {"mood": 3, "fatigue": 2, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0110", "lang": "ko", "text": "오늘은 하나도 안 피곤해요. 기운이 넘쳐요.", "label": {"mood": 3, "fatigue": 1, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0111", "lang": "ko", "text": "기분 가라앉음. 꽤 피곤함. 스트레스는 중간 정도, 버틸 만함.", "label": {"mood": 2, "fatigue": 3, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0112", "lang": "ko", "text": "관제 쪽 수정 요청이 오전에만 다섯 번 와서 압박감이 큽니다.", "label": {"mood": 3, "fatigue": 2, "stress": 4, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0113", "lang": "ko", "text": "너무 속상하고 참담해요. 그래도 일 자체는 여유 있어서 쫓기는 느낌은 없어요.", "label": {"mood": 1, "fatigue": 2, "stress": 1, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0114", "lang": "ko", "text": "짜증 나고 일이 감당이 안 됨. 완전히 한계.", "label": {"mood": 2, "fatigue": 2, "stress": 5, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0115", "lang": "en", "text": "Tired enough that I keep losing my place in the checklist, yet I feel great and nothing is weighing on me.", "label": {"mood": 5, "fatigue": 4, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0116", "lang": "ko", "text": "짜증만 나고 너무 피곤해서 집중이 안 됨. 작업량 때문에 스트레스 심함.", "label": {"mood": 2, "fatigue": 4, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0117", "lang": "en", "text": "Well rested and alert, nothing stressful going on, but the monotony has me down.", "label": {"mood": 2, "fatigue": 1, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0118", "lang": "ko", "text": "피로 누적으로 완전히 탈진. 업무량 감당 불가.", "label": {"mood": 3, "fatigue": 5, "stress": 5, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0119", "lang": "ko", "text": "오늘 기분 좋아요. 적당히 피곤하긴 한데 deadline이 없어서 마음은 편해요.", "label": {"mood": 4, "fatigue": 3, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0120", "lang": "ko", "text": "살짝 피곤한 정도예요.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0121", "lang": "ko", "text": "기분이 좋습니다. 일정 때문에 스트레스는 좀 있지만 충분히 감당하고 있습니다.", "label": {"mood": 4, "fatigue": 2, "stress": 3, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0122", "lang": "en", "text": "Fine, I suppose. Neither up nor down.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0123", "lang": "ko", "text": "피로는 평소 수준인데 장비 고장 때문에 스트레스가 심하고 마음이 불안합니다.", "label": {"mood": 2, "fatigue": 2, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0124", "lang": "en", "text": "Standard day, nothing worth noting.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0125", "lang": "en", "text": "Jaw's been clenched since the morning briefing; the timeline is really straining me.", "label": {"mood": 3, "fatigue": 2, "stress": 4, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0126", "lang": "ko", "text": "긴장은 평소처럼 조금 있는 정도인데, 너무 피곤해서 자꾸 졸아요. 기분은 좋지도 나쁘지도 않아요.", "label": {"mood": 3, "fatigue": 4, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0127", "lang": "ko", "text": "뭐, 기분이 나쁘진 않아요. 그냥 그런 날이에요.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0128", "lang": "ko", "text": "오늘 하루는 만족스러웠습니다.", "label": {"mood": 4, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0129", "lang": "ko", "text": "오늘도 계획대로 진행했습니다. 따로 말씀드릴 건 없어요.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0130", "lang": "ko", "text": "하루 종일 예민하고 짜증이 났어요. 꽤 피곤하고, 일정 때문에 스트레스도 많이 받았어요.", "label": {"mood": 2, "fatigue": 3, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0131", "lang": "ko", "text": "불안하고 초조해요. 내일 선외활동 준비가 덜 돼서 스트레스가 심해요.", "label": {"mood": 2, "fatigue": 2, "stress": 4, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0132", "lang": "ko", "text": "스트레스 전혀 없음. 여유로운 하루.", "label": {"mood": 3, "fatigue": 2, "stress": 1, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0133", "lang": "en", "text": "Mood is okay. Slightly tense, nothing unusual.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0134", "lang": "ko", "text": "요즘 계속 울적하고, 잠도 모자라서 많이 피곤해요. 일정 압박 때문에 스트레스도 심하고요.", "label": {"mood": 2, "fatigue": 4, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0135", "lang": "en", "text": "In a good mood and only a bit tired, but I'm highly stressed about the docking timeline.", "label": {"mood": 4, "fatigue": 2, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0136", "lang": "ko", "text": "기분은 좋은 편이고 약간 피곤해요. 내일 일정 때문에 긴장도 살짝 되고요.", "label": {"mood": 4, "fatigue": 2, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0137", "lang": "ko", "text": "스트레스는 중간 정도. 아직은 버틸 만함.", "label": {"mood": 3, "fatigue": 2, "stress": 3, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0138", "lang": "en", "text": "Feeling great and completely relaxed after the call with my family.", "label": {"mood": 5, "fatigue": 2, "stress": 1, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0139", "lang": "ko", "text": "오늘 기분은 좋지도 나쁘지도 않은데, 통신 지연 문제로 스트레스가 심했어요.", "label": {"mood": 3, "fatigue": 2, "stress": 4, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0140", "lang": "en", "text": "Exhausted to the point of uselessness and overwhelmed by the repair list.", "label": {"mood": 3, "fatigue": 5, "stress": 5, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0141", "lang": "en", "text": "Good mood, moderately stressed, handling it.", "label": {"mood": 4, "fatigue": 2, "stress": 3, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0142", "lang": "ko", "text": "마음은 차분한데 몸이 완전히 지쳤어요. 기분은 그냥 그래요.", "label": {"mood": 3, "fatigue": 5, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0143", "lang": "en", "text": "In a great mood and full of energy, but the schedule is brutal and I'm under a lot of pressure.", "label": {"mood": 5, "fatigue": 1, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0144", "lang": "en", "text": "No updates from me this evening.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0145", "lang": "ko", "text": "평소와 같습니다. 이상 없습니다.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0146", "lang": "en", "text": "Upbeat, but the schedule pressure is intense and I'm strained.", "label": {"mood": 5, "fatigue": 2, "stress": 4, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0147", "lang": "en", "text": "Tired, but still getting through the task list fine.", "label": {"mood": 3, "fatigue": 3, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0148", "lang": "ko", "text": "조금 피곤한 정도고 급한 일도 없어 느긋한데, 집 생각에 마음이 울적하네요.", "label": {"mood": 2, "fatigue": 2, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0149", "lang": "ko", "text": "실험이 한 번에 성공해서 신나요! 하나도 안 피곤하고 마음도 느긋해요.", "label": {"mood": 5, "fatigue": 1, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0150", "lang": "en", "text": "Good spirits. Bit tired. Slightly tense before the burn, nothing unusual.", "label": {"mood": 4, "fatigue": 2, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0151", "lang": "ko", "text": "심란하고 불안한데 몸은 이상하게 쌩쌩해요. 스트레스는 중간쯤이고 아직은 견딜 만합니다.", "label": {"mood": 2, "fatigue": 1, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0152", "lang": "ko", "text": "기분은 그냥 okay고, stress는 중간 정도인데 아직 감당할 만해요.", "label": {"mood": 3, "fatigue": 2, "stress": 3, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0153", "lang": "en", "text": "Fully alert and calm.", "label": {"mood": 3, "fatigue": 1, "stress": 1, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0154", "lang": "ko", "text": "복잡한 심경이에요. 기쁘기도 하고 아쉽기도 하고.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0155", "lang": "ko", "text": "실험 성공해서 뿌듯한데 너무 졸려서 눈꺼풀이 천근만근이에요.", "label": {"mood": 4, "fatigue": 4, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0156", "lang": "ko", "text": "아들 졸업식을 못 본다는 생각에 너무 슬퍼서 눈물이 났어요. 몸은 쌩쌩하고 일 스트레스도 없는데 말이에요.", "label": {"mood": 1, "fatigue": 1, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0157", "lang": "ko", "text": "약간 긴장되는 정도입니다.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0158", "lang": "en", "text": "Happy with the data, fairly tired, moderately stressed about the deadline but handling it.", "label": {"mood": 4, "fatigue": 3, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0159", "lang": "ko", "text": "오늘 기분이 정말 좋아요.", "label": {"mood": 5, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0160", "lang": "ko", "text": "선외활동 끝내고 완전히 지쳤는데 기분은 날아갈 것 같아요. 다 잘 끝나서 마음도 홀가분하고요.", "label": {"mood": 5, "fatigue": 5, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0161", "lang": "ko", "text": "기분은 아주 좋고 몸도 쌩쌩한데, 일정이 빡빡해서 스트레스는 꽤 받고 있어요. 그래도 감당할 만해요.", "label": {"mood": 5, "fatigue": 1, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0162", "lang": "ko", "text": "기분이 좋지도 나쁘지도 않아요. 다만 잠을 못 자서 완전히 탈진한 느낌이에요.", "label": {"mood": 3, "fatigue": 5, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0163", "lang": "en", "text": "Upbeat and at ease after a quiet sol, though moderately tired.", "label": {"mood": 5, "fatigue": 3, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0164", "lang": "en", "text": "Bad night in the sleep station, struggling to stay awake at the console.", "label": {"mood": 3, "fatigue": 4, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0165", "lang": "en", "text": "Content. Quiet sol, nice dinner with the crew.", "label": {"mood": 4, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0166", "lang": "en", "text": "Content, though fairly tired after the treadmill run.", "label": {"mood": 4, "fatigue": 3, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0167", "lang": "ko", "text": "오늘 뭘 해도 재미가 없고 처져요. 몸은 적당히 피곤하고, 긴장은 약간 있는 정도예요.", "label": {"mood": 2, "fatigue": 3, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0168", "lang": "en", "text": "Crushed. The family video link dropped before I could say anything.", "label": {"mood": 1, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0169", "lang": "ko", "text": "EVA 끝나고 완전 wiped out이에요, energy가 zero예요.", "label": {"mood": 3, "fatigue": 5, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0170", "lang": "en", "text": "Daily check-in done, no remarks.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0171", "lang": "en", "text": "Mixed feelings about the plan change, and I'm completely overwhelmed by the replanning.", "label": {"mood": 3, "fatigue": 2, "stress": 5, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0172", "lang": "en", "text": "Anxious all day, can't concentrate from lack of sleep, and the pressure from ground is really wearing on me.", "label": {"mood": 2, "fatigue": 4, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0173", "lang": "ko", "text": "기분 보통. 특별히 좋거나 나쁜 일 없음.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0174", "lang": "ko", "text": "몸은 멀쩡하고 하나도 안 피곤해. 근데 장비 세 대가 동시에 말썽이라 감당이 안 되고 짜증 나.", "label": {"mood": 2, "fatigue": 1, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0175", "lang": "ko", "text": "많이 피곤합니다. 스트레스는 중간 정도이고, 잘 견디고 있습니다.", "label": {"mood": 3, "fatigue": 4, "stress": 3, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0176", "lang": "en", "text": "Too tired to concentrate, and I'm swamped beyond what I can handle.", "label": {"mood": 3, "fatigue": 4, "stress": 5, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0177", "lang": "en", "text": "Happy with the results, a little tense about presenting them to ground.", "label": {"mood": 4, "fatigue": 2, "stress": 2, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0178", "lang": "en", "text": "Completely exhausted. Can't do anything more today.", "label": {"mood": 3, "fatigue": 5, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0179", "lang": "ko", "text": "푹 자서 기운이 넘치는데 왠지 마음이 허전하고 쓸쓸하네요.", "label": {"mood": 2, "fatigue": 1, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0180", "lang": "ko", "text": "잠은 잘 자서 정신은 맑은데, 대장님과 부딪친 뒤로 신경이 곤두서 있고 계속 짜증이 나요.", "label": {"mood": 2, "fatigue": 1, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0181", "lang": "ko", "text": "가족 통화를 놓쳐서 하루 종일 마음이 무너지는 기분이었어요. 몸은 탈진 상태고 남은 작업은 도저히 감당이 안 돼요.", "label": {"mood": 1, "fatigue": 5, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0182", "lang": "ko", "text": "트레드밀 뛰고 나니 기분이 정말 상쾌하고 좋아요. 적당히 피곤하고 스트레스도 싹 풀렸어요.", "label": {"mood": 5, "fatigue": 3, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0183", "lang": "en", "text": "Neutral mood, energetic after a solid night, under heavy schedule pressure.", "label": {"mood": 3, "fatigue": 1, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0184", "lang": "en", "text": "Mixed feelings today, fairly tired, stress is high.", "label": {"mood": 3, "fatigue": 3, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0185", "lang": "en", "text": "Feeling fantastic, moderately tired from the workout.", "label": {"mood": 5, "fatigue": 3, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0186", "lang": "en", "text": "Slightly tired, stressed but coping with the schedule changes.", "label": {"mood": 3, "fatigue": 2, "stress": 3, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0187", "lang": "en", "text": "Miserable and too tired to think straight.", "label": {"mood": 1, "fatigue": 4, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0188", "lang": "ko", "text": "오늘 mood가 진짜 최고예요, experiment 대성공!", "label": {"mood": 5, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0189", "lang": "ko", "text": "너무 피곤해서 절차서가 눈에 안 들어와요.", "label": {"mood": 3, "fatigue": 4, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0190", "lang": "en", "text": "Feeling hopeless about the stalled research, even though I'm calm and nothing is pressing.", "label": {"mood": 1, "fatigue": 2, "stress": 1, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0191", "lang": "ko", "text": "아침부터 기분이 정말 좋습니다. 피로는 평소처럼 조금 있는 정도입니다.", "label": {"mood": 5, "fatigue": 2, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0192", "lang": "ko", "text": "schedule이 또 slip돼서 stress가 심해요. 기분은 그냥 그렇고, 꽤 피곤하긴 해요.", "label": {"mood": 3, "fatigue": 3, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0193", "lang": "en", "text": "Devastated by the news from home. Physically fresh and alert, no work stress.", "label": {"mood": 1, "fatigue": 1, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0194", "lang": "en", "text": "Stressed about the schedule slip, but coping.", "label": {"mood": 3, "fatigue": 2, "stress": 3, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0195", "lang": "ko", "text": "조금 피곤하고 약간 긴장돼요.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0196", "lang": "ko", "text": "푹 자서 쌩쌩하고 마음도 느긋합니다.", "label": {"mood": 3, "fatigue": 1, "stress": 1, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0197", "lang": "ko", "text": "실험이 통째로 망가져서 참담합니다. 사흘째 무리해서 기진맥진이고, 재실험 일정 압박도 큽니다.", "label": {"mood": 1, "fatigue": 5, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0198", "lang": "en", "text": "Low mood, but honestly no stress at all.", "label": {"mood": 2, "fatigue": 2, "stress": 1, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0199", "lang": "ko", "text": "sleep station이 너무 더워서 잠을 못 잤더니 focus가 안 돼요. 기분도 down이고 workload 때문에 완전 overwhelmed 상태예요.", "label": {"mood": 2, "fatigue": 4, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0200", "lang": "en", "text": "Devastated about missing my son's recital, and the workload pressure is heavy on top of that.", "label": {"mood": 1, "fatigue": 2, "stress": 4, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0201", "lang": "ko", "text": "동료와 신경전 때문에 기분이 안 좋고 긴장이 심해요.", "label": {"mood": 2, "fatigue": 2, "stress": 4, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0202", "lang": "ko", "text": "마음이 비참하고 암담한데, 몸은 꽤 피곤한 정도야.", "label": {"mood": 1, "fatigue": 3, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0203", "lang": "ko", "text": "오늘 check-in, 특별한 update 없습니다.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0204", "lang": "ko", "text": "기분 최고예요! 걱정도 없고 마음이 아주 평온해요.", "label": {"mood": 5, "fatigue": 2, "stress": 1, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0205", "lang": "en", "text": "Feeling hopeless after the third failed repair attempt.", "label": {"mood": 1, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0206", "lang": "en", "text": "Caught myself humming during the filter change, so I guess I'm in a good mood.", "label": {"mood": 4, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0207", "lang": "en", "text": "Content today, a little tired, slightly tense about the afternoon checkout.", "label": {"mood": 4, "fatigue": 2, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0208", "lang": "ko", "text": "내일 점검 앞두고 살짝 긴장돼요.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0209", "lang": "en", "text": "Bit flat today. Only slightly tired.", "label": {"mood": 2, "fatigue": 2, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0210", "lang": "ko", "text": "일정 때문에 스트레스가 좀 있긴 한데 감당할 만해요.", "label": {"mood": 3, "fatigue": 2, "stress": 3, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0211", "lang": "en", "text": "Very tired and highly stressed; the timeline keeps slipping.", "label": {"mood": 3, "fatigue": 4, "stress": 4, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0212", "lang": "en", "text": "Heartbroken that I missed the call home; I'm really tired and very stressed about the timeline.", "label": {"mood": 1, "fatigue": 4, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0213", "lang": "ko", "text": "기분은 만족스럽고 몸은 적당히 피곤해요. 딱 일한 만큼요.", "label": {"mood": 4, "fatigue": 3, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0214", "lang": "ko", "text": "오후 작업 끝나니 적당히 피곤하네요. 내일 궤도 수정 때문에 살짝 긴장도 되고요.", "label": {"mood": 3, "fatigue": 3, "stress": 2, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0215", "lang": "en", "text": "Calm and content today.", "label": {"mood": 4, "fatigue": 2, "stress": 1, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0216", "lang": "en", "text": "I feel hopeless about this mission today, and I'm wiped out on top of it.", "label": {"mood": 1, "fatigue": 5, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0217", "lang": "en", "text": "Down and worried about home. Work has me fairly stressed, but I'm managing.", "label": {"mood": 2, "fatigue": 2, "stress": 3, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0218", "lang": "ko", "text": "재배하던 상추가 또 다 죽었어요. 이 실험은 더 해 봐야 소용없을 것 같아 절망적이에요.", "label": {"mood": 1, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0219", "lang": "ko", "text": "기분 보통, 피로는 중간 정도. 스트레스도 딱 그 정도고 아직 할 만함.", "label": {"mood": 3, "fatigue": 3, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0220", "lang": "en", "text": "Fairly tired after the inventory run, and a touch tense about tomorrow's burn.", "label": {"mood": 3, "fatigue": 3, "stress": 2, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0221", "lang": "ko", "text": "가족 video message가 또 delay돼서 너무 슬프고 절망적인 기분이에요.", "label": {"mood": 1, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0222", "lang": "en", "text": "Slightly tired, calm, and pretty low after the family call fell through.", "label": {"mood": 2, "fatigue": 2, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0223", "lang": "ko", "text": "솔직히 요즘 너무 우울하고 참담한 기분입니다. 피로는 조금, 긴장은 약간 있는 정도입니다.", "label": {"mood": 1, "fatigue": 2, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0224", "lang": "en", "text": "Wide awake but feeling low and lonely tonight.", "label": {"mood": 2, "fatigue": 1, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0225", "lang": "en", "text": "Down today and completely exhausted.", "label": {"mood": 2, "fatigue": 5, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0226", "lang": "ko", "text": "crew랑 사소한 conflict가 있어서 좀 irritable해요. 몸은 fresh한데 tension은 꽤 높아요.", "label": {"mood": 2, "fatigue": 1, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0227", "lang": "en", "text": "Everything annoys me today, and I'm very tired, can't focus on the procedure.", "label": {"mood": 2, "fatigue": 4, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0228", "lang": "en", "text": "Body is done for the day, nothing left, but my head is calm.", "label": {"mood": 3, "fatigue": 5, "stress": 1, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0229", "lang": "en", "text": "Content. Fairly tired. Slightly tense.", "label": {"mood": 4, "fatigue": 3, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0230", "lang": "ko", "text": "shift 끝나니 적당히 피곤한데, 급한 issue가 없어서 아주 차분한 하루였어요.", "label": {"mood": 3, "fatigue": 3, "stress": 1, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0231", "lang": "ko", "text": "일정 만회할 희망이 안 보여서 막막합니다. 스트레스도 심합니다.", "label": {"mood": 1, "fatigue": 2, "stress": 4, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0232", "lang": "en", "text": "Stress level moderate, manageable.", "label": {"mood": 3, "fatigue": 2, "stress": 3, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0233", "lang": "ko", "text": "기분은 완전 up됐는데 timeline이 tight해서 stress가 심해요.", "label": {"mood": 5, "fatigue": 2, "stress": 4, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0234", "lang": "en", "text": "Wide awake, energy is fine, but I'm overwhelmed and anxious about the suit repair.", "label": {"mood": 2, "fatigue": 1, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0235", "lang": "ko", "text": "선외활동 마치고 돌아오니 탈진해서 꼼짝도 못 하겠습니다.", "label": {"mood": 3, "fatigue": 5, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0236", "lang": "ko", "text": "동료가 한 말이 계속 거슬려서 짜증이 나요.", "label": {"mood": 2, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0237", "lang": "ko", "text": "기분은 아주 좋고, 발표 앞두고 살짝 긴장되는 정도예요.", "label": {"mood": 5, "fatigue": 2, "stress": 2, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0238", "lang": "ko", "text": "밤새 뒤척였는데도 이상하게 기분은 아주 좋아요. 몸은 많이 피곤하지만요.", "label": {"mood": 5, "fatigue": 4, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0239", "lang": "en", "text": "Same as yesterday, nothing to add.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0240", "lang": "ko", "text": "피로 누적. 오후 내내 졸음 심해서 작업 속도 느림.", "label": {"mood": 3, "fatigue": 4, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0241", "lang": "en", "text": "Thrilled about the sample find and bursting with energy.", "label": {"mood": 5, "fatigue": 1, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0242", "lang": "ko", "text": "오늘 체크인합니다. 특별히 보고할 내용 없습니다.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0243", "lang": "ko", "text": "딱히 적을 게 없네.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0244", "lang": "en", "text": "Typed the wrong valve ID twice; I'm too tired to track anything.", "label": {"mood": 3, "fatigue": 4, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0245", "lang": "ko", "text": "운동을 세게 했더니 많이 피곤하지만 기분은 좋아요. 저녁 점검 때문에 조금 긴장은 됩니다.", "label": {"mood": 4, "fatigue": 4, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0246", "lang": "ko", "text": "임무 절반을 넘겼다고 생각하니 마음이 흐뭇합니다. 많이 피곤해서 집중은 잘 안 되지만 스트레스는 평소 수준입니다.", "label": {"mood": 4, "fatigue": 4, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0247", "lang": "ko", "text": "급할 게 하나도 없어서 느긋하게 차 한잔했어요. 마음이 차분해요.", "label": {"mood": 3, "fatigue": 2, "stress": 1, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0248", "lang": "ko", "text": "오늘은 숨 돌릴 틈도 없이 쫓겨서 종일 신경이 곤두서 있었어요.", "label": {"mood": 3, "fatigue": 2, "stress": 4, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0249", "lang": "en", "text": "Feeling fresh. A little tense about the docking rehearsal.", "label": {"mood": 3, "fatigue": 1, "stress": 2, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0250", "lang": "en", "text": "Thrilled with the experiment results, full of energy, a little tense about the write-up.", "label": {"mood": 5, "fatigue": 1, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0251", "lang": "en", "text": "Under a lot of strain; since the comm outage everyone has been on my case.", "label": {"mood": 3, "fatigue": 2, "stress": 4, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0252", "lang": "en", "text": "Pleased with today's work, very tired, somewhat stressed but keeping on top of it.", "label": {"mood": 4, "fatigue": 4, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0253", "lang": "ko", "text": "수리가 또 실패해서 아무 희망이 안 보이고 암담해요. 잠은 충분히 자서 정신은 또렷한데 모든 게 너무 벅차요.", "label": {"mood": 1, "fatigue": 1, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0254", "lang": "ko", "text": "가족 통화가 중간에 끊겨서 속상하고 초조해. 꽤 피곤한데 할 일은 산더미라 어쩔 줄을 모르겠어.", "label": {"mood": 2, "fatigue": 3, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0255", "lang": "ko", "text": "할 일이 너무 많아서 감당이 안 돼요. 어디서부터 손대야 할지 모르겠어요.", "label": {"mood": 3, "fatigue": 2, "stress": 5, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0256", "lang": "en", "text": "Nothing to flag today.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0257", "lang": "en", "text": "Hard session on the resistive device. Very tired, in a good mood, mildly tense about the next task.", "label": {"mood": 4, "fatigue": 4, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0258", "lang": "en", "text": "Neutral mood. Stress high, feeling stretched.", "label": {"mood": 3, "fatigue": 2, "stress": 4, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0259", "lang": "en", "text": "Ecstatic about the landing-site photos, completely drained, and overwhelmed by the pace.", "label": {"mood": 5, "fatigue": 5, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0260", "lang": "ko", "text": "잘 자서 기운은 넘치는데 할 일이 산더미라 감당이 안 돼.", "label": {"mood": 3, "fatigue": 1, "stress": 5, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0261", "lang": "en", "text": "Feeling low and irritable, very tired, and the schedule slip has me highly stressed.", "label": {"mood": 2, "fatigue": 4, "stress": 4, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0262", "lang": "en", "text": "Low and homesick, moderately tired, slightly tense.", "label": {"mood": 2, "fatigue": 3, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0263", "lang": "ko", "text": "별일 없이 지나간 하루예요.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0264", "lang": "ko", "text": "오늘은 만족스러운 하루였어요. 피곤함은 중간 정도, 긴장은 약간 있었고요.", "label": {"mood": 4, "fatigue": 3, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0265", "lang": "en", "text": "Wiped out after the surface traverse, but content; stress is moderate and I'm handling it.", "label": {"mood": 4, "fatigue": 5, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0266", "lang": "ko", "text": "실험이 드디어 성공해서 날아갈 것 같아!", "label": {"mood": 5, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0267", "lang": "en", "text": "Uneasy about the storm forecast; can't shake the worry.", "label": {"mood": 2, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0268", "lang": "en", "text": "Feeling okay, a little tired, stressed but managing.", "label": {"mood": 3, "fatigue": 2, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0269", "lang": "ko", "text": "몸은 기진맥진인데 마음은 차분해요.", "label": {"mood": 3, "fatigue": 5, "stress": 1, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0270", "lang": "en", "text": "Crushed that the greenhouse seedlings died, a bit tired, moderately stressed but I'll cope.", "label": {"mood": 1, "fatigue": 2, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0271", "lang": "en", "text": "Hopeless about ever fixing this pump, totally spent, and stretched to breaking point.", "label": {"mood": 1, "fatigue": 5, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0272", "lang": "ko", "text": "가족과 통화하고 나니 정말 행복해요. 긴장도 다 풀렸어요.", "label": {"mood": 5, "fatigue": 2, "stress": 1, "confidence": 0.7}, "why": "stated: mood, stress"}
+{"id": "MN-0273", "lang": "ko", "text": "밤새 뒤척였더니 종일 하품만 나오고 집중이 안 돼.", "label": {"mood": 3, "fatigue": 4, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0274", "lang": "en", "text": "Fairly tired by now, and the checkout delays are stressing me, but I'm getting by.", "label": {"mood": 3, "fatigue": 3, "stress": 3, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0275", "lang": "en", "text": "Anxious about my family, slightly tired, moderately stressed, holding up.", "label": {"mood": 2, "fatigue": 2, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0276", "lang": "ko", "text": "어젯밤 수면 스테이션 환풍기 소리 때문에 못 자서 녹초예요. 긴장은 평소처럼 약간 있는 정도고요.", "label": {"mood": 3, "fatigue": 5, "stress": 2, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0277", "lang": "ko", "text": "오늘따라 기분이 처지고 꽤 피곤하네요.", "label": {"mood": 2, "fatigue": 3, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0278", "lang": "ko", "text": "일이 한꺼번에 터져서 완전히 한계야 ㅠㅠ", "label": {"mood": 3, "fatigue": 2, "stress": 5, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0279", "lang": "en", "text": "Upbeat today. Not tired at all. Overwhelmed by the maintenance backlog, though.", "label": {"mood": 5, "fatigue": 1, "stress": 5, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0280", "lang": "en", "text": "Mood's not bad, nothing special, just another sol.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0281", "lang": "ko", "text": "workout 하고 나니 fresh하고 기분도 good이에요.", "label": {"mood": 4, "fatigue": 1, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0282", "lang": "ko", "text": "기분은 그냥 괜찮은 정도고 몸은 좀 피곤해.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0283", "lang": "en", "text": "Gutted and heartbroken after the video from home failed to download, and a bit tired.", "label": {"mood": 1, "fatigue": 2, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0284", "lang": "en", "text": "Yawning nonstop and losing track mid-task, though I'm relaxed about the work.", "label": {"mood": 3, "fatigue": 4, "stress": 1, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0285", "lang": "ko", "text": "energy는 full인데 deadline 때문에 좀 tense해요.", "label": {"mood": 3, "fatigue": 1, "stress": 2, "confidence": 0.7}, "why": "stated: fatigue, stress"}
+{"id": "MN-0286", "lang": "en", "text": "Overwhelmed. Three urgent tasks and no time for any of them.", "label": {"mood": 3, "fatigue": 2, "stress": 5, "confidence": 0.5}, "why": "stated: stress"}
+{"id": "MN-0287", "lang": "ko", "text": "가족 영상 메시지가 안 와서 너무 슬프고 마음이 무너져요.", "label": {"mood": 1, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0288", "lang": "ko", "text": "가족 영상 메시지를 받아서 하루 종일 싱글벙글했어. 몸은 평소처럼 살짝 피곤한 정도고 마음은 아주 편해.", "label": {"mood": 5, "fatigue": 2, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0289", "lang": "en", "text": "Calm but completely exhausted; mood is neutral.", "label": {"mood": 3, "fatigue": 5, "stress": 1, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0290", "lang": "ko", "text": "창밖으로 화성 노을을 봤는데 마음이 흐뭇하고 좋았어요.", "label": {"mood": 4, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0291", "lang": "ko", "text": "기분은 so-so예요. 오후 task 끝내고 나니 적당히 피곤하고요.", "label": {"mood": 3, "fatigue": 3, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0292", "lang": "ko", "text": "기분은 그냥 neutral이에요.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: mood"}
+{"id": "MN-0293", "lang": "ko", "text": "기분 좋음, 정신 또렷함, 긴장은 약간.", "label": {"mood": 4, "fatigue": 1, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0294", "lang": "en", "text": "Could run the whole checklist again right now, wide awake.", "label": {"mood": 3, "fatigue": 1, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0295", "lang": "en", "text": "Slept well, feeling sharp and happy, with only slight nerves about the rover drive.", "label": {"mood": 4, "fatigue": 1, "stress": 2, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}
+{"id": "MN-0296", "lang": "en", "text": "Slightly sleepy after lunch, otherwise normal.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0297", "lang": "ko", "text": "오늘 fatigue level은 moderate입니다.", "label": {"mood": 3, "fatigue": 3, "stress": 2, "confidence": 0.5}, "why": "stated: fatigue"}
+{"id": "MN-0298", "lang": "ko", "text": "어제랑 달라진 건 없어요.", "label": {"mood": 3, "fatigue": 2, "stress": 2, "confidence": 0.3}, "why": "stated: none"}
+{"id": "MN-0299", "lang": "en", "text": "Rough night, hardly slept, yet I'm in a great mood, just very tired.", "label": {"mood": 5, "fatigue": 4, "stress": 2, "confidence": 0.7}, "why": "stated: mood, fatigue"}
+{"id": "MN-0300", "lang": "ko", "text": "오늘 기분은 그냥 그랬어요. 꽤 피곤하고 스트레스도 좀 있지만 버틸 만해요.", "label": {"mood": 3, "fatigue": 3, "stress": 3, "confidence": 0.9}, "why": "stated: mood, fatigue, stress"}

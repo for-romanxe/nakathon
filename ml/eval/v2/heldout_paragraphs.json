@@ -1,0 +1,42 @@
+{
+ "co2_headache": [
+  "hrp:co2-01#p1",
+  "nasa:co2-01#p3"
+ ],
+ "dehydration": [
+  "lit:dehy-08#p2",
+  "hrp:dehy-04#p1"
+ ],
+ "mood_low": [
+  "hrp:mood-02#p4",
+  "hrp:mood-02#p2"
+ ],
+ "musculoskeletal_strain": [
+  "nasa:msk-08#p1",
+  "nih:msk-05#p1"
+ ],
+ "orthostatic_intolerance": [
+  "nasa:oi-07#p1",
+  "cdc:oi-09#p1"
+ ],
+ "sans_suspect": [
+  "hrp:sans-01#p1",
+  "hrp:sans-02#p1"
+ ],
+ "skin_irritation": [
+  "lit:skin-01#p1",
+  "cdc:skin-06#p1"
+ ],
+ "sleep_deficit": [
+  "hrp:sleep-01#p1",
+  "hrp:sleep-01#p2"
+ ],
+ "space_motion_sickness": [
+  "hrp:sms-01#p1",
+  "hrp:sms-01#p2"
+ ],
+ "upper_respiratory": [
+  "ochmo:uri-01#p1",
+  "ochmo:uri-04#p2"
+ ]
+}
