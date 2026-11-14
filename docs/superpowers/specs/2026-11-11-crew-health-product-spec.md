@@ -118,7 +118,7 @@ UI 언어: **한국어·영어 토글** **[결정]**. 모든 문자열은 사전
 - sample {crew, ts, metric, value, source}
 - baseline {crew, metric, mean, sd, window_days, computed_at, excluded_days[]}
 - checkin {crew, date, kind(morning|evening|weekly|monthly|quarterly), answers{}, free_text?, derived{mood_scale...}, at}
-- event {id, crew, ts, title, symptom_text, codes[], level(normal|advisory|caution|warning|hold), findings[{metric,value,baseline,z}], risk{category, condition_id, condition_text, actions[{text,doc}]}, explanation?, runs[{n, ok, fails[], note}], verified(0-5), status(open|closed), closed_reason?, shared, tx_ref?}
+- event {id, crew, ts, title, symptom_text, codes[], urgent(bool), level(normal|advisory|caution|warning|hold), findings[{metric,value,baseline,z}], risk{category, condition_id, condition_text, actions[{text,doc}]}, explanation?, runs[{n, ok, fails[], note}], verified(0-5), status(open|closed), closed_reason?, shared, tx_ref?}
 - guide_item {crew, date, key(exercise|sleep|mood|diet_weekly|pmc_prep|body_mass|vitals|temp:<event>|advisory), target, adjustment?, why?, cites[], progress, done}
 - med_log {crew, ts, med_id, dose}
 - tx_packet {seq, crew, kind, priority(warning|caution|daily), payload_ref, hash, status(queued|sent|acked|missing), window_id}
@@ -134,6 +134,9 @@ UI 언어: **한국어·영어 토글** **[결정]**. 모든 문자열은 사전
   - 참고(advisory): 지표 1개가 하루 |z| ≥ 2. 색·배지 없음. 가이드에 한 줄.
   - 주의(caution): 이틀 연속 **또는** 지표 2개 이상 **또는** 지표 1개 + 증상 보고. 노란 상태 문장 + 레일 배지 + 가이드 조정. 인터럽트 없음.
   - 경보(warning): 증상 규칙(흉통·호흡곤란·의식 변화·위기 표현) **또는** |z| ≥ 3. 전체 화면, 소리, 모델 건너뜀, 지구 긴급 전송.
+    - **[11/14 보강, `docs/CONTRACT.md` §5.4와 같은 규칙]** 경보는 원인과 상관없이 똑같이 다룬다. 즉시 경보 증상 없이 측정값만 |z| ≥ 3인 경우에도 **전체 화면 경보를 띄우고 모델을 건너뛴다.** 가장 높은 단계에서는 고정된 절차서와 수치만 보여 주고, 생성 문장을 기다리지 않는다.
+    - 경보의 원인이 보고 문장(증상 규칙)인지는 이벤트의 `urgent`로 표시한다. 화면은 경보 여부(전체 화면, 모델 건너뜀 안내)를 `level`로, 원인 문구("긴급 증상" / "측정값이 크게 벗어남")를 `urgent`로 고른다.
+    - 증상 보고의 등급은 **보고마다 따로** 계산한다. 그 보고 문장에 건 증상 규칙과 보고 시점의 지표만 쓰고, 그날 전체 상태나 다른 보고의 등급은 물려받지 않는다. 예: 흉통 보고 뒤의 두통 보고는 지표가 정상이면 정상이고, 모델을 건너뛰지 않는다.
 - **증상 규칙(모델보다 먼저)**: 키워드 사전(가슴·흉통·숨·호흡곤란·의식·죽고 싶 등 ko/en). 매치 시 즉시 경보. 모델은 경보를 올릴 수만 있고 낮출 수 없다.
 - **가이드 조정 규칙**(예시, 빌더가 표로 확장)
   - 주의 + 심박↑ 또는 HRV↓ → 운동 "저강도 1시간, 운동 중 심박 안정 시 +40 이내" (hrp:sm-03#p5)
