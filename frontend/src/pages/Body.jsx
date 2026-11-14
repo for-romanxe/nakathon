@@ -2,18 +2,19 @@
 // Region colour = the most serious backend level among that region's metrics (GET /crew/{id}/today).
 // Nothing is recomputed from z; each metric row shows its own backend level.
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client.js'
 import { METRICS, metricLabel, formatMetric } from '../api/contract.js'
 // three.js is large: load the hologram only when the Body screen opens
 const HoloBody = lazy(() => import('../components/HoloBody.jsx'))
 import Cite from '../components/Cite.jsx'
 import { REGIONS } from '../components/bodyRegions.js'
+import { reportsByRegion } from '../components/bodyLocations.js'
 import { useMission } from '../mission.jsx'
 import { CURRENT_CREW } from '../session.js'
 import { useT } from '../i18n/index.jsx'
 
-const LEVEL_ICONS = { normal: '✔', advisory: '•', caution: '▲', warning: '✖', hold: '↻' }
+const LEVEL_ICONS = { normal: '✔', advisory: '•', caution: '▲', warning: '✖', hold: '↻', none: '–' }
 const RANK = { normal: 0, advisory: 1, caution: 2, warning: 3 }
 const DOCS_RETRY_MS = 10000
 
@@ -38,8 +39,22 @@ function buildRegions(today) {
   const byMetric = Object.fromEntries((today.metrics ?? []).map((m) => [m.metric, m]))
   return REGIONS.map((r) => {
     const rows = r.metrics.map((k) => byMetric[k]).filter(Boolean)
-    return { ...r, rows, level: regionLevel(rows) }
+    // a part nothing measures is "no sensor", not "hold" (hold means a reading exists but is not judged yet)
+    return { ...r, rows, level: r.sensor === 'none' ? 'none' : regionLevel(rows) }
   })
+}
+
+// Worst level among the reports that point at each region (for the "!" marks). Only reports that name this exact
+// part get a mark: a limb named without a side ("다리가 아파요") is listed under both legs but marks neither, since
+// it is not certain which one it is.
+function markLevels(reports) {
+  const out = {}
+  for (const [region, list] of Object.entries(reports)) {
+    const sure = list.filter((r) => r.sideStated)
+    if (sure.length === 0) continue
+    out[region] = sure.reduce((worst, { event }) => ((RANK[event.level] ?? -1) > (RANK[worst] ?? -1) ? event.level : worst), null) ?? 'normal'
+  }
+  return out
 }
 
 // First off region (caution or worse), otherwise the heart
@@ -52,8 +67,8 @@ export default function Body() {
   const { mission } = useMission()
   const sol = mission?.clock?.sol
   const [result, setResult] = useState(null)
+  const navigate = useNavigate()
   const [picked, setPicked] = useState(null)
-  const [noSensor, setNoSensor] = useState(false) // the last figure click was on the right arm (no sensor)
   const [openable, setOpenable] = useState({}) // "doc#pN" -> true when that paragraph exists on this device
   const key = `${lang}:${sol}`
 
@@ -107,16 +122,34 @@ export default function Body() {
   if (!current) return <section className="page"><p className="muted">{t('common.loading')}</p></section>
 
   const today = current.today
-  const regions = buildRegions(today) // always all five regions, with or without readings
+  const regions = buildRegions(today) // always all regions, with or without readings
   const levels = Object.fromEntries(regions.map((r) => [r.id, r.level]))
+  const reports = reportsByRegion(today.events) // where today's symptom reports say it hurts
+  const marks = markLevels(reports)
   const selectedId = regions.some((r) => r.id === picked) ? picked : defaultRegionId(regions)
-  // 3) the selected region stays selected even when it has no readings; its table shows an empty state
+  // the selected region stays selected even when it has no readings; its table shows an empty state
   const sel = regions.find((r) => r.id === selectedId)
-  // Events carry all six readings, so match only the region's readings that were at caution or warning
-  // (advisory is reference level, not a deviation worth linking)
-  const related = (today.events ?? []).filter((e) => (e.findings ?? []).some(
-    (f) => sel.metrics.includes(f.metric) && RANK[f.level] >= RANK.caution))
+  // Today's events for the region, each with why it is listed:
+  // - "reading": one of the region's readings was at caution or warning at report time (advisory is not linked)
+  // - "report": the report says it hurts here (from the backend's locations, or found in the report text)
+  const related = new Map()
+  for (const e of today.events ?? []) {
+    if ((e.findings ?? []).some((f) => sel.metrics.includes(f.metric) && RANK[f.level] >= RANK.caution)) {
+      related.set(e.id, { event: e, reading: true })
+    }
+  }
+  for (const r of reports[sel.id] ?? []) {
+    related.set(r.event.id, { ...related.get(r.event.id), event: r.event, report: r })
+  }
+  // newest first: by report time (ISO ts), then by id as a number (CONTRACT ids are integers)
+  const relatedList = [...related.values()].sort((a, b) =>
+    String(b.event.ts ?? '').localeCompare(String(a.event.ts ?? '')) || (Number(b.event.id) || 0) - (Number(a.event.id) || 0))
   const counts = { caution: regions.filter((r) => r.level === 'caution').length, warning: regions.filter((r) => r.level === 'warning').length }
+
+  // "Record a symptom here": open the Log with the part already written, the crew member adds how it feels
+  function recordHere() {
+    navigate('/log', { state: { prefill: t(`body.prefill.${sel.id}`) } })
+  }
 
   return (
     <section className="page body-page">
@@ -131,9 +164,14 @@ export default function Body() {
             {regions.map((r) => (
               <li key={r.id}>
                 <button type="button" className={r.id === selectedId ? 'on' : ''} aria-pressed={r.id === selectedId}
-                  onClick={() => { setNoSensor(false); setPicked(r.id) }}>
+                  onClick={() => setPicked(r.id)}>
                   <span className={`badge ${badgeClass(r.level)}`}>{LEVEL_ICONS[r.level]} {t(`level.${r.level}`)}</span>
                   <span>{t(`body.region.${r.id}`)}</span>
+                  {marks[r.id] && (
+                    <span className={`body-mark ${badgeClass(marks[r.id])}`} title={t('body.legend.reported')}>
+                      <span aria-hidden="true">!</span><span className="sr-only">{t('body.legend.reported')}</span>
+                    </span>
+                  )}
                 </button>
               </li>
             ))}
@@ -144,6 +182,7 @@ export default function Body() {
             <li><i className="sw cell-warning" aria-hidden="true" />{t('body.legend.warning')}</li>
             <li><i className="sw cell-hold" aria-hidden="true" />{t('body.legend.hold')}</li>
             <li><i className="sw cell-base" aria-hidden="true" />{t('body.legend.no_sensor')}</li>
+            <li><span className="body-mark" aria-hidden="true">!</span>{t('body.legend.reported')}</li>
           </ul>
         </section>
 
@@ -153,12 +192,12 @@ export default function Body() {
             <span className="muted small">{t('body.figure_hint')}</span>
           </div>
           <Suspense fallback={<p className="panel-empty muted">{t('common.loading')}</p>}>
-            <HoloBody levels={levels} selected={selectedId} label={t('body.figure_label')}
+            <HoloBody levels={levels} selected={selectedId} marks={marks} label={t('body.figure_label')}
+              callouts={regions.map((r) => ({ id: r.id, text: t(`body.short.${r.id}`), level: r.level, reported: !!marks[r.id] }))}
+              texts={{ rotate: t('body.ctrl.rotate'), labels: t('body.ctrl.labels'), reset: t('body.ctrl.reset') }}
               sideLabels={{ left: t('body.side.left'), right: t('body.side.right') }}
-              onSelect={(id) => { setNoSensor(false); setPicked(id) }} onNoSensor={() => setNoSensor(true)}
-              unavailableText={t('body.figure_unavailable')} />
+              onSelect={setPicked} unavailableText={t('body.figure_unavailable')} />
           </Suspense>
-          {noSensor && <p className="panel-empty muted small" role="status">{t('body.no_sensor')}</p>}
         </section>
 
         <section className={`panel body-detail lv-${sel.level}`}>
@@ -166,7 +205,9 @@ export default function Body() {
             <h2>{t(`body.region.${sel.id}`)}</h2>
             <span className={`badge ${badgeClass(sel.level)}`}>{LEVEL_ICONS[sel.level]} {t(`level.${sel.level}`)}</span>
           </div>
-          <table className="facts-table">
+          {sel.sensor === 'none' && <p className="panel-empty muted">{t('body.sensor.none')}</p>}
+          {sel.sensor === 'whole' && <p className="panel-empty muted small">{t('body.sensor.whole')}</p>}
+          {sel.sensor !== 'none' && <table className="facts-table">
             <thead>
               <tr>
                 <th>{t('event.col.metric')}</th>
@@ -193,27 +234,39 @@ export default function Body() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table>}
           <div className="body-note">
             <p>{t(`body.note.${sel.id}`)}</p>
             {sel.doc && openable[sel.doc] && <p className="muted small">{t('body.source')} <Cite id={sel.doc} /></p>}
           </div>
           <div className="panel-head body-subhead">
             <h2>{t('body.related')}</h2>
-            <span className="muted small">{related.length}</span>
+            <span className="muted small">{relatedList.length}</span>
           </div>
-          {related.length === 0 && <p className="panel-empty muted">{t('body.none')}</p>}
+          {relatedList.length === 0 && <p className="panel-empty muted">{t('body.none')}</p>}
           <ul className="event-list">
-            {related.map((e) => (
+            {relatedList.map(({ event: e, reading, report }) => (
               <li key={e.id}>
                 <Link to={`/events/${e.id}`}>
                   <span className={`badge ${badgeClass(e.level)}`}>{t(`level.${e.level}`)}</span>
-                  <span>{e.title}</span>
+                  <span className="body-event">
+                    <span>{e.symptom_text ? `“${e.symptom_text}”` : e.title}</span>
+                    <span className="muted small">
+                      {[
+                        reading && t('body.why.reading'),
+                        report && t(report.source === 'backend' ? 'body.why.report' : 'body.why.report_text'),
+                        report && !report.sideStated && t('body.why.no_side'),
+                      ].filter(Boolean).join(' · ')}
+                    </span>
+                  </span>
                   <span className="num muted small">#{e.id}</span>
                 </Link>
               </li>
             ))}
           </ul>
+          <div className="response">
+            <button type="button" className="btn-secondary" onClick={recordHere}>{t('body.record_here')}</button>
+          </div>
         </section>
       </div>
     </section>

@@ -412,7 +412,8 @@ a.cite:hover { text-decoration: underline; }
 
 /* ---- Body ---- */
 .body-page { max-width: 1280px; }
-.body-layout { display: grid; grid-template-columns: minmax(220px, 280px) minmax(260px, 1fr) minmax(300px, 380px); gap: 16px; align-items: start; }
+/* the figure column is the widest: its callouts need room at both sides of the body */
+.body-layout { display: grid; grid-template-columns: minmax(200px, 250px) minmax(420px, 1fr) minmax(280px, 340px); gap: 16px; align-items: start; }
 .body-list ul { list-style: none; margin: 0; padding: 0; }
 .body-list li button {
   width: 100%; min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 8px 14px;
@@ -427,16 +428,59 @@ a.cite:hover { text-decoration: underline; }
 .body-legend .sw { width: 12px; height: 12px; border-radius: 2px; }
 .body-figure-panel { display: flex; flex-direction: column; }
 .body-figure { display: block; width: 100%; height: min(70vh, 600px); padding: 12px; }
-/* Hologram: a dark projection bay with a faint cyan glow and fixed scan lines over the 3D canvas */
+/*! Blueprint sheet and leader-label styles adapted from redradman/artemis — MIT License,
+    Copyright (c) 2026 Radman Rakhshandehroo. Full license text: frontend/public/THIRD_PARTY_NOTICES.md (served as /THIRD_PARTY_NOTICES.md) */
+/* Body on a blueprint sheet: cyanotype navy, a 20px / 80px grid, darker corners.
+   Line colours are the reference's blueprint pair: paper-cyan lines, sky-cyan for the selected part. */
 .body-figure.holo {
+  --bp-line: #dceafe;
+  --bp-accent: #8fd2ff;
+  --bp-navy: #0b2e55;
   position: relative; padding: 0; overflow: hidden; touch-action: none;
-  background: radial-gradient(ellipse 55% 70% at 50% 62%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%), var(--well);
+  background-color: var(--bp-navy);
+  background-image:
+    radial-gradient(ellipse 130% 100% at 50% 50%, transparent 45%, rgba(0, 0, 0, 0.35) 100%),
+    linear-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 80px 80px, 80px 80px, 20px 20px, 20px 20px;
 }
-.body-figure.holo canvas { display: block; width: 100%; height: 100%; cursor: grab; }
-.body-figure.holo::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--accent) 5%, transparent) 0 1px, transparent 1px 4px);
+.holo-canvas { position: absolute; inset: 0; }
+.holo-canvas canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+/* Leader labels: a thin line from a dot on the part to a tick dot, then the name in spaced capitals */
+.holo-labels { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.holo-label { cursor: pointer; }
+.holo-label:focus { outline: none; }
+.holo-leader { stroke: color-mix(in srgb, var(--bp-line) 45%, transparent); stroke-width: 0.75; transition: stroke 0.25s; }
+.holo-end, .holo-tick { fill: var(--bp-line); transition: fill 0.25s; }
+/* a wide invisible stroke over the leader, so the line (not only the name) selects the part */
+.holo-leader-hit { stroke: transparent; stroke-width: 12; stroke-linecap: round; pointer-events: stroke; } /* round ends cover both dots */
+.holo-text {
+  pointer-events: auto; user-select: none;
+  font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  fill: color-mix(in srgb, var(--bp-line) 95%, transparent); transition: fill 0.25s;
 }
+.holo-status, .holo-mark { font-weight: 700; }
+.holo-label.lv-caution .holo-status, .holo-label.lv-warning .holo-status { fill: var(--status); }
+.holo-mark { fill: var(--caution); }
+.holo-label:hover .holo-leader { stroke: var(--bp-line); }
+.holo-label:hover .holo-text, .holo-label:hover .holo-tick { fill: #fff; }
+.holo-label.on .holo-leader, .holo-label:focus-visible .holo-leader { stroke: var(--bp-accent); }
+.holo-label.on .holo-text, .holo-label.on .holo-end, .holo-label.on .holo-tick,
+.holo-label:focus-visible .holo-text, .holo-label:focus-visible .holo-tick { fill: var(--bp-accent); }
+@media (max-width: 1200px) { .holo-text { font-size: 10.5px; letter-spacing: 0.1em; } }
+@media (max-width: 768px) { .holo-text { font-size: 9.5px; letter-spacing: 0.06em; } .holo-leader { stroke-width: 0.6; } }
+/* HUD buttons: spaced capitals on the sheet; a pressed toggle is filled in paper colour */
+.holo-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; }
+.holo-controls button {
+  min-height: 30px; padding: 4px 10px; cursor: pointer;
+  font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--bp-line); background: rgba(10, 38, 72, 0.55); border: 1px solid color-mix(in srgb, var(--bp-line) 55%, transparent); border-radius: 0;
+}
+.holo-controls button:hover { border-color: var(--bp-line); }
+.holo-controls button:focus-visible { outline: 1px solid var(--bp-accent); outline-offset: 2px; }
+.holo-controls button[aria-pressed="true"] { color: var(--bp-navy); background: var(--bp-line); border-color: var(--bp-line); }
 .cell-base { fill: var(--line); }
 .cell-normal, .body-legend .cell-normal { fill: color-mix(in srgb, var(--text-2) 55%, transparent); background: color-mix(in srgb, var(--text-2) 55%, transparent); }
 .cell-advisory { fill: color-mix(in srgb, var(--text-2) 55%, transparent); }
@@ -452,6 +496,16 @@ a.cite:hover { text-decoration: underline; }
 .body-detail.lv-advisory, .body-detail.lv-normal { border-top-color: var(--line); }
 .body-note { padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; color: var(--text-2); }
 .body-subhead { border-top: 1px solid var(--line); }
+.lv-none { --status: var(--muted); }
+/* "!" next to a part that a symptom report points at (same mark as on the hologram) */
+.body-mark {
+  margin-left: auto; flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px;
+  font-family: var(--mono); font-weight: 700; font-size: 0.8rem; color: var(--status, var(--accent));
+  border: 1.5px solid var(--status, var(--accent)); border-radius: 50%;
+}
+.body-mark.neutral, .body-mark.lv-normal, .body-mark.lv-hold { --status: var(--accent); }
+.body-legend .body-mark { margin-left: 0; width: 14px; height: 14px; font-size: 0.6rem; border-width: 1px; }
+.body-event { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
 /* three columns need ~1280px with the rail; step down so the page never scrolls sideways */
 @media (max-width: 1280px) {
   .body-layout { grid-template-columns: minmax(200px, 260px) minmax(0, 1fr); }
