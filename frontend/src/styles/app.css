@@ -315,8 +315,11 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
 .warning-numbers li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(110px, 180px) 7.5em 7.5em; gap: 14px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
 .warning-numbers .dev-needle { box-shadow: 0 0 0 2px var(--bezel); }
 @media (max-width: 560px) {
-  .warning-numbers li { grid-template-columns: 1fr auto auto; }
-  .warning-numbers .dev-scale { grid-column: 1 / -1; grid-row: 2; }
+  /* name | value on the first line, gauge on its own line, baseline below: nothing can push past the screen */
+  .warning-numbers li { grid-template-columns: minmax(0, 1fr) auto; row-gap: 6px; }
+  .warning-numbers li > span:first-child { overflow-wrap: anywhere; }
+  .warning-numbers .dev-scale { grid-column: 1 / -1; grid-row: 2; min-width: 0; }
+  .warning-numbers li > .muted { grid-column: 1 / -1; grid-row: 3; }
 }
 .warning-numbers li:last-child { border-bottom: 0; }
 .warning-numbers b { color: var(--status); font-size: 1.3rem; }
