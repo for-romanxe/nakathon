@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crew Health 컨셉 목업</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1419; --panel:#1A2129; --panel2:#222B36; --line:#3A4654;
+    --text:#E8EDF2; --muted:#9AA7B4; --soft:#C5CED8;
+    --code:#2F6FB5; --slm:#7C5CD6;
+    --ok:#4CD48A; --watch:#FFA23C; --alert:#FF6B6B; --hold:#9AA7B4;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Noto Sans KR",system-ui,sans-serif;font-size:14px;line-height:1.5}
+  a{color:#4FA3FF}
+  button{font:inherit;cursor:pointer}
+  .top{height:56px;display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:1px solid var(--line);background:#0B0F13;position:sticky;top:0;z-index:5}
+  .brand{font-family:"Space Grotesk",Inter,sans-serif;font-weight:700;letter-spacing:.12em;font-size:14px}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;border:1px solid var(--line);color:var(--soft)}
+  .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+  .top .sp{flex:1}
+  .layout{display:flex;min-height:calc(100vh - 56px)}
+  nav{width:220px;border-right:1px solid var(--line);padding:16px 12px;display:flex;flex-direction:column;gap:4px;background:#0B0F13}
+  nav a{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:8px;color:var(--soft);text-decoration:none;font-size:14px}
+  nav a .n{width:22px;height:22px;border-radius:6px;background:var(--panel2);display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted)}
+  nav a.on{background:var(--panel);color:var(--text)}
+  nav a.on .n{background:#4FA3FF;color:#0B0F13;font-weight:700}
+  nav .note{margin-top:auto;font-size:12px;color:var(--muted);padding:12px;border:1px dashed var(--line);border-radius:8px}
+  main{flex:1;padding:28px 32px;max-width:1400px}
+  section.screen{display:none}
+  section.screen.on{display:block}
+  h1{margin:0 0 4px;font-size:26px}
+  .sub{color:var(--muted);margin:0 0 22px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .grid{display:grid;gap:16px}
+  .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .row{display:flex;gap:16px;align-items:stretch}
+  .k{font-size:12px;color:var(--muted);letter-spacing:.04em}
+  .badge{display:inline-block;padding:3px 10px;border-radius:6px;font-weight:700;font-size:12px}
+  .b-ok{background:#163B2A;color:var(--ok)} .b-watch{background:#4A2E12;color:var(--watch)} .b-alert{background:#4A1D1D;color:var(--alert)} .b-hold{background:#2A323C;color:var(--hold)}
+  .b-code{background:#193655;color:#8CC4FF} .b-slm{background:#2E2451;color:#C9B8FF}
+  .btn{padding:10px 16px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-weight:600}
+  .btn.p{background:#4FA3FF;border-color:#4FA3FF;color:#0B0F13}
+  .btn.w{background:var(--watch);border-color:var(--watch);color:#0B0F13}
+  .btn.ghost{background:transparent}
+  pre{margin:0;font-family:var(--mono);font-size:12px;line-height:1.5;background:#0B0F13;border-radius:8px;padding:12px;white-space:pre-wrap;color:#B7E1FF}
+  pre.slm{color:#D9CCFF}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--muted);font-weight:500;padding:8px 10px;border-bottom:1px solid var(--line)}
+  td{padding:10px;border-bottom:1px solid #27313C;vertical-align:top}
+  .cite{display:inline-block;font-family:var(--mono);font-size:11px;padding:1px 6px;border-radius:4px;background:#193655;color:#8CC4FF;margin:0 2px}
+  .check{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #27313C}
+  .check:last-child{border-bottom:0}
+  .ck{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:none;font-size:12px;font-weight:700}
+  .ck.y{background:#163B2A;color:var(--ok)} .ck.n{background:#4A1D1D;color:var(--alert)}
+  /* flow */
+  .flow{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding-bottom:6px}
+  .stage{width:212px;flex:none;display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--line);border-radius:12px;padding:14px}
+  .stage.code{border-color:var(--code)} .stage.slm{border-color:var(--slm)}
+  .stage h3{margin:0;font-size:16px}
+  .stage p{margin:0;font-size:12.5px;color:var(--soft)}
+  .stage pre{margin-top:auto;font-size:11px}
+  .arrow{width:34px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+  /* vitals */
+  .vital{display:flex;flex-direction:column;gap:6px}
+  .vital .v{font-size:28px;font-weight:700;font-family:"Space Grotesk",Inter,sans-serif}
+  .vital .v small{font-size:13px;color:var(--muted);font-weight:500;margin-left:4px}
+  .vital .base{font-size:12px;color:var(--muted)}
+  .z{font-family:var(--mono);font-size:12px}
+  .z.hi{color:var(--watch)} .z.vhi{color:var(--alert)} .z.ok{color:var(--ok)}
+  svg.spark{width:100%;height:36px}
+  .banner{display:flex;gap:16px;align-items:center;padding:16px 20px;border-radius:12px;border:1px solid #B4642A;background:#2A1E12;margin-bottom:16px}
+  .banner .big{font-size:18px;font-weight:700}
+  .todo{display:flex;flex-direction:column;gap:8px}
+  .todo label{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;background:var(--panel2)}
+  .todo input{width:18px;height:18px}
+  /* chat */
+  .chat{display:flex;flex-direction:column;gap:12px;min-height:420px}
+  .msg{max-width:80%;padding:12px 14px;border-radius:12px;font-size:14px}
+  .msg.me{align-self:flex-end;background:#193655}
+  .msg.sys{align-self:flex-start;background:var(--panel2)}
+  .msg .who{font-size:11px;color:var(--muted);margin-bottom:4px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--soft);font-size:13px}
+  .input{display:flex;gap:8px;margin-top:12px}
+  .input input{flex:1;padding:12px 14px;border-radius:8px;border:1px solid var(--line);background:#0B0F13;color:var(--text);font:inherit}
+  .hidden{display:none}
+  /* compare */
+  .flag{display:inline-block;padding:2px 8px;border-radius:4px;background:#4A1D1D;color:var(--alert);font-size:11px;font-weight:600;margin-left:6px}
+  .col-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .crew-row{cursor:pointer}
+  .crew-row.sel td{background:#1D2733}
+  .foot{margin-top:28px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:12px}
+</style>
+</head>
+<body>
+<header class="top">
+  <span class="brand">CREW HEALTH</span>
+  <span class="pill"><span class="dot"></span>오프라인 · 온디바이스</span>
+  <span class="pill">모델: 4B SLM · 로컬</span>
+  <span class="sp"></span>
+  <span class="pill">승무원 A · 사령관</span>
+  <span class="pill">Sol 142 · 10:42</span>
+</header>
+
+<div class="layout">
+<nav>
+  <a href="#flow" data-s="flow"><span class="n">1</span>처리 흐름</a>
+  <a href="#dash" data-s="dash"><span class="n">2</span>메인 대시보드</a>
+  <a href="#alert" data-s="alert"><span class="n">3</span>이상 상세 · AI 설명</a>
+  <a href="#symptom" data-s="symptom"><span class="n">4</span>증상 입력</a>
+  <a href="#compare" data-s="compare"><span class="n">5</span>비교 데모</a>
+  <a href="#crew" data-s="crew"><span class="n">6</span>승무원 관리</a>
+  <div class="note">회의 논의용 컨셉 목업.<br>제출물 아님. 모든 수치는 가상.</div>
+</nav>
+
+<main>
+
+<!-- 1. FLOW -->
+<section class="screen" id="s-flow">
+  <h1>처리 흐름 — 코드가 흐름을 쥐고, SLM은 두 칸만</h1>
+  <p class="sub">입력이 어떻게 들어가고, 단계마다 무엇이 나오고, 어디서 모델이 끼는지. 상태 판정은 ②에서 끝나고 SLM은 그걸 옮겨 적을 뿐.</p>
+  <div style="display:flex;gap:16px;margin-bottom:14px">
+    <span class="badge b-code">코드 · 규칙 / 통계 / 검색 / 검증</span>
+    <span class="badge b-slm">SLM · 언어만</span>
+  </div>
+  <div class="flow">
+    <div class="stage">
+      <span class="k">입력</span><h3>① 수집</h3>
+      <p>손목밴드 스트림(심박·HRV·EDA·피부온·가속도), 수면 기록, 환경값(방사선·CO₂), 승무원이 직접 말하는 증상 문장.</p>
+      <pre>{"hr":92,"hrv":31,"eda":4.8,
+ "sleep_h":5.2,
+ "text":"어지럽고 메스꺼워"}</pre>
+    </div>
+    <div class="arrow">➜</div>
+    <div class="stage code">
+      <span class="k">코드</span><h3>② 이상 탐지</h3>
+      <p>개인 기준선(첫 14일) 대비 z-score. 임계값은 HRP 기준 측정 세트 근거. <b>상태 판정은 여기서 끝.</b></p>
+      <pre>{"status":"watch",
+ "findings":[
+  {"metric":"hr","z":2.6},
+  {"metric":"eda","z":3.1}]}</pre>
+    </div>
+    <div class="arrow">➜</div>
+    <div class="stage slm">
+      <span class="k">SLM ①</span><h3>③ 증상 해석</h3>
+      <p>자연어 문장을 <b>정해진 증상 코드 목록</b>으로만 옮긴다. 목록 밖 단어는 못 만든다(JSON enum 강제).</p>
+      <pre class="slm">{"symptoms":
+  ["dizziness","nausea"],
+ "onset":"morning",
+ "unmapped":[]}</pre>
+    </div>
+    <div class="arrow">➜</div>
+    <div class="stage code">
+      <span class="k">코드</span><h3>④ 근거 검색</h3>
+      <p>상태 + 증상 코드로 기기 안의 HRP 문서·절차서 검색. 점수 미달이면 <b>근거 부족</b> 플래그.</p>
+      <pre>{"docs":["hrp:sm-03#p2",
+  "proc:ortho-01#s4"],
+ "enough":true}</pre>
+    </div>
+    <div class="arrow">➜</div>
+    <div class="stage slm">
+      <span class="k">SLM ②</span><h3>⑤ 설명 생성</h3>
+      <p>②의 수치와 ④의 문서만 보고 사람 말로 설명·대응 안내. 문장마다 출처 id 필수. 상태는 <b>옮겨 적기만.</b></p>
+      <pre class="slm">{"status":"watch",
+ "explanation":"...",
+ "actions":[{"step":"...",
+  "source_id":"proc:.."}]}</pre>
+    </div>
+    <div class="arrow">➜</div>
+    <div class="stage code">
+      <span class="k">코드</span><h3>⑥ 검증</h3>
+      <p>상태 일치 · 수치 일치 · 출처가 ④ 안에 있음 · 설명 속 숫자 전부 근거 있음 · 근거 충분. 하나라도 실패하면 SLM 문장을 <b>버린다.</b></p>
+      <pre>{"passed":true,
+ "checks":"5/5",
+ "show":"explanation"}</pre>
+    </div>
+  </div>
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card"><span class="k">출력 (화면)</span><p style="margin:6px 0 0">상태 배지 + 수치 카드 + 출처 달린 설명 + 대응 체크리스트 + 검증 5/5 표시. 승무원은 읽고, 체크하고, 필요하면 의료 담당에게 넘긴다. → <a href="#alert">3번 화면</a></p></div>
+    <div class="card" style="border-color:#B4642A"><span class="k">검증 실패 · 근거 부족일 때</span><p style="margin:6px 0 0">SLM 문장은 안 보여 준다. "판단 보류" 배지와 ②의 수치만 보여 주고 의료 담당 호출 버튼을 띄운다. 모델이 모르는 걸 아는 척하지 못하게 하는 게 이 칸의 전부. → 3번 화면에서 "검증 실패 상태 보기"</p></div>
+  </div>
+</section>
+
+<!-- 2. DASHBOARD -->
+<section class="screen" id="s-dash">
+  <h1>메인 대시보드</h1>
+  <p class="sub">승무원이 하루에 몇 번 보는 화면. 숫자보다 "지금 내 상태가 기준선에서 얼마나 벗어났나"가 먼저 보여야 한다.</p>
+  <div class="banner">
+    <span class="badge b-watch">주의 · WATCH</span>
+    <div style="flex:1">
+      <div class="big">심박과 피부전기활동(EDA)이 개인 기준선보다 높습니다</div>
+      <div style="color:var(--soft);font-size:13px">규칙 엔진 판정 10:42 · 근거 문서 2건 · 검증 5/5 통과 · 판정에 모델은 관여하지 않음</div>
+    </div>
+    <a class="btn w" href="#alert">AI 설명 보기</a>
+    <a class="btn ghost" href="#symptom">증상 말하기</a>
+  </div>
+  <div class="row">
+    <div style="flex:3" class="grid g3">
+      <div class="card vital"><span class="k">심박 HR</span><div class="v">92<small>bpm</small></div><svg class="spark" viewBox="0 0 100 36" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="#FFA23C" stroke-width="2" points="0,28 10,27 20,29 30,26 40,25 50,24 60,20 70,16 80,14 90,10 100,8"/></svg><div class="base">기준선 68 · <span class="z hi">z +2.6</span></div></div>
+      <div class="card vital"><span class="k">심박변이 HRV</span><div class="v">31<small>ms</small></div><svg class="spark" viewBox="0 0 100 36" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="#FFA23C" stroke-width="2" points="0,10 10,12 20,11 30,14 40,16 50,18 60,22 70,24 80,27 90,28 100,30"/></svg><div class="base">기준선 52 · <span class="z hi">z −2.1</span></div></div>
+      <div class="card vital"><span class="k">피부전기활동 EDA</span><div class="v">4.8<small>µS</small></div><svg class="spark" viewBox="0 0 100 36" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="#FF6B6B" stroke-width="2" points="0,30 10,30 20,29 30,29 40,27 50,22 60,18 70,12 80,9 90,6 100,4"/></svg><div class="base">기준선 1.9 · <span class="z vhi">z +3.1</span></div></div>
+      <div class="card vital"><span class="k">피부온</span><div class="v">34.1<small>°C</small></div><svg class="spark" viewBox="0 0 100 36" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="#4CD48A" stroke-width="2" points="0,20 10,19 20,20 30,21 40,20 50,19 60,20 70,20 80,19 90,20 100,19"/></svg><div class="base">기준선 33.9 · <span class="z ok">z +0.4</span></div></div>
+      <div class="card vital"><span class="k">산소포화도 SpO₂</span><div class="v">97<small>%</small></div><svg class="spark" viewBox="0 0 100 36" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="#4CD48A" stroke-width="2" points="0,18 10,18 20,17 30,18 40,18 50,19 60,18 70,18 80,17 90,18 100,18"/></svg><div class="base">기준선 97 · <span class="z ok">z 0.0</span></div></div>
+      <div class="card vital"><span class="k">지난밤 수면</span><div class="v">5h 10m</div><svg class="spark" viewBox="0 0 100 36" preserveAspectRatio="none" aria-hidden="true"><rect x="0" y="22" width="18" height="12" fill="#2F6FB5"/><rect x="20" y="10" width="30" height="24" fill="#7C5CD6"/><rect x="52" y="18" width="22" height="16" fill="#2F6FB5"/><rect x="76" y="26" width="24" height="8" fill="#3A4654"/></svg><div class="base">기준선 6h 50m · 깊은 수면 12% (기준 21%) · <span class="z hi">z −1.8</span></div></div>
+    </div>
+    <div style="flex:1.2" class="card">
+      <span class="k">오늘 할 일</span>
+      <div class="todo" style="margin-top:10px">
+        <label><input type="checkbox" checked> 오전 체크인 설문 (06:00–12:00)</label>
+        <label><input type="checkbox"> 운동 세션 15:00 · 저항운동 45분</label>
+        <label><input type="checkbox"> 수분 섭취 500 mL 추가 <span class="cite">proc:ortho-01</span></label>
+        <label><input type="checkbox"> 기립 시 어지러움 재확인 (14:00)</label>
+        <label><input type="checkbox"> 주간 지구 전송 요약 승인</label>
+      </div>
+      <div style="margin-top:14px" class="k">최근 7일</div>
+      <div style="display:flex;gap:4px;margin-top:6px">
+        <span class="badge b-ok">정상</span><span class="badge b-ok">정상</span><span class="badge b-ok">정상</span><span class="badge b-watch">주의</span><span class="badge b-ok">정상</span><span class="badge b-hold">보류</span><span class="badge b-watch">주의</span>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin:8px 0 0">"보류"는 데이터 부족이나 근거 부족으로 모델 설명을 보여 주지 않은 날.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3. ALERT DETAIL -->
+<section class="screen" id="s-alert">
+  <h1>이상 상세 · AI 설명 · 검증</h1>
+  <p class="sub">왼쪽은 코드가 계산한 사실, 가운데는 SLM이 쓴 설명, 오른쪽은 그 설명을 코드가 대조한 결과. 셋이 한 화면에 같이 있어야 "근거 있는 답"이 보인다.</p>
+  <div style="display:flex;gap:10px;margin-bottom:14px">
+    <button class="btn p" id="btn-pass">검증 통과 상태</button>
+    <button class="btn" id="btn-fail">검증 실패 상태 보기</button>
+  </div>
+
+  <div id="view-pass" class="row">
+    <div style="flex:1.1" class="card">
+      <div class="col-title"><span class="k">사실 (규칙 엔진)</span><span class="badge b-code">코드</span></div>
+      <table>
+        <tr><th>지표</th><th>값</th><th>기준선</th><th>z</th><th>출처</th></tr>
+        <tr><td>심박</td><td>92 bpm</td><td>68</td><td class="z hi">+2.6</td><td><span class="cite">data:e4:S03</span></td></tr>
+        <tr><td>EDA</td><td>4.8 µS</td><td>1.9</td><td class="z vhi">+3.1</td><td><span class="cite">data:e4:S03</span></td></tr>
+        <tr><td>HRV</td><td>31 ms</td><td>52</td><td class="z hi">−2.1</td><td><span class="cite">data:e4:S03</span></td></tr>
+        <tr><td>수면</td><td>5h 10m</td><td>6h 50m</td><td class="z hi">−1.8</td><td><span class="cite">data:sleep:D141</span></td></tr>
+      </table>
+      <div style="margin-top:12px"><span class="k">판정</span> <span class="badge b-watch">주의</span> <span style="font-size:12px;color:var(--muted)">규칙: z ≥ 2.5 지표 2개 이상 + 수면 부족</span></div>
+      <div style="margin-top:12px"><span class="k">증상 (승무원 입력)</span><div style="margin-top:4px"><span class="badge b-slm">dizziness</span> <span class="badge b-slm">nausea</span> <span style="font-size:12px;color:var(--muted)">onset: morning</span></div></div>
+    </div>
+
+    <div style="flex:1.4" class="card">
+      <div class="col-title"><span class="k">설명 · 대응 안내</span><span class="badge b-slm">SLM ② · 근거 문서로만</span></div>
+      <p style="margin:0 0 10px">오늘 아침 심박과 피부전기활동이 평소보다 뚜렷하게 높고, 수면은 평소보다 1시간 40분 짧았습니다 <span class="cite">data:e4:S03</span><span class="cite">data:sleep:D141</span>. 어지러움과 메스꺼움을 함께 보고하셨는데, 수면 부족과 자율신경 반응이 겹칠 때 흔히 보고되는 조합입니다 <span class="cite">hrp:sm-03#p2</span>.</p>
+      <p style="margin:0 0 14px">이 설명은 <b>진단이 아닙니다.</b> 상태 판정은 규칙 엔진이 했고, 저는 그 결과를 문서에 있는 말로 옮긴 것입니다.</p>
+      <span class="k">권장 대응</span>
+      <div class="todo" style="margin-top:8px">
+        <label><input type="checkbox"> 수분 500 mL 섭취 후 30분 뒤 재측정 <span class="cite">proc:ortho-01#s4</span></label>
+        <label><input type="checkbox"> 기립 시 어지러움이 심해지면 의료 담당 승무원에게 알림 <span class="cite">proc:ortho-01#s6</span></label>
+        <label><input type="checkbox"> 오늘 고강도 운동은 저강도로 조정 <span class="cite">hrp:sm-03#p5</span></label>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn p">의료 담당 승무원에게 공유</button>
+        <button class="btn">지구 전송 대기열에 추가</button>
+      </div>
+    </div>
+
+    <div style="flex:0.9" class="card">
+      <div class="col-title"><span class="k">검증</span><span class="badge b-ok">5 / 5 통과</span></div>
+      <div class="check"><span class="ck y">✓</span><div>상태 일치<br><small style="color:var(--muted)">SLM "watch" = 규칙 "watch"</small></div></div>
+      <div class="check"><span class="ck y">✓</span><div>수치 일치<br><small style="color:var(--muted)">92·4.8·31·5h10m 모두 계산값과 같음</small></div></div>
+      <div class="check"><span class="ck y">✓</span><div>출처 존재<br><small style="color:var(--muted)">인용 4건 전부 이번 검색 결과 안에 있음</small></div></div>
+      <div class="check"><span class="ck y">✓</span><div>설명 속 숫자 전부 근거 있음<br><small style="color:var(--muted)">"1시간 40분" = 6h50 − 5h10</small></div></div>
+      <div class="check"><span class="ck y">✓</span><div>근거 충분<br><small style="color:var(--muted)">검색 점수 0.71 ≥ 기준 0.55</small></div></div>
+      <p style="font-size:12px;color:var(--muted);margin:12px 0 0">응답 1.9초 · 메모리 3.1 GB · 모델 4B</p>
+    </div>
+  </div>
+
+  <div id="view-fail" class="row hidden">
+    <div style="flex:1.1" class="card">
+      <div class="col-title"><span class="k">사실 (규칙 엔진)</span><span class="badge b-code">코드</span></div>
+      <table>
+        <tr><th>지표</th><th>값</th><th>기준선</th><th>z</th></tr>
+        <tr><td>심박</td><td>92 bpm</td><td>68</td><td class="z hi">+2.6</td></tr>
+        <tr><td>EDA</td><td>4.8 µS</td><td>1.9</td><td class="z vhi">+3.1</td></tr>
+      </table>
+      <div style="margin-top:12px"><span class="k">판정</span> <span class="badge b-watch">주의</span></div>
+    </div>
+    <div style="flex:1.4" class="card" style="border-color:#B4642A">
+      <div class="col-title"><span class="k">설명</span><span class="badge b-hold">판단 보류</span></div>
+      <p style="margin:0 0 10px">모델의 설명을 표시하지 않습니다. 검증에서 2개 항목이 실패했습니다.</p>
+      <p style="margin:0 0 14px;color:var(--soft)">위의 수치와 판정은 규칙 엔진 결과이며 그대로 유효합니다. 설명이 필요하면 의료 담당 승무원에게 문의하세요.</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn w">의료 담당 승무원 호출</button>
+        <button class="btn">원본 문서 2건 직접 열기</button>
+      </div>
+    </div>
+    <div style="flex:0.9" class="card">
+      <div class="col-title"><span class="k">검증</span><span class="badge b-alert">3 / 5 실패</span></div>
+      <div class="check"><span class="ck y">✓</span><div>상태 일치</div></div>
+      <div class="check"><span class="ck n">✕</span><div>수치 일치<br><small style="color:var(--muted)">SLM이 "심박 110"이라고 씀 · 계산값 92</small></div></div>
+      <div class="check"><span class="ck n">✕</span><div>출처 존재<br><small style="color:var(--muted)">"hrp:cv-12" 는 검색 결과에 없음</small></div></div>
+      <div class="check"><span class="ck y">✓</span><div>설명 속 숫자</div></div>
+      <div class="check"><span class="ck y">✓</span><div>근거 충분</div></div>
+      <p style="font-size:12px;color:var(--muted);margin:12px 0 0">실패 로그는 저장 → 평가표의 "수치·단위 오류"로 집계</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4. SYMPTOM -->
+<section class="screen" id="s-symptom">
+  <h1>증상 입력 — 자연어로 말하면 코드 목록으로</h1>
+  <p class="sub">SLM이 하는 첫 번째 일. 문장을 정해진 증상 코드로만 옮기고, 확인 질문은 코드가 템플릿으로 던진다.</p>
+  <div class="row">
+    <div style="flex:1.5" class="card">
+      <div class="chat" id="chat">
+        <div class="msg sys"><div class="who">시스템</div>지금 어떤지 말씀해 주세요. 문장 그대로 적으셔도 됩니다.</div>
+      </div>
+      <div class="chips" id="chips" style="margin-top:12px">
+        <button class="chip" data-say="어지럽고 속이 메스꺼워. 아침부터 그래.">어지럽고 속이 메스꺼워. 아침부터 그래.</button>
+        <button class="chip" data-say="별일 없고 좀 피곤한 정도.">별일 없고 좀 피곤한 정도.</button>
+        <button class="chip" data-say="왼쪽 가슴이 조이는 느낌이야.">왼쪽 가슴이 조이는 느낌이야.</button>
+      </div>
+      <form class="input" id="form">
+        <input id="inp" placeholder="직접 입력…" autocomplete="off">
+        <button class="btn p" type="submit">보내기</button>
+      </form>
+    </div>
+    <div style="flex:1" style="display:flex;flex-direction:column;gap:16px">
+      <div class="card" style="margin-bottom:16px">
+        <div class="col-title"><span class="k">SLM ① 이 한 일</span><span class="badge b-slm">증상 코드 추출</span></div>
+        <pre class="slm" id="json-slm">{ "symptoms": [], "onset": null, "unmapped": [] }</pre>
+        <p style="font-size:12px;color:var(--muted);margin:8px 0 0">enum 밖 단어는 unmapped로 떨어진다. 모델이 새 증상을 "발명"할 수 없게.</p>
+      </div>
+      <div class="card">
+        <div class="col-title"><span class="k">코드가 한 일</span><span class="badge b-code">규칙 + 검색</span></div>
+        <pre id="json-code">{ "rule": null, "docs": [], "status": null }</pre>
+        <p style="font-size:12px;color:var(--muted);margin:8px 0 0">증상 코드 + 현재 바이탈 → 규칙 매칭 → 문서 검색. 여기까지 오면 3번 화면으로 넘어간다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. COMPARE -->
+<section class="screen" id="s-compare">
+  <h1>비교 데모 — 같은 입력, 두 가지 답</h1>
+  <p class="sub">발표 때 와이파이 끄고 나란히 돌리는 화면. 왼쪽은 그냥 SLM, 오른쪽은 우리 구조.</p>
+  <div class="card" style="margin-bottom:16px"><span class="k">입력</span> <span style="font-family:var(--mono);font-size:13px">HR 92 · HRV 31 · EDA 4.8 · 수면 5h10m</span> + <span style="color:var(--soft)">"어지럽고 속이 메스꺼워. 아침부터 그래."</span></div>
+  <div class="grid g2">
+    <div class="card" style="border-color:#5a3030">
+      <div class="col-title"><span class="k">A · SLM 단독</span><span class="badge b-alert">출처 없음</span></div>
+      <p style="margin:0 0 8px">심박수가 <b>110 이상</b>으로 상승하고<span class="flag">입력에 없는 숫자</span> 어지러움과 메스꺼움이 동반되는 경우 <b>심근 허혈이나 부정맥</b>을 의심해야 합니다.<span class="flag">진단 단정</span> 즉시 니트로글리세린 0.4 mg을 투여하고<span class="flag">근거 없는 처치</span> 지상 관제에 연락하십시오.<span class="flag">화성에선 22분 지연</span></p>
+      <p style="margin:0;color:var(--muted);font-size:13px">유창하고 자신 있게 틀린다. 숫자 1개를 지어냈고, 문서 없이 처치를 권했고, 상태를 스스로 "경보"로 올렸다.</p>
+      <div style="margin-top:12px"><span class="badge b-alert">경보 (모델이 결정)</span></div>
+    </div>
+    <div class="card" style="border-color:#2F6FB5">
+      <div class="col-title"><span class="k">B · 우리 시스템</span><span class="badge b-ok">검증 5/5</span></div>
+      <p style="margin:0 0 8px">심박 92(기준 68)와 EDA 4.8(기준 1.9)이 높고 수면이 1시간 40분 짧습니다 <span class="cite">data:e4:S03</span>. 어지러움·메스꺼움은 수면 부족과 자율신경 반응이 겹칠 때 흔한 조합입니다 <span class="cite">hrp:sm-03#p2</span>. 수분 섭취 후 30분 뒤 재측정하세요 <span class="cite">proc:ortho-01#s4</span>.</p>
+      <p style="margin:0;color:var(--muted);font-size:13px">숫자는 전부 입력에서 왔고, 문장마다 출처가 붙고, 상태는 규칙이 정한 "주의"를 그대로 옮겼다.</p>
+      <div style="margin-top:12px"><span class="badge b-watch">주의 (규칙이 결정)</span></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="col-title"><span class="k">평가표 (틀만 · 숫자는 행사 중 측정)</span><span class="badge b-hold">30문항 × 3조건 × 3회</span></div>
+    <table>
+      <tr><th>측정</th><th>SLM 단독</th><th>SLM + 검색</th><th>SLM + 검색 + 검증</th><th>비고</th></tr>
+      <tr><td>정답률 (A·B 묶음 20문항)</td><td>[측정]</td><td>[측정]</td><td>[측정]</td><td>문서로 답 가능한 질문</td></tr>
+      <tr><td>수치·단위 오류율</td><td>[측정]</td><td>[측정]</td><td>[측정]</td><td>검증 실패 로그로 집계</td></tr>
+      <tr><td>보류율 (C 묶음 10문항)</td><td>[측정]</td><td>[측정]</td><td>[측정]</td><td>답하면 안 되는 질문</td></tr>
+      <tr><td>과잉 보류율 (A·B에서 보류)</td><td>[측정]</td><td>[측정]</td><td>[측정]</td><td>"무조건 보류" 꼼수 차단</td></tr>
+      <tr><td>응답 시간 · 메모리</td><td>[측정]</td><td>[측정]</td><td>[측정]</td><td>3회 평균</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- 6. CREW -->
+<section class="screen" id="s-crew">
+  <h1>승무원 관리</h1>
+  <p class="sub">의료 담당 승무원이 보는 화면. 각자의 기준선이 잡혔는지, 오늘 상태가 어떤지, 누가 누구 데이터를 볼 수 있는지.</p>
+  <div class="row">
+    <div style="flex:1.6" class="card">
+      <table id="crew-table">
+        <tr><th>승무원</th><th>역할</th><th>기준선</th><th>오늘</th><th>마지막 동기화</th><th>기기</th></tr>
+        <tr class="crew-row sel" data-name="승무원 A" data-role="사령관" data-base="14일 완료"><td>승무원 A</td><td>사령관</td><td><span class="badge b-ok">14일 완료</span></td><td><span class="badge b-watch">주의</span></td><td>10:41</td><td>밴드 82%</td></tr>
+        <tr class="crew-row" data-name="승무원 B" data-role="의료 담당" data-base="14일 완료"><td>승무원 B</td><td>의료 담당</td><td><span class="badge b-ok">14일 완료</span></td><td><span class="badge b-ok">정상</span></td><td>10:40</td><td>밴드 64%</td></tr>
+        <tr class="crew-row" data-name="승무원 C" data-role="엔지니어" data-base="9일 / 14일"><td>승무원 C</td><td>엔지니어</td><td><span class="badge b-hold">9일 / 14일</span></td><td><span class="badge b-hold">보류</span></td><td>09:58</td><td>밴드 91%</td></tr>
+        <tr class="crew-row" data-name="승무원 D" data-role="과학" data-base="14일 완료"><td>승무원 D</td><td>과학</td><td><span class="badge b-ok">14일 완료</span></td><td><span class="badge b-ok">정상</span></td><td>10:42</td><td>밴드 ⚠ 12%</td></tr>
+      </table>
+      <p style="font-size:12px;color:var(--muted);margin:12px 0 0">승무원 C는 기준선이 덜 잡혀 오늘 판정이 "보류". 데이터 부족도 보류 사유로 똑같이 표시한다.</p>
+    </div>
+    <div style="flex:1" class="card">
+      <div class="col-title"><span class="k">선택: <b id="sel-name">승무원 A</b></span><span class="badge b-code" id="sel-role">사령관</span></div>
+      <div class="k" style="margin-top:8px">기준선 설정</div>
+      <div class="todo" style="margin-top:6px">
+        <label>수집 구간 <span style="margin-left:auto;font-family:var(--mono)" id="sel-base">14일 완료</span></label>
+        <label>민감도 <span style="margin-left:auto;font-family:var(--mono)">z 2.5 (기본)</span></label>
+        <label>기준선 재계산 <span style="margin-left:auto;font-family:var(--mono)">매 7일</span></label>
+      </div>
+      <div class="k" style="margin-top:14px">열람 권한</div>
+      <div class="todo" style="margin-top:6px">
+        <label><input type="checkbox" checked> 본인: 전체</label>
+        <label><input type="checkbox" checked> 의료 담당 승무원: 전체</label>
+        <label><input type="checkbox"> 사령관: 상태 배지만</label>
+        <label><input type="checkbox" checked> 지구 의료팀: 주간 요약 + 경보 즉시</label>
+      </div>
+      <div class="k" style="margin-top:14px">지구 전송</div>
+      <p style="margin:6px 0 0;font-size:13px;color:var(--soft)">대기열 3건 · 다음 창 14:00 · 편도 지연 11분 · 경보는 즉시 큐 선두</p>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn">기준선 다시 잡기</button>
+        <button class="btn ghost">기기 교체</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="foot">회의 논의용 컨셉 목업 · 제출물 아님 · 모든 수치·문서 id·승무원은 가상 · 제출용 화면은 11/14 09:00 이후 새로 제작</div>
+</main>
+</div>
+
+<script>
+  // 화면 전환
+  const screens = ['flow','dash','alert','symptom','compare','crew'];
+  function show(){
+    let id = (location.hash||'#flow').slice(1);
+    if(!screens.includes(id)) id='flow';
+    screens.forEach(s=>{
+      document.getElementById('s-'+s).classList.toggle('on', s===id);
+      document.querySelector('nav a[data-s="'+s+'"]').classList.toggle('on', s===id);
+    });
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange', show); show();
+
+  // 3번: 검증 통과/실패 토글
+  document.getElementById('btn-pass').onclick=()=>{document.getElementById('view-pass').classList.remove('hidden');document.getElementById('view-fail').classList.add('hidden');document.getElementById('btn-pass').classList.add('p');document.getElementById('btn-fail').classList.remove('p');};
+  document.getElementById('btn-fail').onclick=()=>{document.getElementById('view-fail').classList.remove('hidden');document.getElementById('view-pass').classList.add('hidden');document.getElementById('btn-fail').classList.add('p');document.getElementById('btn-pass').classList.remove('p');};
+
+  // 4번: 증상 입력 대본
+  const chat=document.getElementById('chat'), jS=document.getElementById('json-slm'), jC=document.getElementById('json-code');
+  const scripts = {
+    '어지럽고 속이 메스꺼워. 아침부터 그래.': {
+      slm:'{ "symptoms": ["dizziness", "nausea"],\n  "onset": "morning",\n  "unmapped": [] }',
+      ask:'일어설 때 더 심해지나요?', opts:['예','아니오'],
+      code:'{ "rule": "ortho-intolerance-screen",\n  "vitals": {"hr_z": 2.6, "eda_z": 3.1},\n  "docs": ["hrp:sm-03#p2", "proc:ortho-01#s4"],\n  "status": "watch" }',
+      done:'현재 바이탈(심박·EDA 상승, 수면 부족)과 합쳐 <b>주의</b>로 판정됐습니다. 근거 문서 2건을 찾았고 설명을 준비했습니다. <a href="#alert">상세 보기 →</a>'
+    },
+    '별일 없고 좀 피곤한 정도.': {
+      slm:'{ "symptoms": ["fatigue"],\n  "onset": null,\n  "unmapped": [] }',
+      ask:'어젯밤 수면은 평소보다 짧았나요? (기록상 5h 10m)', opts:['네, 짧았어요','비슷해요'],
+      code:'{ "rule": "sleep-debt-mild",\n  "docs": ["hrp:sleep-02#p1"],\n  "status": "normal" }',
+      done:'수면 부족으로 설명되는 범위입니다. 상태는 <b>정상</b>, 오늘 저녁 취침 시각 권고만 표시합니다.'
+    },
+    '왼쪽 가슴이 조이는 느낌이야.': {
+      slm:'{ "symptoms": ["chest_tightness"],\n  "onset": null,\n  "unmapped": [] }',
+      ask:'지금 통증이 팔이나 턱으로 번지나요?', opts:['예','아니오'],
+      code:'{ "rule": "chest-symptom-escalate",\n  "docs": [],\n  "status": "alert",\n  "note": "SLM 설명 생략, 즉시 에스컬레이션" }',
+      done:'<b>경보</b>입니다. 이 경우 모델 설명을 기다리지 않고 바로 의료 담당 승무원 호출 화면으로 넘어갑니다. (규칙이 결정)'
+    }
+  };
+  function add(cls, who, html){const d=document.createElement('div');d.className='msg '+cls;d.innerHTML='<div class="who">'+who+'</div>'+html;chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d;}
+  function say(text){
+    add('me','승무원 A',text);
+    const s=scripts[text] || {
+      slm:'{ "symptoms": [],\n  "onset": null,\n  "unmapped": ["'+text.slice(0,12)+'"] }',
+      ask:'목록에 없는 표현이라 그대로 기록만 했습니다. 어지러움·메스꺼움·피로·통증 중 가까운 것이 있나요?', opts:['어지러움','피로','없음'],
+      code:'{ "rule": null,\n  "docs": [],\n  "status": "insufficient_evidence" }',
+      done:'증상 코드가 없어 <b>판단 보류</b>. 바이탈 수치만 표시합니다.'
+    };
+    setTimeout(()=>{jS.textContent=s.slm; const q=add('sys','시스템 · 확인 질문 (코드 템플릿)',s.ask+'<div class="chips" style="margin-top:8px">'+s.opts.map(o=>'<button class="chip">'+o+'</button>').join('')+'</div>');
+      q.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{add('me','승무원 A',b.textContent); setTimeout(()=>{jC.textContent=s.code; add('sys','시스템',s.done);},500);});
+    },600);
+  }
+  document.querySelectorAll('#chips .chip').forEach(b=>b.onclick=()=>say(b.dataset.say));
+  document.getElementById('form').onsubmit=e=>{e.preventDefault();const v=document.getElementById('inp').value.trim();if(!v)return;document.getElementById('inp').value='';say(v);};
+
+  // 6번: 승무원 선택
+  document.querySelectorAll('.crew-row').forEach(r=>r.onclick=()=>{document.querySelectorAll('.crew-row').forEach(x=>x.classList.remove('sel'));r.classList.add('sel');document.getElementById('sel-name').textContent=r.dataset.name;document.getElementById('sel-role').textContent=r.dataset.role;document.getElementById('sel-base').textContent=r.dataset.base;});
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+__pycache__/
+!data/.gitkeep
+.DS_Store
+.env
+.gstack/
+.venv/
+data/*
+ml/.venv/
+ml/adapters/
+ml/data/symptoms/
+ml/models/
+mockup/refs/
+node_modules/
+ml/logs/

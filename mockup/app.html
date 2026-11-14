@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crew Health Terminal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070A0F; --panel:#0C1117; --panel2:#101720; --line:#161E29; --line2:#1F2A37;
+    --text:#E6EAF0; --muted:#7D8896; --soft:#A8B2BF;
+    --up:#22D3A6; --down:#F0526B; --warn:#F5A524; --blue:#3B82F6; --slm:#A78BFA;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Noto Sans KR",system-ui,sans-serif;font-size:12px;line-height:1.4;overflow:hidden}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  input{font:inherit;color:inherit}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .up{color:var(--up)}.down{color:var(--down)}.warn{color:var(--warn)}.mut{color:var(--muted)}
+
+  /* top bar */
+  .top{height:44px;display:flex;align-items:center;gap:14px;padding:0 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+  .logo{font-weight:700;font-size:14px;letter-spacing:-.02em;margin-right:6px}
+  .tabs{display:flex;gap:2px;background:#0A0F15;border:1px solid var(--line);border-radius:8px;padding:2px}
+  .tabs button{padding:5px 11px;border-radius:6px;color:var(--muted);font-size:12px;font-weight:500}
+  .tabs button.on{background:#1A2432;color:var(--text)}
+  .ticker{display:flex;gap:22px;margin-left:16px;overflow:hidden;white-space:nowrap}
+  .ticker div{display:flex;gap:7px;align-items:baseline}
+  .ticker .k{color:var(--muted);font-size:11px}
+  .ticker .v{font-family:var(--mono);font-weight:600}
+  .ticker .d{font-family:var(--mono);font-size:11px}
+  .sp{flex:1}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:6px;font-family:var(--mono);font-size:11px;border:1px solid var(--line2);color:var(--soft)}
+  .pill.ok{background:#0D2A24;border-color:#14433A;color:var(--up)}
+  .pill i{width:6px;height:6px;border-radius:50%;background:var(--up);display:inline-block}
+  .clock{font-family:var(--mono);font-size:12px;color:var(--soft)}
+
+  /* grid */
+  .grid{display:grid;grid-template-columns:230px minmax(0,1fr) 360px;grid-template-rows:minmax(0,1.5fr) minmax(0,1fr);gap:8px;padding:8px;height:calc(100vh - 44px)}
+  .p{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .p .h{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);font-weight:600;font-size:12px}
+  .p .h small{color:var(--muted);font-weight:400;font-size:11px}
+  .p .h .sp{flex:1}
+  .p .b{flex:1;min-height:0;overflow:auto;padding:6px 0}
+  #crewP{grid-row:1/3}
+  #chainP{grid-row:1/3}
+
+  /* crew list */
+  .crew{display:grid;grid-template-columns:1fr 70px 70px;gap:8px;align-items:center;padding:7px 12px;cursor:pointer;border-left:2px solid transparent}
+  .crew:hover{background:#0F161E}
+  .crew.on{background:#0F161E;border-left-color:var(--blue)}
+  .crew .n{font-weight:600}
+  .crew .r{font-size:10px;color:var(--muted)}
+  .crew svg{width:70px;height:24px}
+  .crew .v{text-align:right;font-family:var(--mono);font-weight:600}
+  .crew .c{text-align:right;font-family:var(--mono);font-size:10.5px}
+  .depth{padding:8px 12px;border-top:1px solid var(--line)}
+  .depth .t{font-weight:600;margin-bottom:6px;display:flex;justify-content:space-between}
+  .depth .t small{color:var(--muted);font-weight:400}
+  .dr{display:grid;grid-template-columns:52px 1fr 44px;gap:8px;align-items:center;font-family:var(--mono);font-size:10.5px;padding:2px 0}
+  .dr .bar{height:12px;position:relative;background:#0A0F15;border-radius:2px;overflow:hidden}
+  .dr .bar i{position:absolute;top:0;bottom:0;left:50%}
+  .dr .bar i.pos{background:rgba(245,165,36,.45)} .dr .bar i.neg{background:rgba(59,130,246,.45);transform:translateX(-100%)}
+  .dr .bar i.hi{background:rgba(240,82,107,.55)}
+  .dr .bar em{position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--line2)}
+
+  /* chart */
+  .tf{display:flex;gap:2px}
+  .tf button{padding:3px 8px;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:10.5px}
+  .tf button.on{background:#1A2432;color:var(--text)}
+  .ohlc{font-family:var(--mono);font-size:11px;color:var(--soft);display:flex;gap:10px}
+  .ohlc b{color:var(--text);font-weight:500}
+  canvas{display:block;width:100%;height:100%}
+  .chartwrap{flex:1;min-height:0;position:relative}
+  .tag{position:absolute;right:8px;background:var(--up);color:#04130E;font-family:var(--mono);font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px;transform:translateY(-50%);pointer-events:none}
+  .tag.w{background:var(--warn);color:#1A1000}
+
+  /* findings + verify */
+  .two{display:grid;grid-template-columns:1.25fr 1fr;flex:1;min-height:0}
+  .two > div{min-height:0;overflow:auto}
+  .two > div + div{border-left:1px solid var(--line)}
+  table{width:100%;border-collapse:collapse;font-size:11.5px}
+  th{text-align:left;color:var(--muted);font-weight:500;font-size:10.5px;padding:6px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
+  td{padding:6px 12px;border-bottom:1px solid var(--line);font-family:var(--mono);white-space:nowrap}
+  td.t{font-family:Inter,"Noto Sans KR",sans-serif}
+  tr.hl td{background:#0F161E}
+  .badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;font-family:var(--mono)}
+  .bg-up{background:#0D2A24;color:var(--up)}.bg-down{background:#3A1520;color:var(--down)}.bg-warn{background:#3A2A0C;color:var(--warn)}.bg-mut{background:#1A2432;color:var(--soft)}.bg-slm{background:#2A2250;color:var(--slm)}.bg-blue{background:#142A4A;color:#8AB8FF}
+  .kv{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;padding:8px 12px;border-top:1px solid var(--line)}
+  .kv div{font-size:10px;color:var(--muted)}
+  .kv b{display:block;font-family:var(--mono);font-size:12px;color:var(--text);font-weight:500;margin-top:2px}
+  .steps{display:flex;gap:4px;padding:8px 12px}
+  .steps span{flex:1;text-align:center;font-family:var(--mono);font-size:10px;padding:5px 2px;border-radius:5px;background:#0A0F15;color:var(--muted);border:1px solid var(--line)}
+  .steps span.run{border-color:var(--blue);color:#8AB8FF;animation:blink .6s infinite alternate}
+  .steps span.done{border-color:#14433A;color:var(--up);background:#0D2A24}
+  .steps span.slm.done{border-color:#3A2F66;color:var(--slm);background:#2A2250}
+  @keyframes blink{from{opacity:.5}to{opacity:1}}
+  .chk{display:flex;gap:8px;align-items:center;padding:5px 12px;font-size:11.5px}
+  .chk i{width:14px;height:14px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-style:normal;flex:none;background:#1A2432;color:var(--muted)}
+  .chk i.y{background:#0D2A24;color:var(--up)}.chk i.n{background:#3A1520;color:var(--down)}
+  .chk .m{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .expl{padding:8px 12px;font-size:12px;line-height:1.6;border-top:1px solid var(--line)}
+  .cite{font-family:var(--mono);font-size:9.5px;padding:0 4px;border-radius:3px;background:#142A4A;color:#8AB8FF;margin:0 1px}
+  .btn{padding:6px 12px;border-radius:6px;background:#1A2432;border:1px solid var(--line2);font-weight:600;font-size:11.5px}
+  .btn.p{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn.w{background:#3A2A0C;border-color:#5A4012;color:var(--warn)}
+  .btn:disabled{opacity:.5;cursor:default}
+
+  /* chain */
+  .chain{display:grid;grid-template-columns:1.2fr 62px 56px 52px 60px 60px;gap:6px;padding:5px 12px;font-family:var(--mono);font-size:11px;align-items:center;border-bottom:1px solid var(--line)}
+  .chain.head{position:sticky;top:0;background:var(--panel);color:var(--muted);font-size:10px;font-family:Inter,sans-serif;z-index:1}
+  .chain .n{font-family:Inter,"Noto Sans KR",sans-serif;font-weight:500}
+  .chain .n small{display:block;color:var(--muted);font-size:9.5px;font-family:var(--mono)}
+  .chain .z{text-align:right}
+  .chain.hl{background:#0F161E}
+  .chain .sb{height:4px;border-radius:2px;background:#0A0F15;position:relative;overflow:hidden}
+  .chain .sb i{position:absolute;top:0;bottom:0;left:0;border-radius:2px}
+  .foot{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 12px;border-top:1px solid var(--line)}
+  .foot div{font-size:10px;color:var(--muted)}
+  .foot b{display:block;font-family:var(--mono);font-size:12px;color:var(--text);font-weight:500;margin-top:2px}
+
+  /* views in center */
+  .view{display:none;flex:1;min-height:0;flex-direction:column}
+  .view.on{display:flex}
+  /* chat */
+  .chat{flex:1;min-height:0;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .msg{max-width:78%;padding:9px 12px;border-radius:10px;font-size:12.5px;line-height:1.55}
+  .msg.me{align-self:flex-end;background:#142A4A}
+  .msg.sys{align-self:flex-start;background:var(--panel2);border:1px solid var(--line)}
+  .msg .who{font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-bottom:3px}
+  .msg pre{margin:6px 0 0;font-family:var(--mono);font-size:10.5px;background:#0A0F15;border:1px solid var(--line);border-radius:6px;padding:8px;white-space:pre-wrap;color:var(--slm)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .chip{padding:4px 10px;border-radius:999px;border:1px solid var(--line2);font-size:11px;color:var(--soft);background:#0A0F15}
+  .chip:hover{background:#1A2432;color:var(--text)}
+  .inrow{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
+  .inrow input{flex:1;background:#0A0F15;border:1px solid var(--line2);border-radius:8px;padding:9px 12px;color:var(--text);outline:none}
+  .inrow input:focus{border-color:var(--blue)}
+  /* body view */
+  .bodyv{display:grid;grid-template-columns:320px 1fr;flex:1;min-height:0}
+  .bodyv > div + div{border-left:1px solid var(--line);overflow:auto}
+  .mann{display:flex;align-items:center;justify-content:center;padding:10px}
+  .mann svg{height:100%;max-height:100%;width:100%}
+  .mk circle{fill:var(--up)}.mk .ring{fill:none;stroke:var(--up);stroke-width:1.5;opacity:.6;transform-origin:center;animation:pulse 2s ease-out infinite}
+  .mk-w circle{fill:var(--warn)}.mk-w .ring{stroke:var(--warn)} .mk-d circle{fill:var(--down)}.mk-d .ring{stroke:var(--down);animation-duration:1.3s}
+  @keyframes pulse{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.9);opacity:0}}
+  .lbl text{font-family:Inter,"Noto Sans KR",sans-serif;font-size:10px;font-weight:600;fill:var(--text)}
+  .lbl text.s{font-family:var(--mono);font-size:9px;font-weight:400;fill:var(--muted)}
+  .mg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px}
+  .m{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .m .k{font-size:10px;color:var(--muted)}
+  .m .v{font-family:var(--mono);font-size:20px;font-weight:600;letter-spacing:-.02em;margin:2px 0}
+  .m .v small{font-size:10px;color:var(--muted);font-weight:400;margin-left:2px}
+  .m .t{font-family:var(--mono);font-size:10px;color:var(--muted)}
+  /* pixel body */
+  .mann{position:relative;background:#050709;background-image:linear-gradient(#0C1117 1px,transparent 1px),linear-gradient(90deg,#0C1117 1px,transparent 1px);background-size:24px 24px}
+  .mann canvas{width:100%;height:100%;cursor:pointer}
+  .hint{position:absolute;left:10px;bottom:8px;font-family:var(--mono);font-size:9.5px}
+  .regions{display:flex;flex-wrap:wrap;gap:6px;padding:10px 10px 0}
+  .regions button{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:6px;border:1px solid var(--line2);font-size:11px;color:var(--soft);background:#0A0F15}
+  .regions button i{width:7px;height:7px;border-radius:2px;display:inline-block;background:#C6E84A}
+  .regions button.w i{background:var(--warn)}.regions button.d i{background:var(--down)}
+  .regions button.on{border-color:#C6E84A;color:var(--text)}
+  .rd{margin:10px;border:1px solid var(--line2);border-radius:10px;background:var(--panel2);padding:12px}
+  .rd .ttl{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .rd .ttl b{font-size:14px}
+  .rd .ttl .x{margin-left:auto}
+  .rd .mrow{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px}
+  .rd .mrow .n{font-family:Inter,"Noto Sans KR",sans-serif;font-weight:500}
+  .rd .mrow svg{width:90px;height:20px}
+  .rd p{margin:8px 0;font-size:11.5px;line-height:1.55;color:var(--soft)}
+  .rd .acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  /* toast */
+  .toast{position:fixed;top:52px;left:50%;transform:translateX(-50%) translateY(-20px);background:#0D2A24;border:1px solid #14433A;color:var(--up);font-family:var(--mono);font-size:11.5px;padding:7px 12px;border-radius:8px;opacity:0;transition:.35s;pointer-events:none;z-index:9}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.w{background:#3A2A0C;border-color:#5A4012;color:var(--warn)}
+  .sched{padding:6px 12px}
+  .sched div{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line);font-size:11.5px}
+  .sched div span:last-child{font-family:var(--mono);color:var(--muted);font-size:10.5px}
+</style>
+</head>
+<body>
+<div class="toast" id="toast">Verified 5/5 · 1.9 s</div>
+
+<header class="top">
+  <span class="logo">Crew Health</span>
+  <div class="tabs" id="tabs">
+    <button class="on" data-v="overview">Overview</button>
+    <button data-v="body">Body</button>
+    <button data-v="assistant">Assistant</button>
+    <button data-v="procedures">Procedures</button>
+  </div>
+  <div class="ticker" id="ticker"></div>
+  <span class="sp"></span>
+  <span class="pill ok" id="latency"><i></i>Inference 1.9 s</span>
+  <span class="pill"><i style="background:var(--muted)"></i>Offline · 4B local</span>
+  <span class="clock" id="clock">Sol 142 · 10:42:00</span>
+</header>
+
+<div class="grid">
+  <!-- crew -->
+  <section class="p" id="crewP">
+    <div class="h">Crew <small>4 · 기준선 대비</small><span class="sp"></span><small id="ctime">10:42</small></div>
+    <div class="b" id="crewList"></div>
+    <div class="depth">
+      <div class="t">Baseline depth <small id="depthName">승무원 A · z-score</small></div>
+      <div id="depth"></div>
+      <div class="mut num" style="font-size:9.5px;margin-top:6px;display:flex;justify-content:space-between"><span>−4σ</span><span>0</span><span>+4σ</span></div>
+    </div>
+  </section>
+
+  <!-- center top -->
+  <section class="p" id="centerTop">
+    <div class="h" id="chartHead"><span id="chartTitle">HR · 승무원 A</span><small>live · 1 Hz</small><span class="sp"></span>
+      <div class="tf" id="tf"><button data-w="60">1m</button><button class="on" data-w="300">5m</button><button data-w="900">15m</button><button data-w="3600">1h</button><button id="emaBtn" class="on">EMA 20</button></div>
+    </div>
+    <div class="view on" id="v-overview">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px">
+        <div class="ohlc" id="ohlc"></div>
+        <div class="tf" id="metricTabs"><button class="on" data-m="hr">HR</button><button data-m="hrv">HRV</button><button data-m="eda">EDA</button><button data-m="temp">체온</button><button data-m="spo2">SpO₂</button><button data-m="rr">호흡</button></div>
+      </div>
+      <div class="chartwrap"><canvas id="chart"></canvas><div class="tag" id="tagv">92</div></div>
+    </div>
+    <div class="view" id="v-body">
+      <div class="bodyv">
+        <div class="mann"><canvas id="bodyCanvas"></canvas><div class="hint mut" id="bodyHint">부위를 클릭하면 상세 · 흩어진 셀 = 기준선 이탈</div></div>
+        <div id="bodyRight">
+          <div id="regionDetail" class="rd" hidden></div>
+          <div class="regions" id="regionList"></div>
+          <div class="mg" id="mgrid"></div>
+        </div>
+      </div>
+    </div>
+    <div class="view" id="v-assistant">
+      <div class="chat" id="chat">
+        <div class="msg sys"><div class="who">SYSTEM · 규칙 엔진</div>현재 상태 <b class="warn">주의</b>. 심박·EDA가 기준선보다 높고 수면이 짧습니다. 증상이 있으면 말씀해 주세요. 판정은 제가 하고, 모델은 설명만 합니다.
+          <div class="chips"><button class="chip" data-say="어지럽고 속이 메스꺼워. 아침부터 그래.">어지럽고 속이 메스꺼워</button><button class="chip" data-say="별일 없고 좀 피곤한 정도.">좀 피곤한 정도</button><button class="chip" data-say="왼쪽 가슴이 조이는 느낌이야.">가슴이 조이는 느낌</button><button class="chip" data-say="내 심박이 왜 높은지 설명해줘">왜 심박이 높아?</button></div></div>
+      </div>
+      <form class="inrow" id="chatForm"><input id="chatIn" placeholder="증상이나 질문을 입력… (오프라인, 로컬 4B)" autocomplete="off"><button class="btn p" type="submit">보내기</button></form>
+    </div>
+    <div class="view" id="v-procedures">
+      <div style="flex:1;overflow:auto">
+        <table>
+          <tr><th>절차서</th><th>섹션</th><th>관련 상태</th><th>마지막 열람</th><th></th></tr>
+          <tr><td class="t">기립성 불내성 대응</td><td>proc:ortho-01 · s4–s6</td><td><span class="badge bg-warn">주의</span></td><td>10:42</td><td><button class="btn">열기</button></td></tr>
+          <tr><td class="t">수면 부족 시 운동 조정</td><td>hrp:sm-03 · p5</td><td><span class="badge bg-warn">주의</span></td><td>10:42</td><td><button class="btn">열기</button></td></tr>
+          <tr><td class="t">흉부 증상 에스컬레이션</td><td>proc:chest-02 · s1</td><td><span class="badge bg-down">경보</span></td><td>—</td><td><button class="btn">열기</button></td></tr>
+          <tr><td class="t">방사선 이벤트 대피</td><td>proc:rad-04</td><td><span class="badge bg-mut">—</span></td><td>Sol 131</td><td><button class="btn">열기</button></td></tr>
+          <tr><td class="t">기준선 재설정 절차</td><td>ops:baseline-01</td><td><span class="badge bg-mut">—</span></td><td>Sol 128</td><td><button class="btn">열기</button></td></tr>
+          <tr><td class="t">지구 의료팀 전송 포맷</td><td>ops:downlink-02</td><td><span class="badge bg-mut">—</span></td><td>Sol 140</td><td><button class="btn">열기</button></td></tr>
+        </table>
+        <div class="mut" style="padding:10px 12px;font-size:11px">문서는 기기 안에 저장돼 있고 검색은 로컬 BM25. 모델은 검색된 구절만 인용할 수 있다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- center bottom: findings + verify -->
+  <section class="p">
+    <div class="h">Findings <small id="findSub">규칙 엔진 · 10:42</small><span class="sp"></span>
+      <span class="badge bg-warn" id="statusBadge">WATCH</span>
+      <button class="btn p" id="runBtn" style="margin-left:8px">검사 실행</button>
+    </div>
+    <div class="steps" id="steps"><span>① 수집</span><span>② 이상 탐지</span><span class="slm">③ 증상 해석</span><span>④ 근거 검색</span><span class="slm">⑤ 설명 생성</span><span>⑥ 검증</span></div>
+    <div class="two">
+      <div>
+        <table id="findTable">
+          <tr><th>지표</th><th>값</th><th>기준</th><th>z</th><th>상태</th><th>출처</th></tr>
+        </table>
+        <div class="kv"><div>Readiness<b class="warn">62</b></div><div>24h 평균 HR<b id="avgHr">74</b></div><div>안정 시 HR<b>61</b></div><div>이상 지속<b id="dur">18 m</b></div></div>
+      </div>
+      <div>
+        <div class="h" style="border-bottom:1px solid var(--line)">Verification <small id="vsub">대기</small><span class="sp"></span><span class="badge bg-mut" id="vbadge">—</span></div>
+        <div id="checks">
+          <div class="chk"><i>1</i>상태 일치<span class="m">SLM = 규칙</span></div>
+          <div class="chk"><i>2</i>수치 일치<span class="m">±1%</span></div>
+          <div class="chk"><i>3</i>출처 존재<span class="m">검색 결과 내</span></div>
+          <div class="chk"><i>4</i>설명 속 숫자<span class="m">근거 있음</span></div>
+          <div class="chk"><i>5</i>근거 충분<span class="m">score ≥ 0.55</span></div>
+        </div>
+        <div class="expl mut" id="expl">검사 실행을 누르면 파이프라인이 돌고 설명이 여기 표시됩니다. 검증에 실패하면 설명 대신 "판단 보류"가 표시됩니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- chain -->
+  <section class="p" id="chainP">
+    <div class="h">Metric chain <small>승무원 A · 24h</small><span class="sp"></span><span class="pill" id="chainTime">Sol 142</span></div>
+    <div class="b" style="padding:0">
+      <div class="chain head"><span>지표</span><span class="z">값</span><span class="z">기준</span><span class="z">z</span><span class="z">24h 범위</span><span>상태</span></div>
+      <div id="chain"></div>
+    </div>
+    <div class="foot"><div>누적 방사선<b>38.2 mSv</b></div><div>선실 CO₂<b>0.41 %</b></div><div>수분<b class="warn">1.1 / 2.5 L</b></div><div>다음 다운링크<b>14:00</b></div></div>
+    <div class="sched">
+      <div><span>운동 세션 · 저강도로 조정</span><span>15:00</span></div>
+      <div><span>기립 시 어지러움 재확인</span><span>14:00</span></div>
+      <div><span>오후 체크인 설문</span><span>16:00–18:00</span></div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---------- data ---------- */
+const CREW = {
+  A:{name:'승무원 A',role:'사령관',status:'watch',base:{hr:68,hrv:52,eda:1.9,temp:36.7,spo2:97,rr:14},now:{hr:92,hrv:31,eda:4.8,temp:36.8,spo2:97,rr:15},sd:{hr:9,hrv:10,eda:0.9,temp:.25,spo2:1,rr:1.5}},
+  B:{name:'승무원 B',role:'의료 담당',status:'ok',base:{hr:62,hrv:58,eda:1.6,temp:36.6,spo2:98,rr:13},now:{hr:64,hrv:55,eda:1.8,temp:36.6,spo2:98,rr:13},sd:{hr:8,hrv:9,eda:.8,temp:.25,spo2:1,rr:1.5}},
+  C:{name:'승무원 C',role:'엔지니어',status:'hold',base:{hr:71,hrv:46,eda:2.2,temp:36.8,spo2:97,rr:15},now:{hr:75,hrv:44,eda:2.6,temp:36.9,spo2:96,rr:15},sd:{hr:9,hrv:10,eda:.9,temp:.25,spo2:1,rr:1.5},baseDays:9},
+  D:{name:'승무원 D',role:'과학',status:'ok',base:{hr:66,hrv:50,eda:1.7,temp:36.7,spo2:97,rr:14},now:{hr:67,hrv:51,eda:1.7,temp:36.7,spo2:97,rr:14},sd:{hr:8,hrv:9,eda:.8,temp:.25,spo2:1,rr:1.5}},
+};
+const M = {hr:{l:'심박',u:'bpm',d:0},hrv:{l:'HRV',u:'ms',d:0},eda:{l:'EDA',u:'µS',d:1},temp:{l:'심부 체온',u:'°C',d:1},spo2:{l:'SpO₂',u:'%',d:0},rr:{l:'호흡수',u:'/min',d:0}};
+const EXTRA = [['혈압','118/76','mmHg','ok'],['피부온','34.1','°C','ok'],['수면','5h10','깊은 12%','warn'],['활동','42','min','ok'],['체중','71.4','kg','ok'],['누적 방사선','38.2','mSv','ok']];
+let cur='A', metric='hr', win=300, ema=true;
+const series={}; // per crew per metric: array of {t,v}
+const z=(c,m)=> (CREW[c].now[m]-CREW[c].base[m])/CREW[c].sd[m];
+const fmt=(v,m)=>Number(v).toFixed(M[m].d);
+const st=(zz)=> Math.abs(zz)>=3?'down':Math.abs(zz)>=2?'warn':'up';
+const stL={down:'ALERT',warn:'WATCH',up:'OK'};
+
+// seed series
+for(const c in CREW){series[c]={};for(const m in M){const a=[];let v=CREW[c].base[m];const target=CREW[c].now[m];for(let i=3600;i>0;i--){const k=i<1500?(1-i/1500):0;v=CREW[c].base[m]+(target-CREW[c].base[m])*k+ (Math.random()-.5)*CREW[c].sd[m]*.5;a.push({t:Date.now()-i*1000,v});}series[c][m]=a;}}
+
+/* ---------- clock ---------- */
+let t0=Date.now();const base=new Date();base.setHours(10,42,0,0);
+function tick(){const d=new Date(base.getTime()+(Date.now()-t0));const s=d.toTimeString().slice(0,8);document.getElementById('clock').textContent='Sol 142 · '+s;document.getElementById('ctime').textContent=s.slice(0,5);}
+setInterval(tick,1000);tick();
+
+/* ---------- live walk ---------- */
+setInterval(()=>{
+  for(const c in CREW){for(const m in M){const o=CREW[c];const sd=o.sd[m];
+    // mean-revert toward "now" target + noise
+    const last=series[c][m][series[c][m].length-1].v;const v=last+(o.now[m]-last)*.08+(Math.random()-.5)*sd*.35;
+    series[c][m].push({t:Date.now(),v});if(series[c][m].length>3700)series[c][m].shift();}}
+  renderTicker();renderCrew();renderChain();drawChart();
+},1000);
+
+/* ---------- ticker ---------- */
+function live(c,m){const a=series[c][m];return a[a.length-1].v;}
+function renderTicker(){const el=document.getElementById('ticker');el.innerHTML=['hr','hrv','eda','temp','spo2'].map(m=>{const v=live(cur,m),zz=(v-CREW[cur].base[m])/CREW[cur].sd[m],cls=zz>1.5?'warn':zz<-1.5?'warn':'up';return `<div><span class="k">${M[m].l}</span><span class="v">${fmt(v,m)}</span><span class="d ${cls}">${zz>=0?'+':''}${zz.toFixed(1)}σ</span></div>`;}).join('');}
+
+/* ---------- crew list ---------- */
+function spark(a,color){const n=60,s=a.slice(-n*60).filter((_,i)=>i%60===0);const mn=Math.min(...s.map(p=>p.v)),mx=Math.max(...s.map(p=>p.v));const pts=s.map((p,i)=>`${(i/(s.length-1))*70},${22-((p.v-mn)/((mx-mn)||1))*20+1}`).join(' ');return `<svg viewBox="0 0 70 24" preserveAspectRatio="none"><polyline fill="none" stroke="${color}" stroke-width="1.3" points="${pts}"/></svg>`;}
+function renderCrew(){const el=document.getElementById('crewList');el.innerHTML=Object.keys(CREW).map(c=>{const o=CREW[c];const v=live(c,'hr'),zz=(v-o.base.hr)/o.sd.hr;const col=o.status==='hold'?'#6B7684':zz>2?'#F5A524':zz>3?'#F0526B':'#22D3A6';return `<div class="crew ${c===cur?'on':''}" data-c="${c}"><div><div class="n">${o.name}</div><div class="r">${o.role}${o.baseDays?' · 기준선 '+o.baseDays+'/14일':''}</div></div>${spark(series[c].hr,col)}<div><div class="v">${v.toFixed(0)}</div><div class="c" style="color:${col}">${o.status==='hold'?'HOLD':(zz>=0?'+':'')+zz.toFixed(1)+'σ'}</div></div></div>`;}).join('');
+  el.querySelectorAll('.crew').forEach(r=>r.onclick=()=>{cur=r.dataset.c;document.getElementById('chartTitle').textContent=M[metric].l+' · '+CREW[cur].name;document.getElementById('depthName').textContent=CREW[cur].name+' · z-score';document.querySelector('#chainP .h small').textContent=CREW[cur].name+' · 24h';renderAll();resetChecks();});
+  renderDepth();}
+function renderDepth(){document.getElementById('depth').innerHTML=Object.keys(M).map(m=>{const zz=(live(cur,m)-CREW[cur].base[m])/CREW[cur].sd[m];const w=Math.min(50,Math.abs(zz)/4*50);const cls=zz>=0?'pos':'neg';return `<div class="dr"><span class="mut">${M[m].l}</span><div class="bar"><em></em><i class="${cls} ${Math.abs(zz)>=3?'hi':''}" style="width:${w}%"></i></div><span style="text-align:right;color:${Math.abs(zz)>=3?'var(--down)':Math.abs(zz)>=2?'var(--warn)':'var(--soft)'}">${zz>=0?'+':''}${zz.toFixed(1)}</span></div>`;}).join('');}
+
+/* ---------- chain ---------- */
+function renderChain(){const el=document.getElementById('chain');const rows=Object.keys(M).map(m=>{const a=series[cur][m].slice(-86400/24);const v=live(cur,m),b=CREW[cur].base[m],zz=(v-b)/CREW[cur].sd[m];const mn=Math.min(...a.map(p=>p.v)),mx=Math.max(...a.map(p=>p.v));const s=st(zz);const col=s==='down'?'var(--down)':s==='warn'?'var(--warn)':'var(--up)';const pct=Math.min(100,Math.abs(zz)/4*100);return `<div class="chain ${Math.abs(zz)>=2?'hl':''}" data-m="${m}"><span class="n">${M[m].l}<small>${M[m].u}</small></span><span class="z" style="color:${col}">${fmt(v,m)}</span><span class="z mut">${fmt(b,m)}</span><span class="z" style="color:${col}">${zz>=0?'+':''}${zz.toFixed(2)}</span><span class="z mut" style="font-size:9.5px">${fmt(mn,m)}–${fmt(mx,m)}</span><span class="sb"><i style="width:${pct}%;background:${col}"></i></span></div>`;});
+  const ex=EXTRA.map(([n,v,u,s])=>`<div class="chain"><span class="n">${n}<small>${u}</small></span><span class="z" style="color:${s==='warn'?'var(--warn)':'var(--soft)'}">${v}</span><span class="z mut">—</span><span class="z mut">—</span><span class="z mut" style="font-size:9.5px">—</span><span class="sb"><i style="width:${s==='warn'?60:20}%;background:${s==='warn'?'var(--warn)':'var(--up)'}"></i></span></div>`);
+  el.innerHTML=rows.join('')+ex.join('');el.querySelectorAll('.chain[data-m]').forEach(r=>r.onclick=()=>setMetric(r.dataset.m));}
+
+/* ---------- findings ---------- */
+function renderFindings(){const tb=document.getElementById('findTable');const rows=Object.keys(M).map(m=>{const v=live(cur,m),b=CREW[cur].base[m],zz=(v-b)/CREW[cur].sd[m];const s=st(zz);return {m,v,b,zz,s};}).sort((a,b)=>Math.abs(b.zz)-Math.abs(a.zz));
+  tb.innerHTML='<tr><th>지표</th><th>값</th><th>기준</th><th>z</th><th>상태</th><th>출처</th></tr>'+rows.map(r=>`<tr class="${Math.abs(r.zz)>=2?'hl':''}"><td class="t">${M[r.m].l}</td><td style="color:${r.s==='down'?'var(--down)':r.s==='warn'?'var(--warn)':'var(--text)'}">${fmt(r.v,r.m)} <span class="mut">${M[r.m].u}</span></td><td class="mut">${fmt(r.b,r.m)}</td><td style="color:${r.s==='down'?'var(--down)':r.s==='warn'?'var(--warn)':'var(--up)'}">${r.zz>=0?'+':''}${r.zz.toFixed(2)}</td><td><span class="badge bg-${r.s}">${stL[r.s]}</span></td><td class="mut">data:e4:${cur}</td></tr>`).join('');
+  const worst=rows[0];const o=CREW[cur];const sb=document.getElementById('statusBadge');
+  if(o.status==='hold'){sb.className='badge bg-mut';sb.textContent='HOLD · 기준선 9/14';}
+  else{const cnt=rows.filter(r=>Math.abs(r.zz)>=2).length;const s=cnt>=2?(rows.some(r=>Math.abs(r.zz)>=3.5)?'down':'warn'):'up';sb.className='badge bg-'+s;sb.textContent=stL[s];}
+  const avg=series[cur].hr.reduce((a,p)=>a+p.v,0)/series[cur].hr.length;document.getElementById('avgHr').textContent=avg.toFixed(0);}
+
+/* ---------- body metrics ---------- */
+function renderBody(){const g=document.getElementById('mgrid');const items=[...Object.keys(M).map(m=>{const v=live(cur,m),zz=(v-CREW[cur].base[m])/CREW[cur].sd[m];const s=st(zz);return [M[m].l,fmt(v,m),M[m].u,`기준 ${fmt(CREW[cur].base[m],m)} · ${zz>=0?'+':''}${zz.toFixed(1)}σ`,s];}),['혈압','118/76','mmHg','기상 직후 · 안정','up'],['피부온','34.1','°C','기준 33.9','up'],['수면','5h 10m','','깊은 수면 12% · 기준 21%','warn'],['활동','42','min','저항운동 · 목표 60','up'],['수분','1.1','L','목표 2.5','warn'],['체중','71.4','kg','발사 대비 −1.8','up'],['누적 방사선','38.2','mSv','임무 한도 13%','up'],['선실 CO₂','0.41','%','3.1 mmHg','up'],['Readiness','62','','어제 81 · 7일 78','warn']];
+  g.innerHTML=items.map(([k,v,u,t,s])=>`<div class="m"><div class="k">${k}</div><div class="v" style="color:${s==='down'?'var(--down)':s==='warn'?'var(--warn)':'var(--text)'}">${v}<small>${u}</small></div><div class="t" style="color:${s==='down'?'var(--down)':s==='warn'?'var(--warn)':'var(--muted)'}">${t}</div></div>`).join('');
+  renderRegionList();if(document.getElementById('v-body').classList.contains('on')){cancelAnimationFrame(bodyRAF);drawBody();}}
+
+/* ---------- chart (candles per bucket + EMA) ---------- */
+const cv=document.getElementById('chart'),cx=cv.getContext('2d');
+function drawChart(){const r=cv.parentElement.getBoundingClientRect();if(r.width===0)return;cv.width=r.width*devicePixelRatio;cv.height=r.height*devicePixelRatio;cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);const W=r.width,H=r.height;cx.clearRect(0,0,W,H);
+  const a=series[cur][metric].slice(-win);const bucket=Math.max(1,Math.round(win/80));const cs=[];for(let i=0;i<a.length;i+=bucket){const seg=a.slice(i,i+bucket);cs.push({o:seg[0].v,c:seg[seg.length-1].v,h:Math.max(...seg.map(p=>p.v)),l:Math.min(...seg.map(p=>p.v))});}
+  const padL=8,padR=64,padT=14,padB=22;const mn=Math.min(...cs.map(c=>c.l)),mx=Math.max(...cs.map(c=>c.h));const lo=mn-(mx-mn)*.15-0.01,hi=mx+(mx-mn)*.15+0.01;const y=v=>padT+(1-(v-lo)/(hi-lo))*(H-padT-padB);const cw=(W-padL-padR)/cs.length;
+  // grid
+  cx.strokeStyle='#121A24';cx.lineWidth=1;cx.font='10px JetBrains Mono';cx.fillStyle='#6B7684';cx.textAlign='left';
+  for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4;const yy=y(v);cx.beginPath();cx.moveTo(padL,yy);cx.lineTo(W-padR,yy);cx.stroke();cx.fillText(fmt(v,metric),W-padR+6,yy+3);}
+  for(let i=1;i<5;i++){const xx=padL+(W-padL-padR)*i/5;cx.beginPath();cx.moveTo(xx,padT);cx.lineTo(xx,H-padB);cx.stroke();}
+  // baseline
+  const b=CREW[cur].base[metric];cx.setLineDash([3,4]);cx.strokeStyle='#3B82F6';cx.beginPath();cx.moveTo(padL,y(b));cx.lineTo(W-padR,y(b));cx.stroke();cx.setLineDash([]);cx.fillStyle='#8AB8FF';cx.fillText('기준 '+fmt(b,metric),padL+4,y(b)-4);
+  // candles
+  cs.forEach((c,i)=>{const x=padL+i*cw+cw/2;const up=c.c>=c.o;cx.strokeStyle=cx.fillStyle=up?'#22D3A6':'#F0526B';cx.beginPath();cx.moveTo(x,y(c.h));cx.lineTo(x,y(c.l));cx.stroke();const bw=Math.max(2,cw*.6);const top=y(Math.max(c.o,c.c)),bh=Math.max(1,Math.abs(y(c.o)-y(c.c)));cx.fillRect(x-bw/2,top,bw,bh);});
+  // EMA
+  if(ema){let e=cs[0].c;cx.strokeStyle='#8AB8FF';cx.lineWidth=1.3;cx.beginPath();cs.forEach((c,i)=>{e=e+(c.c-e)*2/21;const x=padL+i*cw+cw/2;i?cx.lineTo(x,y(e)):cx.moveTo(x,y(e));});cx.stroke();cx.lineWidth=1;}
+  // time labels
+  cx.fillStyle='#6B7684';cx.textAlign='center';const now=new Date(base.getTime()+(Date.now()-t0));for(let i=0;i<=4;i++){const d=new Date(now.getTime()-win*1000*(1-i/4));cx.fillText(d.toTimeString().slice(0,5),padL+(W-padL-padR)*i/4,H-6);}
+  // tag
+  const last=cs[cs.length-1];const tag=document.getElementById('tagv');tag.textContent=fmt(last.c,metric);tag.style.top=y(last.c)+'px';const zz=(last.c-b)/CREW[cur].sd[metric];tag.className='tag'+(Math.abs(zz)>=2?' w':'');
+  document.getElementById('ohlc').innerHTML=`<span>O <b>${fmt(cs[0].o,metric)}</b></span><span>H <b>${fmt(mx,metric)}</b></span><span>L <b>${fmt(mn,metric)}</b></span><span>C <b>${fmt(last.c,metric)}</b></span><span class="${Math.abs(zz)>=2?'warn':'up'}">${zz>=0?'+':''}${zz.toFixed(2)}σ</span>`;}
+addEventListener('resize',drawChart);
+
+/* ---------- controls ---------- */
+function setMetric(m){metric=m;document.querySelectorAll('#metricTabs button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));document.getElementById('chartTitle').textContent=M[m].l+' · '+CREW[cur].name;drawChart();}
+document.querySelectorAll('#metricTabs button').forEach(b=>b.onclick=()=>setMetric(b.dataset.m));
+document.querySelectorAll('#tf button[data-w]').forEach(b=>b.onclick=()=>{win=+b.dataset.w;document.querySelectorAll('#tf button[data-w]').forEach(x=>x.classList.toggle('on',x===b));drawChart();});
+document.getElementById('emaBtn').onclick=e=>{ema=!ema;e.target.classList.toggle('on',ema);drawChart();};
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+b.dataset.v));document.getElementById('tf').style.visibility=b.dataset.v==='overview'?'visible':'hidden';document.getElementById('chartTitle').textContent=b.dataset.v==='overview'?M[metric].l+' · '+CREW[cur].name:{body:'Body · '+CREW[cur].name,assistant:'Assistant · 로컬 SLM',procedures:'Procedures · 기기 내 문서'}[b.dataset.v];if(b.dataset.v==='overview')setTimeout(drawChart,0);if(b.dataset.v==='body'){renderBody();cancelAnimationFrame(bodyRAF);setTimeout(drawBody,0);}else{cancelAnimationFrame(bodyRAF);}});
+
+/* ---------- pipeline run ---------- */
+function toast(t,w){const el=document.getElementById('toast');el.textContent=t;el.className='toast on'+(w?' w':'');setTimeout(()=>el.classList.remove('on'),2600);}
+function resetChecks(){document.querySelectorAll('#checks .chk i').forEach((i,k)=>{i.className='';i.textContent=k+1;});document.getElementById('vbadge').className='badge bg-mut';document.getElementById('vbadge').textContent='—';document.getElementById('vsub').textContent='대기';document.getElementById('expl').className='expl mut';document.getElementById('expl').textContent='검사 실행을 누르면 파이프라인이 돌고 설명이 여기 표시됩니다.';document.querySelectorAll('#steps span').forEach(s=>s.classList.remove('run','done'));}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+let running=false;
+async function runPipeline(sym){if(running)return;running=true;const btn=document.getElementById('runBtn');btn.disabled=true;resetChecks();const steps=[...document.querySelectorAll('#steps span')];const o=CREW[cur];
+  for(let i=0;i<6;i++){if(i===2&&!sym){steps[i].classList.add('done');continue;}steps[i].classList.add('run');await wait(i===4?900:350+Math.random()*250);steps[i].classList.remove('run');steps[i].classList.add('done');}
+  const hr=live(cur,'hr'),eda=live(cur,'eda'),hrv=live(cur,'hrv');const zh=(hr-o.base.hr)/o.sd.hr,ze=(eda-o.base.eda)/o.sd.eda;
+  const checks=[...document.querySelectorAll('#checks .chk i')];const expl=document.getElementById('expl');const vb=document.getElementById('vbadge');
+  if(o.status==='hold'){checks.forEach((c,k)=>{c.className=k===4?'n':'y';c.textContent=k===4?'✕':'✓';});vb.className='badge bg-mut';vb.textContent='HOLD';document.getElementById('vsub').textContent='근거 부족';expl.className='expl';expl.innerHTML=`<span class="badge bg-mut">판단 보류</span> 기준선이 9일치뿐이라 z-score를 신뢰할 수 없습니다. 모델 설명은 표시하지 않습니다. 수치만 참고하고 기준선 수집을 계속하세요. <span class="cite">ops:baseline-01</span>`;toast('Abstained · baseline 9/14',true);}
+  else if(Math.abs(zh)>=2||Math.abs(ze)>=2){const fail=Math.random()<0.18;checks.forEach((c,k)=>{const bad=fail&&(k===1||k===2);c.className=bad?'n':'y';c.textContent=bad?'✕':'✓';});
+    if(fail){vb.className='badge bg-down';vb.textContent='3 / 5';document.getElementById('vsub').textContent='실패 · 설명 폐기';expl.className='expl';expl.innerHTML=`<span class="badge bg-mut">판단 보류</span> 모델이 쓴 수치(심박 ${(hr+18).toFixed(0)})가 계산값(${hr.toFixed(0)})과 다르고, 인용한 문서 <span class="cite">hrp:cv-12</span>가 검색 결과에 없습니다. 설명을 버렸습니다. 상태 <b class="warn">주의</b>와 수치는 그대로 유효합니다. <button class="btn w" style="margin-left:6px" onclick="runPipeline(${!!sym})">다시 생성</button>`;toast('Verification failed 3/5 · explanation dropped',true);}
+    else{vb.className='badge bg-up';vb.textContent='5 / 5';document.getElementById('vsub').textContent='통과 · 1.9 s';expl.className='expl';expl.innerHTML=`<span class="badge bg-slm">SLM ②</span> 오늘 아침 심박 ${hr.toFixed(0)}(기준 ${o.base.hr})과 EDA ${eda.toFixed(1)}(기준 ${o.base.eda})이 평소보다 뚜렷하게 높고, HRV는 ${hrv.toFixed(0)}으로 낮습니다 <span class="cite">data:e4:${cur}</span>. ${sym?'보고하신 어지러움·메스꺼움은 ':'이 조합은 '}수면 부족과 자율신경 반응이 겹칠 때 흔히 나타납니다 <span class="cite">hrp:sm-03#p2</span>. 수분 500 mL 섭취 후 30분 뒤 재측정하고, 기립 시 악화되면 의료 담당에게 알리세요 <span class="cite">proc:ortho-01#s4</span>. <span class="mut">진단 아님 · 판정은 규칙 엔진.</span>`;toast('Verified 5/5 · 1.9 s');}}
+  else{checks.forEach(c=>{c.className='y';c.textContent='✓';});vb.className='badge bg-up';vb.textContent='5 / 5';document.getElementById('vsub').textContent='통과 · 1.6 s';expl.className='expl';expl.innerHTML=`<span class="badge bg-slm">SLM ②</span> 모든 지표가 개인 기준선 범위 안입니다 <span class="cite">data:e4:${cur}</span>. 오늘은 특별한 조치가 필요 없습니다. 예정된 운동과 수분 섭취 목표만 지키세요 <span class="cite">hrp:sm-01#p1</span>.`;toast('Verified 5/5 · 1.6 s');}
+  document.getElementById('latency').innerHTML='<i></i>Inference '+(1.4+Math.random()*.8).toFixed(1)+' s';btn.disabled=false;running=false;}
+document.getElementById('runBtn').onclick=()=>runPipeline(false);
+
+/* ---------- chat ---------- */
+const chat=document.getElementById('chat');
+function add(cls,who,html){const d=document.createElement('div');d.className='msg '+cls;d.innerHTML='<div class="who">'+who+'</div>'+html;chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d;}
+const SCRIPT={
+  '어지럽고 속이 메스꺼워. 아침부터 그래.':{slm:'{ "symptoms": ["dizziness","nausea"],\n  "onset": "morning", "unmapped": [] }',q:'일어설 때 더 심해지나요?',opts:['예','아니오'],after:'현재 바이탈과 합쳐 <b class="warn">주의</b>로 판정. 근거 문서 2건 검색됨. Findings 패널에서 설명을 생성했습니다.',run:true},
+  '별일 없고 좀 피곤한 정도.':{slm:'{ "symptoms": ["fatigue"],\n  "onset": null, "unmapped": [] }',q:'어젯밤 수면은 평소보다 짧았나요? (기록 5h 10m)',opts:['네','비슷해요'],after:'수면 부족으로 설명되는 범위입니다. 상태는 유지, 오늘 취침 권고 시각 22:30을 일정에 넣었습니다.',run:false},
+  '왼쪽 가슴이 조이는 느낌이야.':{slm:'{ "symptoms": ["chest_tightness"],\n  "onset": null, "unmapped": [] }',q:'통증이 팔이나 턱으로 번지나요?',opts:['예','아니오'],after:'<b class="down">경보</b>. 흉부 증상은 모델 설명을 기다리지 않고 바로 에스컬레이션합니다. 의료 담당 승무원 B에게 알림을 보냈고 <span class="cite">proc:chest-02</span>를 열었습니다.',run:false},
+  '내 심박이 왜 높은지 설명해줘':{direct:true}
+};
+function say(text){add('me','승무원 A',text);const s=SCRIPT[text];
+  if(s&&s.direct){setTimeout(()=>{add('sys','SLM ② · 근거 문서로만','이 질문은 증상 입력이 아니라 설명 요청이라 바로 설명 단계로 갑니다. Findings 패널에서 검증을 거친 설명을 확인하세요.');runPipeline(false);},500);return;}
+  const sc=s||{slm:'{ "symptoms": [], "onset": null,\n  "unmapped": ["'+text.slice(0,14)+'"] }',q:'목록에 없는 표현이라 기록만 했습니다. 어지러움 · 메스꺼움 · 피로 · 통증 중 가까운 것이 있나요?',opts:['어지러움','피로','없음'],after:'증상 코드가 없어 <b class="mut">판단 보류</b>. 바이탈 수치만 참고하세요.',run:false};
+  setTimeout(()=>{const q=add('sys','SLM ① · 증상 해석 → 코드 템플릿 질문','<pre>'+sc.slm+'</pre><div style="margin-top:8px">'+sc.q+'</div><div class="chips">'+sc.opts.map(o=>'<button class="chip">'+o+'</button>').join('')+'</div>');
+    q.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{if(b.disabled)return;q.querySelectorAll('.chip').forEach(x=>x.disabled=true);add('me','승무원 A',b.textContent);setTimeout(()=>{add('sys','SYSTEM · 규칙 엔진',sc.after);if(sc.run)runPipeline(true);},500);});},600);}
+document.querySelectorAll('#chat .chip[data-say]').forEach(b=>b.onclick=()=>say(b.dataset.say));
+document.getElementById('chatForm').onsubmit=e=>{e.preventDefault();const i=document.getElementById('chatIn');const v=i.value.trim();if(!v)return;i.value='';say(v);};
+
+
+/* ---------- pixel body ---------- */
+const REGIONS=[
+  {id:'heart',name:'심장 · 순환',cx:0.56,cy:0.33,r:0.09,ms:['hr','hrv'],docs:['hrp:sm-03#p2','proc:ortho-01#s4'],note:'심박 상승 + HRV 하락. 수면 부족과 자율신경 반응이 겹친 양상.'},
+  {id:'head',name:'머리 · 수면/인지',cx:0.5,cy:0.09,r:0.075,ms:[],extra:[['수면','5h 10m','기준 6h50','warn'],['깊은 수면','12%','기준 21%','warn'],['반응 시간','312 ms','기준 290','ok']],docs:['hrp:sleep-02#p1'],note:'수면 부족. 인지 테스트는 아직 범위 안.'},
+  {id:'lung',name:'폐 · 호흡',cx:0.44,cy:0.30,r:0.07,ms:['spo2','rr'],docs:['hrp:sm-01#p1'],note:'산소포화도·호흡수 정상.'},
+  {id:'wristL',name:'왼손목 · 피부전기',cx:0.15,cy:0.535,r:0.055,ms:['eda'],docs:['data:e4:A'],note:'EDA가 기준선의 2.5배. 스트레스·교감신경 활성 신호.'},
+  {id:'core',name:'심부 · 체온',cx:0.5,cy:0.44,r:0.08,ms:['temp'],docs:['hrp:sm-01#p3'],note:'심부 체온 정상 범위.'},
+  {id:'legs',name:'하지 · 근골격',cx:0.5,cy:0.78,r:0.11,ms:[],extra:[['골밀도','−1.2%','발사 대비','ok'],['하지 근량','−3%','발사 대비','ok'],['저항운동','42 min','목표 60','warn']],docs:['hrp:bone-01#p4'],note:'감소 추세지만 임무 예측 범위 안. 운동량 유지 필요.'}
+];
+const bc=document.getElementById('bodyCanvas'),bx=bc.getContext('2d');
+let cells=[],cellPx=7,hoverR=null,selR=null,bodyRAF=null,bodyBuilt=0;
+function regionStatus(r){if(CREW[cur].status==='hold')return 'hold';let w=0;for(const m of r.ms){const zz=Math.abs(z(cur,m));if(zz>=3)return 'down';if(zz>=2)w=1;}if(r.extra&&r.extra.some(x=>x[3]==='warn'))w=1;return w?'warn':'ok';}
+function buildCells(W,H){ // rasterize silhouette into grid
+  const off=document.createElement('canvas');off.width=W;off.height=H;const o=off.getContext('2d');
+  const s=Math.min(W/220,H/460),ox=(W-220*s)/2,oy=(H-460*s)/2;o.setTransform(s,0,0,s,ox,oy);o.fillStyle='#fff';
+  const P=new Path2D();P.addPath(new Path2D('M62 96 Q110 78 158 96 L166 200 Q160 250 150 262 L70 262 Q60 250 54 200 Z'));P.addPath(new Path2D('M62 98 Q40 110 36 150 L26 236 Q24 250 34 252 L44 252 Q52 250 54 236 L64 160 Z'));P.addPath(new Path2D('M158 98 Q180 110 184 150 L194 236 Q196 250 186 252 L176 252 Q168 250 166 236 L156 160 Z'));P.addPath(new Path2D('M72 262 L104 262 L108 330 L104 430 Q104 444 92 444 L78 444 Q68 444 70 430 L62 330 Z'));P.addPath(new Path2D('M116 262 L148 262 L158 330 L150 430 Q152 444 142 444 L128 444 Q116 444 116 430 L112 330 Z'));
+  o.fill(P);o.beginPath();o.ellipse(110,42,26,32,0,0,Math.PI*2);o.fill();o.beginPath();o.roundRect(98,72,24,18,8);o.fill();
+  const d=o.getImageData(0,0,W,H).data;cells=[];cellPx=Math.max(5,Math.floor(Math.min(W,H)/62));
+  for(let y=cellPx/2;y<H;y+=cellPx)for(let x=cellPx/2;x<W;x+=cellPx){if(d[((y|0)*W+(x|0))*4+3]>128){const nx=(x-ox)/(220*s),ny=(y-oy)/(460*s);let reg=null,best=1e9;for(const r of REGIONS){const dx=(nx-r.cx)*220/460,dy=ny-r.cy;const dd=Math.hypot(dx*460/220,dy);if(dd<r.r&&dd<best){best=dd;reg=r;}}cells.push({x,y,nx,ny,reg,light:Math.random()<.08,seed:Math.random(),dist:reg?best/reg.r:0});}}
+  bodyBuilt=W+'x'+H;}
+function drawBody(){const rect=bc.parentElement.getBoundingClientRect();if(!rect.width)return;const W=Math.floor(rect.width),H=Math.floor(rect.height);if(bodyBuilt!==W+'x'+H){bc.width=W*devicePixelRatio;bc.height=H*devicePixelRatio;buildCells(W,H);}
+  bx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);bx.clearRect(0,0,W,H);const t=performance.now()/1000;const stat={};for(const r of REGIONS)stat[r.id]=regionStatus(r);
+  for(const c of cells){let col=c.light?'#D6DBC9':'#C6E84A';let x=c.x,y=c.y,a=1,sz=cellPx-1.5;const st=c.reg?stat[c.reg.id]:'ok';
+    if(c.reg&&(st==='warn'||st==='down')){col=st==='down'?'#F0526B':'#F5A524';const loose=c.seed<(st==='down'?.55:.38)&&c.dist>.35;
+      if(loose){const amp=(st==='down'?26:14)*(c.dist)*(0.6+0.4*Math.sin(t*1.6+c.seed*9));const ang=Math.atan2(c.ny-c.reg.cy,(c.nx-c.reg.cx)*0.48);x+=Math.cos(ang)*amp+Math.sin(t*2.1+c.seed*7)*2;y+=Math.sin(ang)*amp+Math.cos(t*1.7+c.seed*5)*2;a=.55+.45*Math.abs(Math.sin(t*1.3+c.seed*11));sz=cellPx-2.5;}
+      if(c.light)col='#FFE9C2';}
+    if(st==='hold'&&c.reg)col=c.light?'#8A9199':'#5B6672';
+    if(hoverR&&c.reg&&c.reg.id===hoverR.id){a=1;col=c.light?'#FFFFFF':(st==='down'?'#FF8A9B':st==='warn'?'#FFC46A':'#E2FF6A');}
+    if(selR&&c.reg&&c.reg.id===selR.id){sz=cellPx-0.5;}
+    bx.globalAlpha=a;bx.fillStyle=col;bx.fillRect(x-sz/2,y-sz/2,sz,sz);}
+  bx.globalAlpha=1;
+  // region label for hover/selected
+  const r=hoverR||selR;if(r){const rect2=bc.parentElement.getBoundingClientRect();const s=Math.min(W/220,H/460),ox=(W-220*s)/2,oy=(H-460*s)/2;const px=ox+r.cx*220*s,py=oy+r.cy*460*s;bx.font='600 11px Inter';const txt=r.name;const w=bx.measureText(txt).width+14;bx.fillStyle='rgba(5,7,9,.85)';bx.fillRect(px+14,py-10,w,20);bx.strokeStyle='#C6E84A';bx.strokeRect(px+14,py-10,w,20);bx.fillStyle='#E6EAF0';bx.fillText(txt,px+21,py+4);}
+  bodyRAF=requestAnimationFrame(drawBody);}
+function regionAt(ev){const rect=bc.getBoundingClientRect();const W=rect.width,H=rect.height;const s=Math.min(W/220,H/460),ox=(W-220*s)/2,oy=(H-460*s)/2;const nx=(ev.clientX-rect.left-ox)/(220*s),ny=(ev.clientY-rect.top-oy)/(460*s);let best=null,bd=1e9;for(const r of REGIONS){const dd=Math.hypot((nx-r.cx)*220/460*460/220,ny-r.cy);if(dd<r.r*1.25&&dd<bd){bd=dd;best=r;}}return best;}
+bc.addEventListener('mousemove',ev=>{hoverR=regionAt(ev);bc.style.cursor=hoverR?'pointer':'default';});
+bc.addEventListener('mouseleave',()=>hoverR=null);
+bc.addEventListener('click',ev=>{const r=regionAt(ev);if(r)openRegion(r);});
+function sparkSvg(m){const a=series[cur][m].slice(-1800).filter((_,i)=>i%30===0);const mn=Math.min(...a.map(p=>p.v)),mx=Math.max(...a.map(p=>p.v));const pts=a.map((p,i)=>`${i/(a.length-1)*90},${18-((p.v-mn)/((mx-mn)||1))*16+1}`).join(' ');const zz=z(cur,m);const col=Math.abs(zz)>=3?'#F0526B':Math.abs(zz)>=2?'#F5A524':'#22D3A6';return `<svg viewBox="0 0 90 20" preserveAspectRatio="none"><polyline fill="none" stroke="${col}" stroke-width="1.3" points="${pts}"/></svg>`;}
+function openRegion(r){selR=r;const st=regionStatus(r);const el=document.getElementById('regionDetail');el.hidden=false;const badge=st==='down'?'<span class="badge bg-down">ALERT</span>':st==='warn'?'<span class="badge bg-warn">WATCH</span>':st==='hold'?'<span class="badge bg-mut">HOLD</span>':'<span class="badge bg-up">OK</span>';
+  const rows=r.ms.map(m=>{const v=live(cur,m),zz=z(cur,m);const col=Math.abs(zz)>=3?'var(--down)':Math.abs(zz)>=2?'var(--warn)':'var(--text)';return `<div class="mrow"><span class="n">${M[m].l}</span><span style="color:${col}">${fmt(v,m)} <span class="mut">${M[m].u}</span></span><span style="color:${col}">${zz>=0?'+':''}${zz.toFixed(2)}σ</span>${sparkSvg(m)}</div>`;}).join('')+(r.extra||[]).map(x=>`<div class="mrow"><span class="n">${x[0]}</span><span style="color:${x[3]==='warn'?'var(--warn)':'var(--text)'}">${x[1]}</span><span class="mut">${x[2]}</span><span></span></div>`).join('');
+  el.innerHTML=`<div class="ttl"><b>${r.name}</b>${badge}<button class="x btn" id="rdClose">닫기</button></div>${rows}<p>${r.note}</p><div class="mut num" style="font-size:10px">근거: ${r.docs.map(d=>'<span class="cite">'+d+'</span>').join(' ')}</div><div class="acts"><button class="btn p" id="rdExplain">설명 생성 (검증 포함)</button><button class="btn" id="rdTrend">추세 차트</button>${st!=='ok'?'<button class="btn w">의료 담당에게 공유</button>':''}</div>`;
+  document.getElementById('rdClose').onclick=()=>{selR=null;el.hidden=true;renderRegionList();};
+  document.getElementById('rdExplain').onclick=()=>{runPipeline(false);};
+  document.getElementById('rdTrend').onclick=()=>{if(r.ms[0]){setMetric(r.ms[0]);document.querySelector('#tabs button[data-v="overview"]').click();}};
+  renderRegionList();}
+function renderRegionList(){document.getElementById('regionList').innerHTML=REGIONS.map(r=>{const st=regionStatus(r);return `<button class="${st==='down'?'d':st==='warn'?'w':''} ${selR&&selR.id===r.id?'on':''}" data-r="${r.id}"><i></i>${r.name}</button>`;}).join('');document.querySelectorAll('#regionList button').forEach(b=>b.onclick=()=>openRegion(REGIONS.find(r=>r.id===b.dataset.r)));}
+
+/* ---------- init ---------- */
+function renderAll(){renderTicker();renderCrew();renderChain();renderFindings();renderBody();drawChart();}
+renderAll();setInterval(renderFindings,5000);
+</script>
+</body>
+</html>

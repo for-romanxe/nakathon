@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>오늘 · Crew Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app"></div>
+<script src="app.js"></script>
+<script>
+(function(){
+const {S,SOL,CREW,me,MK,META,lvl,z,fmt,sig,levelEn,tier,tierInfo,tile,mountBody,rLvl,shell,toast,save,addLog,openEvents,citeA,esc,now,hhmm,thr,ROUTINE,routine,daily,streak,exToday,autoWarn,jo,q}=CH;
+const c=me();
+const aw=autoWarn(c);if(aw){location.replace('warning.html?id='+aw.id);return;}
+const root=shell('today','오늘');
+const meter=v=>`<span class="meter" aria-hidden="true">${[1,2,3,4,5].map(i=>`<i class="${i<=v?'on':''}"></i>`).join('')}</span>`;
+
+/* 시스템이 먼저 채우는 체크인 값 (밴드·어제 기록 기반 가상 추정) */
+function est(kind){const zs=z('sleep');return kind==='am'?{sleepQ:zs<=-2?2:zs<=-1?3:4,mood:tier(c)==='caution'?3:4,fatigue:zs<=-2?4:2,sym:'none'}:{ex:'맞아요',stress:Math.max(1,Math.min(5,Math.round(3+z('eda')/1.5))),sym:'none'};}
+
+/* ---------- 오늘의 가이드: 항목 = 목표 · 조정 · 왜(cite) ---------- */
+function guide(T,am,pm){const L=T.L,cau=L==='caution'||L==='warning',items=[];
+  const ex=exToday(c.id),exGoal=cau?60:150;const outTxt=T.ms.map(k=>`${META[k].l} ${sig(z(k))}`).join(' · ');
+  items.push({name:'운동',sub:'밴드 자동 집계',lines:[['목표',`하루 2시간 30분 · 저항 90분 + 유산소 60분 ${citeA('hrp:routine-01#p3')}`],
+    ...(L==='warning'?[['조정','오늘은 쉬어요 · 경보 절차가 먼저','ga'],['왜',`경보가 열려 있어요 ${citeA(T.ev&&T.ev.doc?T.ev.doc+'#p3':'hrp:emer-01#p2')}`,'gw']]:
+      cau?[['조정','저강도 1시간 · 운동 중 심박은 안정 시 +40 bpm 이내','ga'],['왜',`${outTxt}. 회복이 덜 된 날이라 강도를 낮춰요 ${citeA('hrp:sm-03#p2')} ${citeA('hrp:sm-03#p5')}`,'gw']]:[])],
+    right:`<div class="gp"><span class="mono">${ex} / ${exGoal}분</span><div class="prog ${ex>=exGoal?'normal':''}"><i style="width:${Math.min(100,ex/exGoal*100)}%"></i></div></div>`,done:ex>=exGoal});
+  const sOut=cau&&T.ms.includes('sleep');
+  items.push({name:'수면 평가',sub:'밴드 + 아침 체크인',lines:[['기록',`지난밤 <b class="mono">${fmt(c.now.sleep,'sleep')}</b> <span class="muted">밴드</span> · 질 ${am?`<b class="mono">${am.sleepQ}/5</b> <span class="muted">체크인</span>`:'<span class="muted">체크인 대기</span>'} ${citeA('hrp:routine-01#p1')}`],
+    ...(sOut?[['조정','정밀 작업은 오전 늦게 · 카페인은 정오 전까지','ga'],['왜',`기준 ${fmt(c.base.sleep,'sleep')}보다 ${fmt(c.base.sleep-c.now.sleep,'sleep')} 짧아요 (${sig(z('sleep'))}) ${citeA('hrp:sleep-02#p1')} ${citeA('hrp:sleep-02#p2')}`,'gw']]:[])],
+    right:am?'':'<button class="btn sm" data-open="am">체크인</button>',done:!!am});
+  items.push({name:'기분 · 피로',sub:'매일 눈금',lines:[['기록',am?`기분 ${meter(am.mood)}<b class="mono">${am.mood}</b> · 피로 ${meter(am.fatigue)}<b class="mono">${am.fatigue}</b> ${citeA('hrp:routine-01#p2')}`:`<span class="muted">체크인 대기</span> ${citeA('hrp:routine-01#p2')}`]],right:'',done:!!am});
+  /* 이벤트에서 생긴 임시 항목 (운동·수면 조정은 위 항목에 합침) */
+  for(const e of openEvents(c.id).filter(e=>e.level!=='warning')){const acts=e.actions.map((a,i)=>({a,i,key:e.id+':'+i})).filter(x=>!x.a.k);if(!acts.length)continue;
+    items.push({name:esc(e.title),sub:`임시 · ${e.time} 보고에서 생김`,wide:true,done:acts.every(x=>S.todos[x.key]),lines:acts.map(({a,key})=>{const dn=!!S.todos[key];
+      return ['할 일',`<span class="gt ${dn?'dn':''}"><span>${dn?'✓ ':''}${esc(a.t)} ${citeA(a.doc)}</span>${a.r&&!dn?'<a class="btn sm p" href="log.html#recheck">열기</a>':`<button class="btn sm ${dn?'ghost':''}" data-todo="${key}" data-t="${esc(a.t)}">${dn?'되돌리기':'완료'}</button>`}</span>`];})});}
+  if(c.cmo){const others=Object.values(CREW).filter(x=>x.id!==c.id),n=l=>others.filter(x=>tier(x)===l).length;
+    items.push({name:'승무원 라운드',sub:'의료 담당',opt:true,lines:[['목표',`경보 ${n('warning')} · 주의 ${n('caution')} · 참고 ${n('advisory')} · 기준선 수집 ${n('hold')}`]],right:'<a class="btn sm" href="crew.html">열기</a>'});}
+  if(c.baselineDays<14)items.push({name:'밴드 착용 유지',sub:'기준선 수집',opt:true,lines:[['목표',`오늘 밤까지 착용 · 내일이면 ${c.baselineDays+1}/14일 ${citeA('hrp:sm-01#p2')}`]],right:''});
+  const goalOf={diet:'4문항 · 1분 · 지난 7일 식사',pmc:`내일 Sol ${SOL+1} 비행의 면담 · 자동 요약을 확인만`,mass:`질량 측정 장치 · 지난달 ${c.mass.toFixed(1)} kg`,vitals:'체온 · 혈압 · 맥박 · 호흡'};
+  for(const k of Object.keys(ROUTINE)){const r=routine(c,k);if(r.st==='later')continue;
+    items.push({name:ROUTINE[k].l,sub:'측정 날 · '+ROUTINE[k].sub,lines:[['목표',`${goalOf[k]} ${citeA(ROUTINE[k].doc)}`]],right:r.st==='done'?`<span class="mono muted">${r.at}</span>`:`<a class="btn sm p" href="log.html?open=${k}">${k==='mass'||k==='vitals'?'입력':'열기'}</a>`,done:r.st==='done'});}
+  items.push({name:'저녁 체크아웃',sub:'선택 · 취침 전',opt:true,lines:[[pm?'기록':'내용',pm?`운동 ${pm.ex} · 스트레스 ${meter(pm.stress)}<b class="mono">${pm.stress}</b> · 증상 ${pm.sym==='none'?'없음':'있음'}`:'운동 자동 확인 · 스트레스 눈금 · 증상']],right:pm?`<span class="mono muted">${pm.at}</span>`:'<button class="btn sm ghost" data-open="pm">열기</button>',done:!!pm});
+  if(L==='advisory'){const k=T.ms[0],zz=z(k),dir=k==='sleep'?(zz>0?'길어요':'짧아요'):(zz>0?'높아요':'낮아요');
+    items.push({note:true,text:`참고로 ${jo(META[k].l)} 평소보다 약간 ${dir} <span class="mono">(${fmt(c.now[k],k)}${k==='sleep'?'':' '+META[k].u} · ${sig(zz)})</span>. 지켜볼게요. <a class="soft" href="trends.html?m=${k}">추세 →</a>`});}
+  return items;}
+function row(it){if(it.note)return `<div class="gnote"><span class="gk">참고</span><span>${it.text}</span></div>`;
+  return `<div class="gi ${it.done?'done':''} ${it.wide?'wide':''}"><div class="gn"><b>${it.done?'<span class="ck">✓</span>':''}${it.name}</b><small>${it.sub||''}</small></div>
+    <div class="gb">${it.lines.map(([k,v,cl])=>`<div class="${cl||''}"><span class="gk">${k}</span><span>${v}</span></div>`).join('')}</div>${it.wide?'':`<div class="gr">${it.right||''}</div>`}</div>`;}
+
+/* ---------- 인사 · 상태 · 가이드 (상태가 바뀌면 다시 그림) ---------- */
+function renderTop(){
+  const T=tierInfo(c),L=T.L,d=daily(c.id),am=d.am,pm=d.pm;const evs=openEvents(c.id);const ev=T.ev||evs.find(e=>e.level===L)||evs[0];
+  const h=now().getHours();const greet=h<12?'좋은 아침입니다':h<18?'좋은 오후입니다':'오늘 하루 수고했어요';const names=T.ms.map(k=>META[k].l);
+  const status={normal:()=>'모든 지표가 기준선 안입니다. 오늘은 평소대로.',advisory:()=>'오늘은 평소대로 지내셔도 됩니다.',
+    caution:()=>T.why==='multi'?`${jo(names.join('·'))} 기준선을 벗어났어요. 오늘은 강도를 낮춰요.`:T.why==='days'?`${jo(names[0])} 이틀째 기준선 밖이에요. 오늘은 강도를 낮춰요.`:`${jo(names[0])} 기준선을 벗어났고 증상도 있어요. 오늘은 강도를 낮춰요.`,
+    warning:()=>`경보 · ${ev?esc(ev.title):'즉시 조치'}. 경보 화면에서 절차를 진행하세요.`,
+    hold:()=>`기준선을 모으는 중이에요. ${c.baselineDays}일째 / 14일, 판정은 Sol ${SOL+14-c.baselineDays}부터.`}[L]();
+  const meta=L==='hold'?['판정 · 없음','모델 · 호출 안 함']:[`판정 · 규칙 (기준선 14일 · ${thr()[0]}σ/${thr()[1]}σ)`,...(L==='normal'||L==='advisory'?['설명 · 만들지 않음']:ev?(ev.skipModel?['모델 · 건너뜀']:[`근거 ${ev.findings.length}개`,`설명 검증 ${ev.verified}/5`]):[])];
+  const acts=L==='warning'&&ev?`<a class="btn w" href="warning.html?id=${ev.id}">경보 화면 열기</a>`:L==='caution'?`${ev?`<a class="btn" href="event.html?id=${ev.id}">근거 보기</a>`:''}<a class="btn" href="log.html">증상 기록</a>${ev&&!ev.shared?'<button class="btn c" id="share">의료 담당에게 공유</button>':ev?'<span class="badge normal">CMO 공유됨</span>':''}`:'<a class="btn ghost" href="log.html">증상 기록</a>';
+  const items=guide(T,am,pm);const cnt=items.filter(i=>!i.note&&!i.opt);
+  document.getElementById('hello').innerHTML=`<h2 class="greet">${greet}, ${c.name}님.</h2>
+    <div class="when mono">Sol ${SOL} · <span id="hclock">${hhmm()}</span> · 밴드 동기화 ${c.sync} · ${c.wear}</div>
+    <div class="status-row"><p class="status ${L}"><i></i>${status}</p><div class="acts">${acts}</div></div>
+    <div class="smeta mono">${meta.map(x=>`<span>${x}</span>`).join('')}<span>가상 데이터 · 의료 조언 아님</span></div>`;
+  const g=document.getElementById('guide');g.className='panel guide '+L;
+  g.innerHTML=`<div class="hd">오늘의 가이드<small>조정은 규칙 · 이유는 모델(검증 통과분만)</small><div class="sp"></div>${am?`<small>확정 ${am.at} · ${cnt.filter(i=>i.done).length} / ${cnt.length} 완료</small>`:'<small>임시 · 체크인하면 확정</small><button class="btn sm p" data-open="am">아침 체크인 · 30초</button>'}</div><div class="gl">${items.map(row).join('')}</div>`;
+  document.getElementById('streak').innerHTML=`아침 체크인 <b>${streak(c)}</b>일 연속`;
+  const sh=document.getElementById('share');if(sh)sh.onclick=()=>{ev.shared=true;save();addLog(`이벤트 ${ev.id} 의료 담당(승무원 B)에게 공유`);toast('승무원 B(CMO)에게 공유했어요 · 기기 내 전달');renderTop();};
+  g.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openSheet(b.dataset.open));
+  g.querySelectorAll('[data-todo]').forEach(b=>b.onclick=()=>{const k=b.dataset.todo;S.todos[k]=!S.todos[k];save();if(S.todos[k])addLog('할 일 완료 · '+b.dataset.t);renderTop();});
+}
+
+/* ---------- 근거 · 이벤트 (한 번만 그림) ---------- */
+const evs=openEvents(c.id);
+root.innerHTML=`<section class="hello" id="hello"></section><div class="panel guide" id="guide"></div>
+<div class="sect">근거 · 지표 6개와 몸</div>
+${c.baselineDays<14?`<div class="panel" style="margin-bottom:12px"><div class="bd row" style="gap:14px;flex-wrap:wrap"><span>기준선 수집</span><div class="prog" style="flex:1;min-width:160px"><i style="width:${c.baselineDays/14*100}%"></i></div><span class="mono">${c.baselineDays}/14일 · 열리는 날 Sol ${SOL+14-c.baselineDays}</span><span class="note">14일이 되면 ±2σ(주의)·±3σ(경보)로 판정해요 ${citeA('hrp:sm-01#p2')} ${citeA('hrp:cv-01#p2')}</span></div></div>`:''}
+<div class="grid evid">
+  <div class="tiles sm" id="tiles">${MK.map(k=>tile(k,c,{sm:true})).join('')}</div>
+  <div class="panel"><div class="hd">몸<div class="sp"></div><small id="bodySt"></small><a class="btn sm ghost" href="body.html">크게 →</a></div><div class="bd"><div class="bodywrap" style="height:176px"><canvas id="bodyCanvas" aria-label="픽셀 바디"></canvas><div class="pop" id="pop"></div></div></div></div>
+</div>
+<div class="grid foot2">
+  <div class="panel"><div class="hd">오늘 이벤트<div class="sp"></div><small>${evs.length} 열림</small></div><div class="bd p0 hairrows">
+    ${evs.map(e=>`<a href="event.html?id=${e.id}" class="row between"><span class="row"><span class="badge ${e.level}">${levelEn(e.level)}</span><b>${esc(e.title)}</b><span class="muted mono" style="font-size:11px">${e.time}${e.auto?' · 규칙 자동':''}</span></span><span class="muted">${e.skipModel?'모델 건너뜀':'검증 '+e.verified+'/5'} · ${e.shared?'공유됨':'미공유'} →</span></a>`).join('')||'<div class="empty" style="padding:24px">열린 이벤트 없음 · 증상이 생기면 기록에 적어 주세요</div>'}
+  </div></div>
+  <div class="streak" id="streak"></div>
+</div>`;
+renderTop();
+setInterval(()=>{const el=document.getElementById('hclock');if(el)el.textContent=hhmm();},1000);
+const cN=MK.filter(k=>lvl(k)==='caution').length,wN=MK.filter(k=>lvl(k)==='warning').length,aN=MK.filter(k=>lvl(k)==='advisory').length;
+document.getElementById('bodySt').textContent=c.baselineDays<14?'판정 전 · 회색':aN?`참고 ${aN} · 색 없음`:`주의 ${cN} · 경보 ${wN}`;
+const body=mountBody(document.getElementById('bodyCanvas'),c.id,{onClick:(r)=>{const pop=document.getElementById('pop');if(!r||c.baselineDays<14){pop.classList.remove('on');if(r)toast('기준선이 모이기 전에는 부위 판정이 없어요');return;}
+  const RL=rLvl(r);pop.innerHTML=`<div class="ttl">${r.name}<span class="badge ${RL}">${levelEn(RL)}</span><button aria-label="닫기" id="popX">✕</button></div>${r.ms.map(k=>`<div class="r"><span class="muted">${META[k].l}</span><span class="sig ${lvl(k)}">${fmt(c.now[k],k)} ${k==='sleep'?'':META[k].u} · ${sig(z(k))}</span></div>`).join('')}<p>${r.note}</p><p>${citeA(r.doc)} · <a href="body.html?r=${r.id}" class="soft">부위 상세 →</a></p>`;
+  const p=body.regionPoint(r);const host=pop.parentElement.getBoundingClientRect();let left=p.x+28,top=p.y-20;if(left+270>host.width)left=p.x-290;if(left<4)left=4;top=Math.max(4,Math.min(top,host.height-170));pop.style.left=left+'px';pop.style.top=top+'px';pop.classList.add('on');document.getElementById('popX').onclick=()=>pop.classList.remove('on');}});
+
+/* ---------- 아침 체크인(30초) · 저녁 체크아웃(선택) 시트 ---------- */
+const host=document.createElement('div');host.className='modal sheet';host.id='sheet';document.body.appendChild(host);
+function openSheet(kind){const am=kind==='am';const d=daily(c.id);const v=Object.assign({},d[kind]||est(kind));
+  const scale=(k,lo,hi)=>`<div class="scale" data-k="${k}">${[1,2,3,4,5].map(i=>`<button data-v="${i}" class="${v[k]===i?'on':''}" aria-label="${i}">${i}</button>`).join('')}</div><div class="ends"><span>${lo}</span><span>${hi}</span></div>`;
+  const seg=(k,opts)=>`<span class="seg" data-k="${k}">${opts.map(([val,l])=>`<button data-v="${val}" class="${v[k]===val?'on':''}">${l}</button>`).join('')}</span>`;
+  const rows=am?[['수면 질',`밴드 ${fmt(c.now.sleep,'sleep')} · 기준 ${fmt(c.base.sleep,'sleep')}`,scale('sleepQ','나쁨','좋음')],['기분','어제와 같게 채움',scale('mood','가라앉음','좋음')],['피로','수면·HRV로 추정',scale('fatigue','없음','심함')],['증상','기본은 없음',seg('sym',[['none','없음'],['yes','있어요']])]]:
+    [['운동',`밴드 자동 · 오늘 ${exToday(c.id)}분`,seg('ex',[['맞아요','맞아요'],['아니에요','아니에요']])],['스트레스','피부전기활동으로 추정',scale('stress','낮음','높음')],['증상','기본은 없음',seg('sym',[['none','없음'],['yes','있어요']])]];
+  host.innerHTML=`<div class="box" role="dialog" aria-modal="true" aria-label="${am?'아침 체크인':'저녁 체크아웃'}"><div class="row between"><h3>${am?'아침 체크인':'저녁 체크아웃'}</h3><span class="mono muted" style="font-size:11px">${am?'30초 · 확인만':'선택 · 1분'}</span></div>
+    <p class="muted" style="margin:0">시스템이 먼저 채웠어요. 다르면 눌러서 고치고, 맞으면 확인만 누르세요.</p>
+    <div class="cis">${rows.map(r=>`<div class="ci"><div class="cl"><b>${r[0]}</b><small>${r[1]}</small></div><div class="cv">${r[2]}</div></div>`).join('')}</div>
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:16px"><button class="btn ghost" id="shX">${am?'나중에':'닫기'}</button><button class="btn p" id="shOk"></button></div></div>`;
+  const ok=host.querySelector('#shOk');const label=()=>ok.textContent=v.sym==='yes'?'확인 · 증상 적으러 가기':am?'확인 · 오늘 가이드 확정':'확인';label();
+  host.querySelectorAll('[data-k] button').forEach(b=>b.onclick=()=>{const k=b.parentElement.dataset.k;const n=+b.dataset.v;v[k]=isNaN(n)?b.dataset.v:n;b.parentElement.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));label();});
+  host.querySelector('#shX').onclick=()=>{host.classList.remove('on');if(am&&!d.am){d.later=true;save();}};
+  ok.onclick=()=>{v.at=hhmm();d[kind]=v;delete d.later;save();
+    addLog(am?`아침 체크인 · 수면 질 ${v.sleepQ}/5 · 기분 ${v.mood} · 피로 ${v.fatigue} · 증상 ${v.sym==='none'?'없음':'있음'}`:`저녁 체크아웃 · 운동 ${v.ex} · 스트레스 ${v.stress} · 증상 ${v.sym==='none'?'없음':'있음'}`);
+    host.classList.remove('on');if(v.sym==='yes'){location.href='log.html?from='+kind;return;}toast(am?'체크인 완료 · 오늘 가이드를 확정했어요':'체크아웃 완료 · 푹 쉬세요');renderTop();};
+  host.classList.add('on');ok.focus();}
+const want=q('sheet');if(want==='am'||want==='pm')openSheet(want);else if(!daily(c.id).am&&!daily(c.id).later)openSheet('am');
+})();
+</script>
+</body>
+</html>

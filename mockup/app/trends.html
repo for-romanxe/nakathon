@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>추세 · Crew Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app"></div>
+<script src="app.js"></script>
+<script>
+(function(){
+const {S,CREW,me,META,MK,lvl,z,fmt,sig,levelEn,series,chart,thr,shell,q,citeA,esc,save,addLog,toast}=CH;
+const crewId=q('crew')&&me().cmo?q('crew'):me().id;const c=CREW[crewId];
+let k=META[q('m')]?q('m'):'hr';let n=7;
+const root=shell('trends','추세',c.id!==me().id?c.name:null);
+const LONG=[{l:'골밀도 (대퇴 경부)',v:'-1.8%',s:'임무 시작 대비 · 월 1회 초음파',L:'normal',d:'hrp:cv-01#p1'},{l:'방사선 누적',v:'142 mSv',s:'임무 한도 600 · 선량계',L:'normal',d:'hrp:sm-01#p3'},{l:'체질량',v:'-2.1 kg',s:'임무 시작 대비 · 월 1회 · 기록 탭에서 입력',L:'normal',d:'hrp:routine-01#p4'},{l:'안압',v:'16 mmHg',s:'월 1회 · SANS 추적',L:'normal',d:'hrp:cv-01#p1'}];
+function render(){
+  const data=series(k,c,n);const mean=data.reduce((a,b)=>a+b,0)/n;const t=thr();const out=data.filter(v=>Math.abs((v-c.base[k])/c.sd[k])>=t[0]).length;
+  root.innerHTML=`
+  <div class="row between" style="margin-bottom:14px;flex-wrap:wrap;gap:10px">
+    <div class="seg" id="mseg">${MK.map(m=>`<button data-m="${m}" class="${m===k?'on':''}">${META[m].l}${lvl(m,c)!=='normal'&&lvl(m,c)!=='hold'?` <span class="sig ${lvl(m,c)}">${z(m,c)>0?'▲':'▼'}</span>`:''}</button>`).join('')}</div>
+    <div class="seg" id="nseg">${[7,30,90].map(d=>`<button data-n="${d}" class="${d===n?'on':''}">${d}일</button>`).join('')}</div>
+  </div>
+  <div class="grid g-main">
+    <div class="stack">
+      <div class="panel"><div class="hd">${META[k].l} <small>${META[k].h} · ${META[k].src}</small><div class="sp"></div><small>Sol ${CH.SOL-n+1} – ${CH.SOL}</small></div>
+        <div class="bd">${c.baselineDays<14?'<div class="empty"><b>기준선 수집 중</b>'+c.baselineDays+'/14일 · 밴드는 회색, 판정 없음</div>':''}${chart(k,c,n,S.events)}
+        <div class="legend" style="margin-top:10px"><span><i style="background:#111A22;border:1px solid #1F2A37"></i>±${t[0]}σ 주의 밴드</span><span><i style="background:#0E1419;border:1px solid #1F2A37"></i>±${t[1]}σ 경보 밴드</span><span><i style="background:#3A4A5E"></i>기준선 (14일 평균)</span><span><i style="background:#F5C542"></i>이벤트</span></div></div></div>
+      <div class="panel"><div class="hd">요약</div><div class="bd p0"><table><thead><tr><th>구간</th><th class="num">평균</th><th class="num">최저</th><th class="num">최고</th><th class="num">기준선 밖 일수</th></tr></thead><tbody>
+        <tr><td>최근 ${n}일</td><td class="num">${fmt(mean,k)}</td><td class="num">${fmt(Math.min(...data),k)}</td><td class="num">${fmt(Math.max(...data),k)}</td><td class="num ${out?'sig caution':''}">${out}</td></tr>
+        <tr><td>기준선 (14일)</td><td class="num">${fmt(c.base[k],k)}</td><td class="num muted">σ ${fmt(c.sd[k],k)}</td><td class="num muted">—</td><td class="num muted">—</td></tr>
+        <tr><td>오늘</td><td class="num">${fmt(c.now[k],k)}</td><td colspan="2" class="num sig ${lvl(k,c)}">${c.baselineDays<14?'—':sig(z(k,c))}</td><td class="num"><span class="badge ${lvl(k,c)}">${levelEn(lvl(k,c))}</span></td></tr>
+      </tbody></table></div></div>
+    </div>
+    <div class="stack">
+      <div class="panel"><div class="hd">이 지표의 규칙</div><div class="bd" style="font-size:12.5px"><dl class="kv"><dt>기준선</dt><dd>최근 14일 평균 · 이벤트 날 제외</dd><dt>참고</dt><dd>|σ| ≥ ${t[0]} 지표 1개 · 하루 · 가이드에 한 줄, 색 없음</dd><dt>주의</dt><dd>이틀 연속 · 지표 2개 이상 · 지표 + 증상 · 노란 상태 문장 + 배지</dd><dt>경보</dt><dd>|σ| ≥ ${t[1]} 또는 증상 규칙 · 전체 화면, 모델 건너뜀</dd><dt>신선도</dt><dd>${k==='sleep'?'기상 후 동기화 시각':k==='act'?'하루 단위 · 자정 마감':'5분 이내'} · 늦으면 타일에 시각 표시</dd><dt>출처</dt><dd>${citeA(k==='sleep'?'hrp:sleep-02#p1':k==='eda'?'data:e4:S03#p1':'hrp:cv-01#p2')}</dd></dl></div></div>
+      <div class="panel"><div class="hd">이 구간의 이벤트</div><div class="bd p0 hairrows">${S.events.filter(e=>e.crew===c.id&&CH.SOL-e.sol<n).map(e=>`<a href="event.html?id=${e.id}" class="row between"><span class="row"><span class="badge ${e.level}">${levelEn(e.level)}</span>${esc(e.title)}</span><span class="muted mono" style="font-size:11px">Sol ${e.sol} →</span></a>`).join('')||'<div class="empty" style="padding:18px">없음</div>'}</div></div>
+      <div class="panel"><div class="hd">운동 기록<div class="sp"></div><small>오늘 ${CH.exToday(c.id)}분 · 밴드 자동 감지</small></div><div class="bd p0 hairrows" id="ex">
+        ${(S.exercise||[]).filter(x=>x.crew===c.id).map(x=>`<div class="row between"><span>${x.kind} ${x.min}분</span><span class="muted mono" style="font-size:11px">${x.time} · 최고 ${x.peak} bpm</span></div>`).join('')||'<div class="note" style="padding:10px 16px">아직 없음</div>'}
+        ${c.id===me().id?'<div class="row" style="gap:8px"><button class="btn sm" id="addEx">저강도 30분 감지 (데모)</button><span class="note">주의 상태면 심박 상한 +40 bpm · 오늘 가이드에 바로 반영</span></div>':''}
+      </div></div>
+    </div>
+  </div>
+  <div class="sect">장기 추적 · 월 단위</div>
+  <div class="grid" style="grid-template-columns:repeat(4,1fr)">${LONG.map(x=>`<div class="tile" style="cursor:default"><div class="k">${x.l}</div><div class="v" style="font-size:26px">${x.v}</div><div class="base">${x.s} · ${citeA(x.d)}</div></div>`).join('')}</div>`;
+  document.querySelectorAll('#mseg button').forEach(b=>b.onclick=()=>{k=b.dataset.m;history.replaceState(null,'','trends.html?m='+k+(c.id!==me().id?'&crew='+c.id:''));render();});
+  document.querySelectorAll('#nseg button').forEach(b=>b.onclick=()=>{n=+b.dataset.n;render();});
+  const ax=document.getElementById('addEx');if(ax)ax.onclick=()=>{S.exercise=S.exercise||[];S.exercise.push({crew:c.id,kind:'저강도 유산소',min:30,time:CH.hhmm(),peak:c.now.hr+31});save();addLog('운동 기록 · 저강도 30분 · 최고 '+(c.now.hr+31)+' bpm');toast('운동 30분 기록 · 오늘 '+CH.exToday(c.id)+'분');render();};
+}
+render();
+})();
+</script>
+</body>
+</html>

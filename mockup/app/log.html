@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>기록 · Crew Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app"></div>
+<script src="app.js"></script>
+<script>
+(function(){
+const {S,CREW,me,META,MK,rawLvl,z,fmt,sig,levelEn,levelName,shell,toast,save,addLog,esc,citeA,classify,DOCS,SOL,hhmm,CONDS,riskHTML,verifyScope,newId,ROUTINE,routine,daily,series,thr,q,streak}=CH;
+const c=me();const root=shell('log','기록');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;const wait=ms=>new Promise(r=>setTimeout(r,reduce?0:ms));
+root.innerHTML=`<div class="grid g-main">
+  <div class="panel chat"><div class="hd">증상 대화 <small>모델이 끼는 유일한 입력</small><div class="sp"></div><span class="badge model">SLM 증상→코드</span><span class="badge code">규칙 판정</span></div>
+    <div class="msgs" id="msgs"></div>
+    <div class="inrow"><input class="input" id="in" placeholder="지금 느끼는 걸 그대로 적어요 · 예) 어지럽고 메스꺼워" autocomplete="off"><button class="btn p" id="send">보내기</button></div>
+    <div class="row" style="padding:0 16px 12px;gap:6px;flex-wrap:wrap"><span class="note">예시:</span><button class="chip" data-t="어지럽고 메스꺼워요">어지럽고 메스꺼워요</button><button class="chip" data-t="저녁부터 머리가 띵해요">머리가 띵해요</button><button class="chip" data-t="가슴이 조이듯 아프고 숨이 안 쉬어져요">가슴이 조이듯 아파요</button></div>
+  </div>
+  <div class="stack">
+    <div class="panel" id="recheck" hidden><div class="hd">14:00 재확인 <small id="rcFor"></small><div class="sp"></div><small id="rcSt"></small></div><div class="bd" id="rc"></div></div>
+    <div class="panel" id="routine"><div class="hd">정기 기록 <small>하루 입력 5분 안</small><div class="sp"></div><small>체크인 ${streak(c)}일 연속</small></div><div class="bd p0 hairrows" id="rt"></div></div>
+    <div class="panel"><div class="hd">이벤트<div class="sp"></div><small>${S.events.filter(e=>e.crew===c.id||c.cmo).length}</small></div><div class="bd p0 hairrows">
+      ${S.events.filter(e=>e.crew===c.id||c.cmo).sort((a,b)=>b.sol-a.sol||b.time.localeCompare(a.time)).map(e=>`<a href="event.html?id=${e.id}" class="row between"><span class="row"><span class="badge ${e.level}">${levelEn(e.level)}</span><span><b style="font-weight:500">${esc(e.title)}</b>${c.cmo?`<span class="muted"> · ${CREW[e.crew].name}</span>`:''}</span></span><span class="muted mono" style="font-size:11px">Sol ${e.sol} ${e.time} · ${e.status==='open'?'열림':'종결'} →</span></a>`).join('')}
+    </div></div>
+    <div class="panel"><div class="hd">활동 기록<div class="sp"></div><small>기기 내</small></div><div class="bd tl" style="padding-bottom:4px">${S.log.filter(l=>l.who===c.id||c.cmo).slice(0,8).map(l=>`<div><time>Sol ${l.sol} ${l.time}${c.cmo?' · '+l.who:''}</time>${esc(l.text)}</div>`).join('')}</div></div>
+  </div>
+</div>
+<div class="modal sheet" id="rtModal"><div class="box" id="rtBox" role="dialog" aria-modal="true"></div></div>`;
+
+/* ---------- 14:00 재확인 (S4) · 열린 이벤트에 재확인 할 일이 있을 때만 ---------- */
+const RC=[{id:'ortho',q:'일어설 때 어지러운가요?',o:['없음','조금','많이']},{id:'nausea',q:'메스꺼움은?',o:['없음','조금','많이']},{id:'head',q:'두통은?',o:['없음','조금','많이']}];
+function rcTarget(){for(const e of S.events.filter(e=>e.crew===c.id&&e.status==='open')){const i=e.actions.findIndex(a=>a.r==='recheck');if(i>=0)return {e,i};}return null;}
+function renderRC(){const t=rcTarget();const p=document.getElementById('recheck');if(!t){p.hidden=true;return;}p.hidden=false;
+  const a=S.recheck[t.e.id]||(S.recheck[t.e.id]={});const done=!!a.at;const el=document.getElementById('rc');
+  document.getElementById('rcFor').textContent=`${t.e.id} · ${t.e.title}`;
+  el.innerHTML=RC.map(x=>`<div class="row between" style="padding:6px 0"><span>${x.q}</span><span class="seg">${x.o.map(o=>`<button data-q="${x.id}" data-o="${o}" class="${a[x.id]===o?'on':''}">${o}</button>`).join('')}</span></div>`).join('')+`<div class="row" style="justify-content:flex-end;margin-top:8px;gap:8px"><span class="note" style="flex:1">${done?'기록됨 · 오늘 가이드의 재확인 항목을 완료로 바꿨어요':'세 항목을 고르면 기록되고 오늘 가이드가 갱신돼요'} ${citeA('hrp:sm-03#p4')}</span><button class="btn ${done?'':'p'}" id="rcSave" ${done?'disabled':''}>${done?'기록됨':'기록'}</button></div>`;
+  document.getElementById('rcSt').textContent=done?`완료 ${a.at}`:`${RC.filter(x=>a[x.id]).length}/3`;
+  el.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{a[b.dataset.q]=b.dataset.o;save();renderRC();});
+  const sv=document.getElementById('rcSave');if(sv&&!done)sv.onclick=()=>{if(!RC.every(x=>a[x.id])){toast('세 항목을 모두 골라 주세요');return;}a.at=hhmm();S.todos[t.e.id+':'+t.i]=true;save();addLog(`재확인 · 기립 ${a.ortho} · 메스꺼움 ${a.nausea} · 두통 ${a.head}`);toast('재확인 기록 · 오늘 가이드 갱신');renderRC();};}
+renderRC();
+if(location.hash==='#recheck'){const p=document.getElementById('recheck');if(!p.hidden)p.scrollIntoView();}
+
+/* ---------- 정기 기록: 체크인 · 주간 · 월간 · 분기 (측정 날은 시스템이 띄움) ---------- */
+function renderRT(){const d=daily(c.id);
+  const rows=[{l:'아침 체크인',s:'매일 · 30초',st:d.am?`완료 ${d.am.at}`:'대기',btn:d.am?'':'<a class="btn sm p" href="today.html?sheet=am">하기</a>'},
+    {l:'저녁 체크아웃',s:'선택 · 취침 전',st:d.pm?`완료 ${d.pm.at}`:'선택',btn:d.pm?'':'<a class="btn sm ghost" href="today.html?sheet=pm">열기</a>'},
+    ...Object.keys(ROUTINE).map(k=>{const r=routine(c,k);return {l:ROUTINE[k].l,s:ROUTINE[k].sub,st:r.st==='done'?`완료 ${r.at} · 다음 Sol ${r.next}`:r.st==='due'?'오늘':`Sol ${r.next} · ${r.in}일 뒤`,
+      btn:`<button class="btn sm ${r.st==='due'?'p':'ghost'}" data-rt="${k}">${r.st==='done'?'보기':r.st==='due'?(k==='mass'||k==='vitals'?'입력':'열기'):'지금 하기'}</button>`};})];
+  const el=document.getElementById('rt');
+  el.innerHTML=rows.map(r=>`<div class="row between"><span><b style="font-weight:500">${r.l}</b><small class="muted" style="display:block;font-size:11px">${r.s}</small></span><span class="row" style="gap:10px;flex:none"><span class="mono ${r.st==='오늘'?'':'muted'}" style="font-size:11px;white-space:nowrap">${r.st}</span>${r.btn}</span></div>`).join('');
+  el.querySelectorAll('[data-rt]').forEach(b=>b.onclick=()=>openRT(b.dataset.rt));}
+const DIET=[{id:'appetite',q:'식욕',o:['줄었어요','평소','늘었어요'],d:'평소'},{id:'skip',q:'거른 끼니',o:['없음','1–2끼','3끼 이상'],d:'없음'},{id:'monotony',q:'같은 음식에 질림',o:['없음','조금','많이'],d:'조금'},{id:'gi',q:'속 불편',o:['없음','가끔','자주'],d:'없음'}];
+const modal=document.getElementById('rtModal'),box=document.getElementById('rtBox');
+const foot=l=>`<div class="row" style="justify-content:flex-end;gap:8px;margin-top:16px"><button class="btn ghost" id="rtX">취소</button><button class="btn p" id="rtOk">${l}</button></div>`;
+const num=(id,unit,ph,val,w)=>`<span class="row" style="gap:6px"><input class="input mono" id="${id}" type="number" step="any" inputmode="decimal" placeholder="${ph}" value="${val==null?'':val}" style="width:${w||110}px"><span class="muted mono" style="font-size:11px">${unit}</span></span>`;
+function openRT(k){const prev=((S.done[c.id]||{})[k]||{}).v;const v=Object.assign({},prev||{});const R=ROUTINE[k];let body='';
+  if(k==='diet'){DIET.forEach(x=>{if(!v[x.id])v[x.id]=x.d;});
+    body=`<p class="muted" style="margin:0">4문항 · 1분 · 지난주 답으로 채워 두었어요 ${citeA(R.doc)}</p><div class="cis">${DIET.map(x=>`<div class="ci"><div class="cl"><b>${x.q}</b><small>지난 7일</small></div><div class="cv"><span class="seg" data-q="${x.id}">${x.o.map(o=>`<button data-o="${o}" class="${v[x.id]===o?'on':''}">${o}</button>`).join('')}</span></div></div>`).join('')}</div>${foot('제출')}`;}
+  if(k==='pmc'){const sl=series('sleep',c,7),t=thr();const avg=sl.reduce((a,b)=>a+b,0)/7;
+    const outs=MK.map(m=>[m,series(m,c,7).filter(x=>Math.abs((x-c.base[m])/c.sd[m])>=t[0]).length]).filter(x=>x[1]&&c.baselineDays>=14);
+    const evs=S.events.filter(e=>e.crew===c.id&&SOL-e.sol<7);
+    body=`<p class="muted" style="margin:0">자동 생성 · 내일 Sol ${SOL+1} 비행의 면담에서 함께 봐요. 틀린 곳만 메모하세요 ${citeA(R.doc)}</p><div class="cis">
+      <div class="ci"><div class="cl"><b>수면 7일</b><small>평균 ${fmt(avg,'sleep')} · 기준 ${fmt(c.base.sleep,'sleep')}</small></div><div class="cv"><div class="sl7">${sl.map((x,i)=>`<span class="${(x-c.base.sleep)/c.sd.sleep<=-t[0]?'lo':''}" title="${fmt(x,'sleep')}"><i style="height:${Math.round(Math.max(4,(x-4)/5*44))}px"></i>${SOL-6+i}</span>`).join('')}</div></div></div>
+      <div class="ci"><div class="cl"><b>기준선 밖 지표</b><small>7일 · ±${t[0]}σ</small></div><div class="cv">${c.baselineDays<14?'<span class="muted">기준선 수집 중 · 판정 없음</span>':outs.length?outs.map(([m,n])=>`${META[m].l} <span class="mono">${n}일</span>`).join(' · '):'없음'}</div></div>
+      <div class="ci"><div class="cl"><b>이벤트</b><small>7일</small></div><div class="cv" style="line-height:1.9">${evs.map(e=>`<span class="badge ${e.level}">${levelEn(e.level)}</span> ${esc(e.title)} <span class="muted mono" style="font-size:11px">Sol ${e.sol}</span>`).join('<br>')||'없음'}</div></div>
+      <div class="ci"><div class="cl"><b>체크인</b><small>아침</small></div><div class="cv mono">${streak(c)}일 연속</div></div>
+      <div class="ci"><div class="cl"><b>메모</b><small>선택</small></div><div class="cv"><input class="input" id="vNote" placeholder="틀린 곳이나 면담에서 말할 것" value="${esc(v.note||'')}"></div></div></div>${foot('확인 · 면담 자료로 저장')}`;}
+  if(k==='mass')body=`<p class="muted" style="margin:0">질량 측정 장치로 잰 값을 적어요 · 지난달 Sol ${SOL-30} ${c.mass.toFixed(1)} kg ${citeA(R.doc)}</p><div class="cis"><div class="ci"><div class="cl"><b>체질량</b><small>kg</small></div><div class="cv row" style="gap:12px">${num('vMass','kg',c.mass.toFixed(1),v.mass)}<span class="mono muted" id="dMass" style="font-size:11.5px"></span></div></div></div>${foot('저장')}`;
+  if(k==='vitals')body=`<p class="muted" style="margin:0">의료 담당과 함께 재요. 맥박은 밴드 값으로 채웠어요 ${citeA(R.doc)}</p><div class="cis">
+      <div class="ci"><div class="cl"><b>체온</b><small>구강 · °C</small></div><div class="cv">${num('vTemp','°C','36.6',v.temp)}</div></div>
+      <div class="ci"><div class="cl"><b>혈압</b><small>앉은 자세</small></div><div class="cv row" style="gap:6px">${num('vSys','','수축',v.sys,80)}<span class="muted">/</span>${num('vDia','mmHg','이완',v.dia,80)}</div></div>
+      <div class="ci"><div class="cl"><b>맥박</b><small>밴드 ${c.now.hr} bpm</small></div><div class="cv">${num('vPulse','bpm','',v.pulse==null?c.now.hr:v.pulse)}</div></div>
+      <div class="ci"><div class="cl"><b>호흡</b><small>1분</small></div><div class="cv">${num('vResp','회/분','14',v.resp)}</div></div></div>${foot('저장')}`;
+  box.setAttribute('aria-label',R.l);box.innerHTML=`<div class="row between"><h3>${R.l}</h3><span class="mono muted" style="font-size:11px">${R.sub}</span></div>${body}`;
+  box.querySelectorAll('.seg[data-q] button').forEach(b=>b.onclick=()=>{v[b.parentElement.dataset.q]=b.dataset.o;b.parentElement.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));});
+  const m=box.querySelector('#vMass');if(m){const upd=()=>{const d=+m.value-c.mass;document.getElementById('dMass').textContent=m.value?`지난달 대비 ${d>=0?'+':''}${d.toFixed(1)} kg`:'';};m.oninput=upd;upd();}
+  box.querySelector('#rtX').onclick=()=>modal.classList.remove('on');
+  box.querySelector('#rtOk').onclick=()=>{const val=id=>{const el=box.querySelector('#'+id);return el&&el.value!==''?+el.value:null;};let txt='';
+    if(k==='diet')txt=DIET.map(x=>`${x.q} ${v[x.id]}`).join(' · ');
+    if(k==='pmc'){v.note=box.querySelector('#vNote').value.trim();txt='면담 자료 확인'+(v.note?' · 메모 있음':'');}
+    if(k==='mass'){v.mass=val('vMass');if(v.mass==null){toast('체질량을 적어 주세요');return;}txt=`${v.mass.toFixed(1)} kg`;}
+    if(k==='vitals'){Object.assign(v,{temp:val('vTemp'),sys:val('vSys'),dia:val('vDia'),pulse:val('vPulse'),resp:val('vResp')});if(['temp','sys','dia','pulse','resp'].some(x=>v[x]==null)){toast('네 항목을 모두 적어 주세요');return;}txt=`체온 ${v.temp} · 혈압 ${v.sys}/${v.dia} · 맥박 ${v.pulse} · 호흡 ${v.resp}`;}
+    S.done[c.id]=S.done[c.id]||{};S.done[c.id][k]={at:hhmm(),sol:SOL,v};save();addLog(`${R.l} · ${txt}`);toast(`${R.l} 저장 · 다음 Sol ${c.due[k]+R.every}`);modal.classList.remove('on');renderRT();};
+  modal.classList.add('on');}
+renderRT();
+if(ROUTINE[q('open')])openRT(q('open'));
+
+/* ---------- 증상 대화 ---------- */
+const msgs=document.getElementById('msgs');
+function add(cls,html){const d=document.createElement('div');d.className='msg '+cls;d.innerHTML=html;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d;}
+add('sys',`<div class="tag"><span class="badge code">RULE</span></div>${c.name}님, 지금 느끼는 걸 문장으로 적어 주세요. 모델은 말을 증상 코드로만 바꾸고, 판정은 규칙이 해요. 흉통·호흡곤란은 모델을 거치지 않고 바로 경보해요.`);
+const from=q('from');if(from==='am'||from==='pm'){add('sys',`${from==='am'?'아침 체크인':'저녁 체크아웃'}에서 증상이 있다고 하셨어요. 어떤지 그대로 적어 주세요. 아래 예시를 눌러도 돼요.`);setTimeout(()=>document.getElementById('in').focus(),50);}
+/* 증상 코드별 규칙 계획: 근거 문서 · 오늘 할 일 · 대응 (조정 항목은 k로 표시해 오늘 가이드에 합침) */
+const PLAN={
+  dizziness:{docs:['hrp:sm-03#p1','hrp:sm-03#p2'],todo:'앉아서 수분·염분 보충 → 30분 뒤 안정 시 심박 재측정 → 14:00 기립 시 어지러움 재확인 [hrp:sm-03#p3][hrp:sm-03#p4]',
+    acts:[{t:'앉아서 수분 500 mL + 염분 보충',doc:'hrp:sm-03#p3'},{t:'30분 뒤 안정 시 심박 재측정',doc:'hrp:sm-03#p3'},{t:'오늘 운동은 저강도 (심박 +40 이내)',doc:'hrp:sm-03#p5',k:'ex'},{t:'14:00 기립 시 어지러움 재확인',doc:'hrp:sm-03#p4',r:'recheck'}]},
+  nausea:{docs:['hrp:sm-03#p1'],todo:'앉아서 쉬고 1시간 관찰 · 2시간 넘게 계속되면 의료 담당에게 보고 [hrp:sm-01#p1][hrp:sm-03#p4]',acts:[{t:'1시간 관찰 후 다시 기록',doc:'hrp:sm-01#p1'},{t:'2시간 넘게 계속되면 의료 담당 보고',doc:'hrp:sm-03#p4'}]},
+  headache:{docs:['hrp:sm-01#p1','hrp:sm-03#p4'],todo:'수분 섭취 후 1시간 관찰, 계속되면 의료 담당에게 보고 [hrp:sm-01#p1][hrp:sm-03#p4]',acts:[{t:'수분 섭취 후 1시간 관찰',doc:'hrp:sm-01#p1'},{t:'증상 지속 시 의료 담당 보고',doc:'hrp:sm-03#p4'}]},
+  fatigue:{docs:['hrp:sleep-02#p1'],todo:'정밀 작업은 오전 늦게 · 카페인은 정오 전까지 [hrp:sleep-02#p2]',acts:[{t:'정밀 작업은 오전 늦게 · 카페인은 정오 전까지',doc:'hrp:sleep-02#p2',k:'sleep'},{t:'3일 연속이면 의료 담당과 수면 계획',doc:'hrp:sleep-02#p3'}]}};
+PLAN.sleep_issue=PLAN.fatigue;
+async function handle(text){
+  add('me',esc(text));
+  const hits=classify(text);
+  if(hits.some(h=>h.warning)){add('sys',`<div class="tag"><span class="badge warning">WARNING</span><span class="badge code">RULE</span></div>흉통·호흡곤란 키워드 → 모델을 건너뛰고 바로 경보해요. 경보 화면으로 이동합니다.`);
+    const id=newId();S.events.unshift({id,crew:c.id,sol:SOL,time:hhmm(),title:'가슴 통증 · 호흡곤란',symptom:text,sym:true,codes:['chest_pain'],level:'warning',verified:0,runs:[],findings:[{m:'hr',v:c.now.hr},{m:'hrv',v:c.now.hrv},{m:'eda',v:c.now.eda}],explanation:null,skipModel:true,actions:DOCS['hrp:emer-01'].ps.slice(1,4).map((p,i)=>({t:p,doc:'hrp:emer-01#p'+(i+2)})),shared:true,status:'open'});save();addLog(`WARNING · 흉통 보고 · 모델 건너뜀 · ${id}`);
+    await wait(900);location.href='warning.html?id='+id;return;}
+  if(!hits.length){add('sys',`<div class="tag"><span class="badge model">SLM</span></div>정해진 증상 코드에 맞는 말을 찾지 못했어요. 기록만 남기고 판정은 하지 않아요. 가능한 코드: dizziness · nausea · headache · fatigue · sleep_issue · chest_pain`);addLog('증상 기록(코드 없음) · '+text);return;}
+  const codes=[...new Set(hits.flatMap(h=>h.codes))];const qh=hits.find(h=>h.q);
+  const m=add('sys',`<div class="tag"><span class="badge model">SLM · 0.6 s</span>${codes.map(x=>`<span class="badge model">${x}</span>`).join('')}</div>${qh?qh.q:'확인 질문 없음'}<div class="opts"><button class="chip" data-a="yes">예</button><button class="chip" data-a="no">아니요</button></div>`);
+  const p={text,codes,hits};
+  m.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{m.querySelectorAll('.chip').forEach(x=>x.disabled=true);b.classList.add('on');run(p,b.dataset.a==='yes');});
+}
+async function run(p,yes){
+  const h=p.hits[0];if(yes&&h.yes&&!p.codes.includes(h.yes))p.codes.push(h.yes);
+  add('me',yes?'예':'아니요');
+  const steps=[['이상탐지 · 기준선 비교','RULE'],['증상 해석 → 코드','SLM'],['근거 검색 · 기기 내 문서','BM25'],['위험 안내 생성','SLM'],['검증 5개 규칙','CODE']];
+  const r=add('run',steps.map((s,i)=>`<div class="st" data-i="${i}"><i></i><span>${s[0]}</span><span class="tm">${s[1]}</span></div>`).join(''));
+  const st=i=>r.querySelector(`[data-i="${i}"]`);
+  const out=MK.filter(k=>rawLvl(k)==='caution'||rawLvl(k)==='warning');const coll=c.baselineDays<14;
+  const L=out.some(k=>rawLvl(k)==='warning')?'warning':out.length?'caution':'normal';
+  const plan=PLAN[h.codes[0]];
+  st(0).classList.add('on');await wait(400);st(0).classList.replace('on','ok');st(0).querySelector('.tm').textContent=`0.01 s · ${out.length?out.map(k=>META[k].l+' '+sig(z(k))).join(' · '):coll?'기준선 수집 중 · 판정 없음':'모두 기준선 안'}`;
+  st(1).classList.add('on');await wait(600);st(1).classList.replace('on','ok');st(1).querySelector('.tm').textContent='0.6 s · '+p.codes.join(', ');
+  st(2).classList.add('on');await wait(500);st(2).classList.replace('on','ok');st(2).querySelector('.tm').textContent='0.2 s · '+plan.docs.length+'건';
+  st(3).classList.add('on');await wait(1600);
+  const findings=out.length?out.map(k=>({m:k,v:c.now[k]})):[{m:'hr',v:c.now.hr}];
+  /* 범주는 코드 매핑(규칙), 상태 이름은 모델이 고정 목록에서 고름, 할 일은 규칙 + 출처 */
+  const cond=p.codes.includes('orthostatic')?'orthostatic':h.conds[0];
+  const why=`근거 · ${(out.length?out:['hr']).map(k=>`${META[k].l} ${fmt(c.now[k],k)}${k==='sleep'?'':' '+META[k].u}(${sig(z(k))})`).join(' · ')}${yes&&h.yesTxt?' · '+h.yesTxt:''} ${plan.docs.map(d=>'['+d+']').join('')}`;
+  const risk={cat:h.cat,cond:L==='caution'?[cond]:[],why:L==='caution'?why:null,todo:plan.todo};
+  let verified=5,runs=[],level;
+  if(L==='warning'){st(3).classList.replace('on','skip');st(3).querySelector('.tm').textContent='건너뜀 · ±3σ는 규칙 경보';st(4).classList.add('skip');st(4).querySelector('.tm').textContent='—';
+    const id=newId();S.events.unshift({id,crew:c.id,sol:SOL,time:hhmm(),title:p.hits.map(x=>x.t).join(' · ')+' · 경보 임계',symptom:p.text,sym:true,codes:p.codes,level:'warning',verified:0,runs:[],findings,explanation:null,skipModel:true,doc:'hrp:emer-02',actions:DOCS['hrp:emer-02'].ps.slice(1).map((x,i)=>({t:x,doc:'hrp:emer-02#p'+(i+2)})),shared:true,status:'open'});save();addLog(`WARNING · ±${thr()[1]}σ + 증상 · 모델 건너뜀 · ${id}`);
+    await wait(700);location.href='warning.html?id='+id;return;}
+  if(L==='normal'){level='normal';st(3).classList.replace('on','skip');st(3).querySelector('.tm').textContent='건너뜀 · 정상이면 설명 안 함';st(4).classList.add('skip');st(4).querySelector('.tm').textContent='—';}
+  else if(p.codes.includes('headache')){level='hold';verified=3;runs=[{n:1,ok:false,fails:['numbers','cite'],note:'기준선 수치 불일치 + 출처 없는 문장'},{n:2,ok:false,fails:['numbers'],note:'HRV 방향 서술 오류'}];
+    st(3).classList.replace('on','fail');st(3).querySelector('.tm').textContent='1.8 s × 2 · 모두 폐기';st(4).classList.add('fail');st(4).querySelector('.tm').textContent='3/5 → 판단 보류';}
+  else{level='caution';const name=CONDS[cond].n;const draft=Object.assign({},risk,{why:`${name}입니다. `+why});
+    runs=[{n:1,ok:verifyScope(draft),fails:verifyScope(draft)?[]:['scope'],note:`“${name}입니다” 단정 표현`},{n:2,ok:verifyScope(risk),fails:verifyScope(risk)?[]:['scope']}];
+    st(3).classList.replace('on','ok');st(3).querySelector('.tm').textContent='1.8 s × 2 · run 1 폐기(단정) → run 2';st(4).classList.add('on');await wait(500);st(4).classList.replace('on','ok');st(4).querySelector('.tm').textContent='5/5 통과';}
+  const id=newId();const title=[...new Set(p.hits.map(x=>x.t))].join(' · ');
+  const actions=level==='normal'?[{t:'기록만 · 2시간 뒤 계속되면 다시 기록',doc:'hrp:sm-01#p1'}]:plan.acts;
+  if(level==='normal')risk.todo='기록만 남겨요 · 2시간 뒤에도 계속되면 다시 적어 주세요 [hrp:sm-01#p1]';
+  S.events.unshift({id,crew:c.id,sol:SOL,time:hhmm(),title,symptom:p.text,sym:true,codes:p.codes,level,verified,runs,findings,explanation:null,risk,actions,shared:false,status:'open'});save();addLog(`이벤트 생성 · ${id} · ${title} · ${levelName(level)}`);renderRC();
+  await wait(300);
+  const lead=level==='hold'?'모델 출력이 두 번 모두 검증에 실패해 버렸어요. <b>판단 보류</b> · 범주와 할 일은 규칙으로 드려요.':level==='normal'?(coll?'기준선을 모으는 중이라 판정하지 않았어요. 기록만 남겼어요.':'기준선 안이라 설명을 만들지 않았어요. 기록만 남겼어요.'):'지표와 증상이 함께 있어 <b>주의</b>예요. 오늘 가이드에 할 일을 넣었어요.';
+  add('sys',`<div class="tag"><span class="badge ${level}">${levelEn(level)}</span><span class="badge code">${level==='hold'?'검증 3/5':level==='normal'?'RULE':'검증 5/5'}</span></div><div style="margin-bottom:8px">${lead}</div>${riskHTML(risk,level==='hold'?'held':level==='normal'?'normal':'ok')}<div class="opts"><a class="btn sm p" href="event.html?id=${id}">이벤트 상세</a><a class="btn sm" href="today.html">오늘 가이드</a></div>`);
+}
+document.getElementById('send').onclick=()=>{const v=document.getElementById('in').value.trim();if(!v)return;document.getElementById('in').value='';handle(v);};
+document.getElementById('in').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('send').click();});
+document.querySelectorAll('.chip[data-t]').forEach(b=>b.onclick=()=>handle(b.dataset.t));
+})();
+</script>
+</body>
+</html>

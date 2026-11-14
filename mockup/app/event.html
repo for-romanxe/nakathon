@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>이벤트 상세 · Crew Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app"></div>
+<script src="app.js"></script>
+<div class="modal" id="ovModal"><div class="box"><h3>이 판정을 무시하려면 이유를 선택하세요</h3><p class="muted" style="margin:0">무시 기록은 이벤트와 함께 남고, 의료 담당이 볼 수 있습니다.</p>
+<div class="opts">
+<label><input type="radio" name="ov" value="운동 직후 측정 · 안정 시 값 아님"> 운동 직후 측정이라 안정 시 값이 아님</label>
+<label><input type="radio" name="ov" value="밴드 착용 불량 · 측정 오류"> 밴드 착용 불량 · 측정 오류로 판단</label>
+<label><input type="radio" name="ov" value="이미 조치 완료 · 증상 소실"> 이미 조치했고 증상이 사라짐</label>
+<label><input type="radio" name="ov" value="기타"> 기타 (아래에 적기)</label>
+</div><input class="input" id="ovNote" placeholder="메모 (선택)">
+<div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="ovCancel">취소</button><button class="btn p" id="ovOk" disabled>이유 기록하고 무시</button></div></div></div>
+<script>
+(function(){
+const {S,CREW,META,MK,CHECKS,DOCS,fmt,sig,lvl,z,levelName,levelEn,shell,toast,save,addLog,q,esc,citeLinks,citeA,me,riskHTML}=CH;
+const id=q('id')||(S.events.find(x=>x.crew===me().id&&x.status==='open')||S.events[0]).id;const e=S.events.find(x=>x.id===id);
+const root=shell(null,'이벤트 상세','기록');
+if(!e){root.innerHTML='<div class="empty"><b>이벤트가 없습니다</b>id='+esc(id)+'</div>';return;}
+const c=CREW[e.crew];const viewer=me();
+const zOf=f=>(f.v-c.base[f.m])/c.sd[f.m];
+const lastRun=e.runs[e.runs.length-1];
+const failed=new Set(lastRun?lastRun.fails:[]);
+const skip=!!e.skipModel;const held=!skip&&(e.level==='hold'||(!e.explanation&&!e.risk));
+const runNote=e.runs.length>1?`run 1 폐기 (${esc(e.runs[0].note)}) → run 2 통과`:'run 1 통과';
+
+function render(){
+root.innerHTML=`
+<div class="row between" style="margin-bottom:14px;flex-wrap:wrap;gap:10px">
+  <div class="row"><a class="btn sm ghost" href="log.html">← 기록</a><span class="badge ${e.level}">${levelEn(e.level)}</span><h2 style="font-size:18px;letter-spacing:-.01em">${esc(e.title)}</h2><span class="muted mono" style="font-size:11.5px">${e.id} · Sol ${e.sol} ${e.time} · ${c.name}</span></div>
+  <div class="row">${e.status==='closed'?`<span class="badge">종결 · ${esc(e.closedNote||'')}</span>`:`${e.shared?'<span class="badge normal">CMO 공유됨</span>':'<button class="btn" id="share">의료 담당에게 공유</button>'}${viewer.cmo?'<button class="btn" id="tx">지구 전송 큐에 추가</button>':''}<button class="btn ghost" id="override">판정 무시</button>`}</div>
+</div>
+${e.symptom?`<div class="panel" style="margin-bottom:16px"><div class="bd row" style="gap:14px"><span class="muted" style="flex:none">보고 문장</span><span>“${esc(e.symptom)}”</span><span class="sp" style="flex:1"></span><span class="row" style="gap:6px">${e.codes.map(k=>`<span class="badge model">${k}</span>`).join('')}</span></div></div>`:''}
+<div class="grid g3">
+  <div class="panel"><div class="hd">사실 <small>규칙 · 코드</small><div class="sp"></div><span class="badge code">RULE</span></div><div class="bd p0"><table><thead><tr><th>지표</th><th class="num">측정</th><th class="num">기준</th><th class="num">σ</th></tr></thead><tbody>
+    ${e.findings.map(f=>{const zz=zOf(f);const a=Math.abs(zz);const L=a>=3?'warning':a>=2?'caution':'normal';return `<tr class="clickable" onclick="location.href='trends.html?m=${f.m}&crew=${c.id}'"><td>${META[f.m].l}<span class="muted"> · ${META[f.m].h}</span></td><td class="num">${fmt(f.v,f.m)}</td><td class="num muted">${fmt(c.base[f.m],f.m)}</td><td class="num sig ${L}">${sig(zz)}</td></tr>`;}).join('')}
+  </tbody></table><div class="bd note">판정 <b class="lv ${e.level}">${levelEn(e.level)}</b> · ${e.level==='hold'?'설명 검증 실패로 보류, 규칙 판정은 주의':skip?'모델 건너뜀 · 규칙 경보':'기준선 14일 · 주의 ±2σ · 경보 ±3σ'}. 이 칸은 모델과 무관하게 계산됩니다.</div></div></div>
+  <div class="panel"><div class="hd">${e.risk?'위험 안내 <small>범주·할 일 규칙 · 상태 이름 모델</small>':'설명 <small>모델 · Qwen3-4B</small>'}<div class="sp"></div><span class="badge model">SLM</span></div><div class="bd">
+    ${skip?`<div class="empty" style="padding:24px 8px"><b>모델 건너뜀</b>경보는 설명을 만들지 않고 바로 절차로 갑니다.<br>설명은 이 경보가 종결된 뒤에만 호출됩니다.</div>`
+    :e.risk?`${riskHTML(e.risk,held?'held':e.level==='normal'?'normal':'ok')}${held?`<div class="hairrows" style="border-top:1px solid var(--line);margin:10px -16px -14px">${e.runs.map(r=>`<div class="row between" style="font-size:12px"><span><span class="badge ${r.ok?'normal':'warning'}">run ${r.n} · ${r.ok?'통과':'폐기'}</span></span><span class="muted" style="text-align:right">${esc(r.note||'')}</span></div>`).join('')}</div>`:e.level==='normal'?'':`<div class="note" style="margin-top:8px">생성 1.8 s · 고정 목록 ${Object.keys(CH.CONDS).length}개 중 선택 · ${runNote}</div>`}`
+    :held?`<div class="empty" style="padding:24px 8px"><b>판단 보류</b>모델 설명이 검증을 ${e.runs.length}회 통과하지 못해 폐기했습니다.<br>왼쪽 수치와 아래 절차서만 보세요.</div>
+      <div class="hairrows" style="border-top:1px solid var(--line);margin:0 -16px -14px">${e.runs.map(r=>`<div class="row between" style="font-size:12px"><span><span class="badge ${r.ok?'normal':'warning'}">run ${r.n} · ${r.ok?'통과':'폐기'}</span></span><span class="muted" style="text-align:right">${esc(r.note||'')}</span></div>`).join('')}</div>`
+    :`<p style="margin:0 0 10px;line-height:1.65;max-width:62ch">${citeLinks(e.explanation)}</p>
+      <div class="note">생성 1.8 s · 출처 ${(e.explanation.match(/\[/g)||[]).length}건 · ${runNote}</div>`}
+  </div></div>
+  <div class="panel"><div class="hd">검증 <small>코드 · 5개 규칙</small><div class="sp"></div><span class="badge ${skip?'':e.verified===5?'normal':'warning'}">${skip?'건너뜀':e.verified+'/5'}</span></div><div class="bd p0 hairrows">
+    ${CHECKS.map(ch=>{const f=failed.has(ch.id);return `<div class="row" style="gap:12px;align-items:flex-start"><span class="chk"><span class="${skip?'skip':f?'fail':'ok'}">${skip?'—':f?'✕':'✓'}</span></span><span style="flex:1"><b style="font-weight:500">${ch.l}</b><br><span class="muted" style="font-size:11.5px">${ch.d}</span></span></div>`;}).join('')}
+    <div class="note">하나라도 실패하면 설명을 버리고 다시 생성합니다. 2회 실패 시 “판단 보류”.</div>
+  </div></div>
+</div>
+<div class="grid g-main" style="margin-top:16px">
+  <div class="panel"><div class="hd">대응<div class="sp"></div><small id="actCnt"></small></div><div class="bd p0 steps" id="acts">
+    ${e.actions.map((a,i)=>{const d=S.todos[e.id+':'+i];return `<div class="${d?'ok':''}" data-i="${i}"><span>${esc(a.t)}</span><span class="row">${citeA(a.doc)}${e.status==='open'?`<button class="btn sm ${d?'ghost':''}" data-i="${i}">${d?'되돌리기':'완료'}</button>`:''}</span></div>`;}).join('')}
+  </div></div>
+  <div class="stack">
+    <div class="panel"><div class="hd">공유 · 기록</div><div class="bd p0 hairrows" style="font-size:12.5px">
+      <div class="row between"><span class="muted">의료 담당</span><span>${e.shared?'승무원 B · 기기 내 전달':'미공유'}</span></div>
+      <div class="row between"><span class="muted">지구 전송</span><span>${S.tx.some(t=>t.ref===e.id)?'큐에 있음':'전송 창 '+S.settings.txTime+' 일일 요약에 포함'}</span></div>
+      <div class="row between"><span class="muted">무시 기록</span><span>${S.overrides.filter(o=>o.eventId===e.id).length}건</span></div>
+      ${S.overrides.filter(o=>o.eventId===e.id).map(o=>`<div class="note">Sol ${o.sol} ${o.time} · ${esc(o.reason)}${o.note?' · '+esc(o.note):''}</div>`).join('')}
+    </div></div>
+    <div class="panel"><div class="hd">파이프라인</div><div class="bd p0 hairrows" style="font-size:12px">
+      <div class="row between"><span>① 이상탐지</span><span class="badge code">규칙 · 0.01 s</span></div>
+      <div class="row between"><span>② 증상 해석 → 코드</span><span class="badge model">SLM · 0.6 s</span></div>
+      <div class="row between"><span>③ 근거 검색</span><span class="badge code">BM25 · ${Object.keys(DOCS).length}문서</span></div>
+      <div class="row between"><span>④ ${e.risk?'위험 안내':'설명'} 생성</span><span class="badge model">${skip?'건너뜀':'SLM · 1.8 s × '+e.runs.length}</span></div>
+      <div class="row between"><span>⑤ 검증</span><span class="badge code">5 규칙</span></div>
+    </div></div>
+  </div>
+</div>`;
+const cnt=document.getElementById('actCnt');const upd=()=>cnt.textContent=`${e.actions.filter((a,i)=>S.todos[e.id+':'+i]).length} / ${e.actions.length} 완료`;upd();
+document.querySelectorAll('#acts button').forEach(b=>b.onclick=()=>{const k=e.id+':'+b.dataset.i;S.todos[k]=!S.todos[k];save();if(S.todos[k])addLog(`대응 완료 · ${e.actions[b.dataset.i].t}`);render();});
+const sh=document.getElementById('share');if(sh)sh.onclick=()=>{e.shared=true;save();addLog(`이벤트 ${e.id} 의료 담당에게 공유`);toast('승무원 B(CMO)에게 공유했습니다');render();};
+const tx=document.getElementById('tx');if(tx)tx.onclick=()=>{if(S.tx.some(t=>t.ref===e.id)){toast('이미 큐에 있습니다');return;}S.tx.unshift({id:'tx-'+e.id,sol:CH.SOL,time:CH.hhmm(),crew:e.crew,kind:'이벤트 패킷 · '+e.title,status:'대기',ref:e.id});save();addLog(`지구 전송 큐 추가 · ${e.id}`,viewer.id);toast('지구 전송 큐에 추가 · 다음 창 '+S.settings.txTime);render();};
+const ov=document.getElementById('override');if(ov)ov.onclick=()=>document.getElementById('ovModal').classList.add('on');
+}
+render();
+const modal=document.getElementById('ovModal');
+modal.querySelectorAll('input[name=ov]').forEach(r=>r.onchange=()=>document.getElementById('ovOk').disabled=false);
+document.getElementById('ovCancel').onclick=()=>modal.classList.remove('on');
+document.getElementById('ovOk').onclick=()=>{const reason=modal.querySelector('input[name=ov]:checked').value;const note=document.getElementById('ovNote').value.trim();S.overrides.push({eventId:e.id,reason,note,sol:CH.SOL,time:CH.hhmm(),who:viewer.id});e.status='closed';e.closedNote='무시 · '+reason;save();addLog(`판정 무시 · ${e.id} · ${reason}`);modal.classList.remove('on');toast('무시 이유를 기록했습니다 · CMO에게 보입니다');render();};
+})();
+</script>
+</body>
+</html>

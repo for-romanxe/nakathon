@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crew Health — 컨셉 필름</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0807; --bg2:#0E0B0A;
+    --panel:#161211; --panel2:#1C1716; --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+    --text:#F5F3F0; --muted:#8E8884; --soft:#C9C4BF;
+    --ok:#5BD98F; --watch:#FFB05A; --alert:#FF7A7A; --hold:#9A948F;
+    --slm:#C4B5FF; --code:#8EC5FF;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-snap-type:y mandatory;scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Noto Sans KR",system-ui,sans-serif;font-size:14px;line-height:1.5;letter-spacing:-.01em;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+  /* scenes */
+  .scene{position:relative;min-height:100vh;scroll-snap-align:start;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:64px 6vw}
+  .scene .inner{position:relative;z-index:2;width:100%;max-width:1360px}
+  .horizon{position:absolute;left:50%;bottom:-120vw;width:190vw;height:190vw;border-radius:50%;transform:translateX(-50%);background:#070504;z-index:1;
+    box-shadow:0 0 0 1.5px rgba(255,255,255,.42),0 -10px 40px rgba(255,255,255,.22),0 -50px 140px rgba(150,170,255,.16),0 -120px 260px rgba(120,140,255,.08);pointer-events:none}
+  .horizon.low{bottom:-150vw}
+  .horizon::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.10),transparent 35%)}
+  .vignette{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 50% 60%,transparent 40%,rgba(0,0,0,.55) 100%);pointer-events:none}
+
+  /* type */
+  .eyebrow{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+  h1.big{margin:0;font-size:clamp(44px,6.2vw,92px);font-weight:800;letter-spacing:-.045em;line-height:1.0}
+  h2.head{margin:0;font-size:clamp(32px,3.6vw,54px);font-weight:800;letter-spacing:-.04em;line-height:1.05}
+  .sub{margin:14px 0 0;font-size:clamp(18px,1.6vw,24px);font-weight:600;color:var(--soft);letter-spacing:-.02em}
+  .desc{margin:14px 0 0;font-size:15px;color:var(--muted);max-width:420px;line-height:1.6}
+  .mono{font-family:var(--mono);font-size:13px;color:var(--muted)}
+
+  /* layouts */
+  .split{display:grid;grid-template-columns:minmax(300px,0.8fr) minmax(0,1.4fr);gap:56px;align-items:center}
+  .split.flip{grid-template-columns:minmax(0,1.4fr) minmax(300px,0.8fr)}
+  .center{text-align:center;display:flex;flex-direction:column;align-items:center}
+  @media (max-width:900px){.split,.split.flip{grid-template-columns:1fr}}
+
+  /* panels (app windows) */
+  .win{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.4) inset;overflow:hidden;color:var(--soft)}
+  .win .bar{display:flex;gap:7px;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .win .bar i{width:11px;height:11px;border-radius:50%;background:#2B2524;display:block}
+  .win .body{padding:22px 24px}
+  .win.sb{display:grid;grid-template-columns:200px 1fr}
+  .win.sb .bar{grid-column:1/-1}
+  .side{padding:18px 14px;border-right:1px solid var(--line);font-size:12.5px;display:flex;flex-direction:column;gap:12px;color:var(--muted)}
+  .side b{color:var(--soft);font-weight:600}
+  .side .grp{margin-top:10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .card h4{margin:0 0 4px;font-size:13px;color:var(--text);font-weight:600}
+  .card p{margin:0;font-size:12px;color:var(--muted)}
+  .inputbar{background:#121010;border:1px solid var(--line2);border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+  .inputbar .ph{color:var(--muted);font-size:14px}
+  .inputbar .row{display:flex;align-items:center;gap:18px;color:var(--muted);font-size:12.5px}
+  .inputbar .send{margin-left:auto;width:30px;height:30px;border-radius:50%;background:#2B2524;display:flex;align-items:center;justify-content:center;color:var(--text)}
+  .chip{display:inline-flex;align-items:center;gap:10px;background:#141110;border:1px solid var(--line);border-radius:14px;padding:12px 18px;font-size:15px;font-weight:600;color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .chip i{width:22px;height:22px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;background:#2B2524;font-style:normal;font-size:11px;color:var(--soft);font-family:var(--mono)}
+  .chip.slm i{background:#3A2F66;color:#D9CCFF}
+  .chip.dim{opacity:.55;filter:blur(.6px)}
+  .badge{display:inline-block;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.02em}
+  .b-ok{background:#153224;color:var(--ok)} .b-watch{background:#3A2712;color:var(--watch)} .b-alert{background:#3E1A1A;color:var(--alert)} .b-hold{background:#2A2524;color:var(--hold)}
+  .b-code{background:#1A2A3E;color:var(--code)} .b-slm{background:#2A2246;color:var(--slm)}
+  .cite{font-family:var(--mono);font-size:10.5px;padding:1px 5px;border-radius:4px;background:#1A2A3E;color:var(--code);margin:0 2px}
+  .bubble{position:absolute;top:18px;right:18px;background:#1E1917;border:1px solid var(--line2);border-radius:12px;padding:10px 14px;font-size:12.5px;color:var(--text);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .vitals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .vital{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .vital .k{font-size:11px;color:var(--muted)}
+  .vital .v{font-size:24px;font-weight:700;letter-spacing:-.03em;color:var(--text)}
+  .vital .v small{font-size:11px;color:var(--muted);font-weight:500;margin-left:3px}
+  .vital .z{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .vital .z.hi{color:var(--watch)}.vital .z.vhi{color:var(--alert)}.vital .z.ok{color:var(--ok)}
+  svg.spark{width:100%;height:26px;margin:6px 0 2px}
+  .list{display:flex;flex-direction:column;gap:8px}
+  .list div{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--soft)}
+  .ck{width:16px;height:16px;border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-top:2px}
+  .ck.y{background:#153224;color:var(--ok)} .ck.n{background:#3E1A1A;color:var(--alert)}
+  pre{margin:0;font-family:var(--mono);font-size:11.5px;line-height:1.5;color:var(--code);background:#0E0B0A;border:1px solid var(--line);border-radius:10px;padding:12px;white-space:pre-wrap}
+  pre.slm{color:var(--slm)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;color:var(--muted);font-weight:500;padding:6px 8px;border-bottom:1px solid var(--line);font-size:11px}
+  td{padding:8px;border-bottom:1px solid var(--line);color:var(--soft)}
+  .flag{display:inline-block;padding:1px 6px;border-radius:4px;background:#3E1A1A;color:var(--alert);font-size:10px;font-weight:600;margin-left:4px;vertical-align:middle}
+
+  /* status dashboard */
+  .status{display:grid;grid-template-columns:minmax(300px,0.9fr) minmax(0,1.6fr);gap:16px;margin-top:32px;align-items:stretch}
+  @media (max-width:900px){.status{grid-template-columns:1fr}}
+  .mann{flex:1;display:flex;align-items:center;justify-content:center}
+  .mann svg{width:100%;max-height:430px}
+  .mk circle{fill:#5BD98F}.mk .ring{fill:none;stroke:#5BD98F;stroke-width:1.5;opacity:.6;transform-origin:center;animation:pulse 2.2s ease-out infinite}
+  .mk-watch circle{fill:#FFB05A}.mk-watch .ring{stroke:#FFB05A}
+  .mk-alert circle{fill:#FF7A7A}.mk-alert .ring{stroke:#FF7A7A;animation-duration:1.4s}
+  @keyframes pulse{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.9);opacity:0}}
+  .lbl text{font-family:Inter,"Noto Sans KR",sans-serif;font-size:11px;font-weight:600;fill:#F5F3F0}
+  .lbl text.s{font-family:"JetBrains Mono",monospace;font-size:9.5px;font-weight:400;fill:#8E8884}
+  .dotc{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .dotc.ok{background:var(--ok)}.dotc.watch{background:var(--watch)}.dotc.alert{background:var(--alert)}
+  .metrics{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:16px}
+  .metrics .mgrid{grid-column:1/-1}
+  .ring{--p:0;width:112px;height:112px;border-radius:50%;flex:none;background:conic-gradient(#FFB05A calc(var(--p)*1%),#2A2524 0);display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px rgba(255,176,90,.15)}
+  .ring-in{width:88px;height:88px;border-radius:50%;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .rv-n{font-size:30px;font-weight:800;letter-spacing:-.04em;color:var(--text);line-height:1}
+  .rv-l{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.12em;margin-top:4px}
+  svg.chart{width:100%;height:110px;margin:10px 0 6px}
+  .mgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  @media (max-width:1100px){.mgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  .m{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+  .m .k{font-size:11px;color:var(--muted)}
+  .m .v{font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text);margin:4px 0 2px;line-height:1.1}
+  .m .v small{font-size:12px;color:var(--muted);font-weight:500;margin-left:2px}
+  .m .t{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+  .m .t.ok{color:var(--ok)}.m .t.watch{color:var(--watch)}.m .t.alert{color:var(--alert)}
+
+  /* intro */
+  #intro{background:#000}
+  #warp{position:absolute;inset:0;z-index:0}
+  .intro-line{position:relative;z-index:2;font-size:clamp(34px,4.6vw,64px);font-weight:700;letter-spacing:-.03em;display:flex;align-items:center;gap:.4em;opacity:0;transition:opacity .9s ease,transform .9s ease;transform:translateY(10px)}
+  .intro-line.on{opacity:1;transform:none}
+  .intro-line .tag{font-size:.8em;font-weight:500;color:var(--soft)}
+  .intro-sub{position:relative;z-index:2;margin-top:18px;color:var(--muted);font-size:18px;opacity:0;transition:opacity .9s ease .4s}
+  .intro-sub.on{opacity:1}
+
+  /* big number scene */
+  .bignum{font-size:clamp(96px,14vw,200px);font-weight:800;letter-spacing:-.06em;line-height:.9}
+  .bignum span{color:#6E6864;font-weight:700}
+  .cloud{position:relative;height:420px;width:100%;margin-top:28px}
+  .cloud .chip{position:absolute}
+  .cloud .inputbar{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(820px,80%);z-index:2}
+
+  /* end */
+  .appicon{width:112px;height:112px;border-radius:28px;background:linear-gradient(180deg,#FFFFFF,#E9E6E2);box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.2);display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:26px}
+  .appicon i{border-radius:50%;background:#2A2524;display:block}
+  .appicon i.l{background:#9C9793}.appicon i.x{background:#D8D4D0}
+
+  /* hud */
+  .hud{position:fixed;left:28px;bottom:24px;z-index:9;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.06em}
+  .tag-top{position:fixed;right:28px;top:22px;z-index:9;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em;border:1px solid var(--line);padding:6px 10px;border-radius:999px;background:rgba(11,8,7,.6)}
+  .dots{position:fixed;right:28px;top:50%;transform:translateY(-50%);z-index:9;display:flex;flex-direction:column;gap:10px}
+  .dots a{width:6px;height:6px;border-radius:50%;background:#3A3331;display:block}
+  .dots a.on{background:#F5F3F0}
+
+  /* reveal */
+  .rv{opacity:0;transform:translateY(22px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+  .scene.on .rv{opacity:1;transform:none}
+  .scene.on .rv.d1{transition-delay:.12s}.scene.on .rv.d2{transition-delay:.26s}.scene.on .rv.d3{transition-delay:.42s}
+</style>
+</head>
+<body>
+
+<div class="tag-top">CONCEPT · 회의 논의용 · 제출물 아님 · 가상 데이터</div>
+<div class="hud"><span id="cur">01</span> / 10</div>
+<div class="dots" id="dots"></div>
+
+<!-- 01 intro -->
+<section class="scene on" id="intro">
+  <canvas id="warp"></canvas>
+  <div class="inner center">
+    <div class="intro-line on" id="l1">지구에선 <span class="tag">의사가 옆에 있다</span></div>
+    <div class="intro-line" id="l2" style="margin-top:10px">화성에선 <span class="tag">22분 떨어져 있다</span></div>
+    <div class="intro-sub" id="l3">그 사이, 판단은 누가 하나?</div>
+  </div>
+</section>
+
+<!-- 02 hero -->
+<section class="scene">
+  <div class="horizon"></div><div class="vignette"></div>
+  <div class="inner center">
+    <h1 class="big rv">All your vitals. One screen.</h1>
+    <p class="sub rv d1">온디바이스 · 오프라인 · 승무원 혼자서도</p>
+    <div class="win sb rv d2" style="width:min(980px,100%);margin-top:40px;text-align:left">
+      <div class="bar"><i></i><i></i><i></i></div>
+      <div class="side">
+        <b>CREW HEALTH</b>
+        <span>오늘</span><span>이상 기록</span><span>증상 말하기</span><span>절차서</span>
+        <span class="grp">승무원</span>
+        <span>A · 사령관</span><span>B · 의료 담당</span><span>C · 엔지니어</span><span>D · 과학</span>
+        <span class="mono" style="margin-top:auto;font-size:11px">모델 4B · 로컬<br>동기화 10:41</span>
+      </div>
+      <div class="body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div><div class="eyebrow">Sol 142 · 10:42</div><div style="font-size:18px;font-weight:700;color:var(--text);margin-top:2px">심박과 EDA가 기준선보다 높습니다</div></div>
+          <span class="badge b-watch">주의 · 검증 5/5</span>
+        </div>
+        <div class="vitals">
+          <div class="vital"><div class="k">심박</div><div class="v">92<small>bpm</small></div><svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="#FFB05A" stroke-width="1.5" points="0,20 15,19 30,18 45,16 60,13 75,10 90,7 100,5"/></svg><div class="z hi">기준 68 · z +2.6</div></div>
+          <div class="vital"><div class="k">HRV</div><div class="v">31<small>ms</small></div><svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="#FFB05A" stroke-width="1.5" points="0,6 15,8 30,10 45,12 60,15 75,18 90,20 100,21"/></svg><div class="z hi">기준 52 · z −2.1</div></div>
+          <div class="vital"><div class="k">EDA</div><div class="v">4.8<small>µS</small></div><svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="#FF7A7A" stroke-width="1.5" points="0,22 15,22 30,21 45,18 60,13 75,8 90,4 100,3"/></svg><div class="z vhi">기준 1.9 · z +3.1</div></div>
+          <div class="vital"><div class="k">피부온</div><div class="v">34.1<small>°C</small></div><svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="#5BD98F" stroke-width="1.5" points="0,13 20,12 40,13 60,13 80,12 100,13"/></svg><div class="z ok">기준 33.9 · z +0.4</div></div>
+          <div class="vital"><div class="k">SpO₂</div><div class="v">97<small>%</small></div><svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="#5BD98F" stroke-width="1.5" points="0,12 20,12 40,13 60,12 80,12 100,12"/></svg><div class="z ok">기준 97 · z 0.0</div></div>
+          <div class="vital"><div class="k">수면</div><div class="v">5h 10m</div><svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><rect x="0" y="14" width="18" height="10" fill="#2F4F7A"/><rect x="20" y="4" width="30" height="20" fill="#5A4A9C"/><rect x="52" y="10" width="22" height="14" fill="#2F4F7A"/><rect x="76" y="18" width="24" height="6" fill="#2A2524"/></svg><div class="z hi">기준 6h 50m · z −1.8</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 status dashboard -->
+<section class="scene">
+  <div class="horizon low"></div><div class="vignette"></div>
+  <div class="inner">
+    <div class="center"><h2 class="head rv">Your body, at a glance.</h2><p class="sub rv d1">오늘의 상태판 — 평균값, 추세, 그리고 어디가 벗어났는지</p></div>
+    <div class="status rv d2">
+      <!-- body -->
+      <div class="win body-win">
+        <div class="body" style="display:flex;flex-direction:column;gap:10px;height:100%">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span class="eyebrow">승무원 A · Sol 142</span><span class="badge b-watch">주의</span></div>
+          <div class="mann">
+            <svg viewBox="0 0 220 460" aria-label="신체 상태 마네킹" role="img">
+              <defs>
+                <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A2423"/><stop offset="1" stop-color="#171312"/></linearGradient>
+                <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              </defs>
+              <g fill="url(#skin)" stroke="rgba(255,255,255,.18)" stroke-width="1.2">
+                <ellipse cx="110" cy="42" rx="26" ry="32"/>
+                <rect x="98" y="72" width="24" height="18" rx="8"/>
+                <path d="M62 96 Q110 78 158 96 L166 200 Q160 250 150 262 L70 262 Q60 250 54 200 Z"/>
+                <path d="M62 98 Q40 110 36 150 L26 236 Q24 250 34 252 L44 252 Q52 250 54 236 L64 160 Z"/>
+                <path d="M158 98 Q180 110 184 150 L194 236 Q196 250 186 252 L176 252 Q168 250 166 236 L156 160 Z"/>
+                <path d="M72 262 L104 262 L108 330 L104 430 Q104 444 92 444 L78 444 Q68 444 70 430 L62 330 Z"/>
+                <path d="M116 262 L148 262 L158 330 L150 430 Q152 444 142 444 L128 444 Q116 444 116 430 L112 330 Z"/>
+              </g>
+              <!-- markers -->
+              <g class="mk mk-watch" filter="url(#glow)"><circle cx="124" cy="150" r="7"/><circle cx="124" cy="150" r="14" class="ring"/></g>
+              <g class="mk mk-ok" filter="url(#glow)"><circle cx="110" cy="40" r="6"/></g>
+              <g class="mk mk-ok" filter="url(#glow)"><circle cx="96" cy="138" r="6"/></g>
+              <g class="mk mk-alert" filter="url(#glow)"><circle cx="34" cy="246" r="6"/><circle cx="34" cy="246" r="12" class="ring"/></g>
+              <g class="mk mk-ok" filter="url(#glow)"><circle cx="110" cy="200" r="6"/></g>
+              <g class="mk mk-watch" filter="url(#glow)"><circle cx="110" cy="92" r="5"/></g>
+              <g class="mk mk-ok" filter="url(#glow)"><circle cx="86" cy="360" r="6"/><circle cx="134" cy="360" r="6"/></g>
+              <!-- labels -->
+              <g class="lbl">
+                <text x="150" y="146">심박 92 · HRV 31</text><text x="150" y="160" class="s">기준 대비 +2.6σ</text>
+                <text x="150" y="36">수면 5h10</text><text x="150" y="50" class="s">깊은 수면 12%</text>
+                <text x="6" y="136" text-anchor="start">SpO₂ 97%</text><text x="6" y="150" class="s" text-anchor="start">호흡 15/min</text>
+                <text x="6" y="284" text-anchor="start">EDA 4.8 µS</text><text x="6" y="298" class="s" text-anchor="start">손목 · +3.1σ</text>
+                <text x="150" y="204">심부 체온 36.8°</text><text x="150" y="218" class="s">피부온 34.1°</text>
+                <text x="150" y="88">경동맥 혈압</text><text x="150" y="102" class="s">118 / 76</text>
+                <text x="150" y="364">골밀도 −1.2%</text><text x="150" y="378" class="s">하지 근량 −3%</text>
+              </g>
+            </svg>
+          </div>
+          <div class="mono" style="font-size:11px;display:flex;gap:12px;justify-content:center"><span><i class="dotc ok"></i>정상</span><span><i class="dotc watch"></i>주의</span><span><i class="dotc alert"></i>경보</span></div>
+        </div>
+      </div>
+
+      <!-- metrics -->
+      <div class="metrics">
+        <div class="win big-metric">
+          <div class="body" style="display:flex;align-items:center;gap:22px">
+            <div class="ring" style="--p:62"><div class="ring-in"><div class="rv-n">62</div><div class="rv-l">READINESS</div></div></div>
+            <div style="flex:1">
+              <div class="eyebrow">오늘의 준비도</div>
+              <div style="font-size:16px;font-weight:700;color:var(--text);margin:4px 0 6px">수면 부족 + 자율신경 반응으로 하락</div>
+              <div style="display:flex;gap:16px" class="mono"><span>어제 81</span><span>7일 평균 78</span><span style="color:var(--watch)">−19</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="win"><div class="body">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="eyebrow">심박 24h</span><span class="mono">평균 <b style="color:var(--text)">74</b> bpm · 안정 시 <b style="color:var(--text)">61</b></span></div>
+          <svg class="chart" viewBox="0 0 600 120" preserveAspectRatio="none" aria-hidden="true">
+            <defs><linearGradient id="hrfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFB05A" stop-opacity=".35"/><stop offset="1" stop-color="#FFB05A" stop-opacity="0"/></linearGradient></defs>
+            <line x1="0" y1="60" x2="600" y2="60" stroke="rgba(255,255,255,.08)" stroke-dasharray="3 4"/>
+            <path d="M0,70 C40,74 60,66 90,72 S150,80 190,78 S250,60 300,64 S360,58 400,50 S470,34 520,26 S570,18 600,14 L600,120 L0,120 Z" fill="url(#hrfill)"/>
+            <path d="M0,70 C40,74 60,66 90,72 S150,80 190,78 S250,60 300,64 S360,58 400,50 S470,34 520,26 S570,18 600,14" fill="none" stroke="#FFB05A" stroke-width="2"/>
+            <circle cx="600" cy="14" r="4" fill="#FFB05A"/>
+          </svg>
+          <div class="mono" style="display:flex;justify-content:space-between;font-size:10.5px"><span>10:00 어제</span><span>수면</span><span>기상 06:10</span><span>지금 92</span></div>
+        </div></div>
+        <div class="mgrid">
+          <div class="m"><div class="k">심부 체온</div><div class="v">36.8<small>°C</small></div><div class="t ok">24h 평균 36.7 · 정상 범위</div></div>
+          <div class="m"><div class="k">혈압</div><div class="v">118<small>/76</small></div><div class="t ok">기상 직후 측정 · 안정</div></div>
+          <div class="m"><div class="k">호흡수</div><div class="v">15<small>/min</small></div><div class="t ok">기준 14 · 변동 없음</div></div>
+          <div class="m"><div class="k">SpO₂</div><div class="v">97<small>%</small></div><div class="t ok">야간 최저 94</div></div>
+          <div class="m"><div class="k">HRV (RMSSD)</div><div class="v">31<small>ms</small></div><div class="t watch">7일 평균 49 · −37%</div></div>
+          <div class="m"><div class="k">EDA</div><div class="v">4.8<small>µS</small></div><div class="t alert">기준 1.9 · 자율신경 활성</div></div>
+          <div class="m"><div class="k">수면</div><div class="v">5<small>h</small>10<small>m</small></div><div class="t watch">깊은 수면 12% · 기준 21%</div></div>
+          <div class="m"><div class="k">활동</div><div class="v">42<small>min</small></div><div class="t ok">저항운동 · 목표 60</div></div>
+          <div class="m"><div class="k">수분</div><div class="v">1.1<small>L</small></div><div class="t watch">목표 2.5 · 아침 기준</div></div>
+          <div class="m"><div class="k">체중</div><div class="v">71.4<small>kg</small></div><div class="t ok">발사 대비 −1.8</div></div>
+          <div class="m"><div class="k">누적 방사선</div><div class="v">38.2<small>mSv</small></div><div class="t ok">임무 한도 대비 13%</div></div>
+          <div class="m"><div class="k">선실 CO₂</div><div class="v">0.41<small>%</small></div><div class="t ok">3.1 mmHg · 정상</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 symptom -->
+<section class="scene">
+  <div class="horizon low"></div><div class="vignette"></div>
+  <div class="inner split">
+    <div>
+      <h2 class="head rv">Say it.<br>It gets understood.</h2>
+      <p class="sub rv d1">말하면, 증상 코드가 된다</p>
+      <p class="desc rv d2">자연어 문장은 SLM이 정해진 증상 목록으로만 옮긴다. 목록에 없는 말은 지어내지 못하고 "unmapped"로 남는다. 확인 질문은 코드가 템플릿으로 던진다.</p>
+    </div>
+    <div class="win rv d2" style="position:relative;min-height:440px">
+      <div class="bubble">어지럽고 속이 메스꺼워. 아침부터 그래.</div>
+      <div class="body" style="padding-top:70px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;gap:10px;align-items:center"><span class="badge b-slm">SLM ① · 증상 해석</span><span class="mono" style="font-size:11px">0.4s</span></div>
+        <pre class="slm">{ "symptoms": ["dizziness", "nausea"],
+  "onset": "morning",
+  "unmapped": [] }</pre>
+        <div class="card"><h4>일어설 때 더 심해지나요?</h4><p>확인 질문 · 코드 템플릿 (ortho-screen)</p><div style="display:flex;gap:8px;margin-top:10px"><span class="chip" style="padding:8px 14px;font-size:13px;box-shadow:none">예</span><span class="chip" style="padding:8px 14px;font-size:13px;box-shadow:none;opacity:.6">아니오</span></div></div>
+        <div class="inputbar"><div class="ph">지금 어떤지 말씀해 주세요…</div><div class="row"><span>+</span><span>4B · 로컬</span><span>증상 enum v3</span><span class="send">↑</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 facts then words -->
+<section class="scene">
+  <div class="horizon low"></div><div class="vignette"></div>
+  <div class="inner split flip">
+    <div class="win rv d2" style="position:relative">
+      <div class="bar"><i></i><i></i><i></i></div>
+      <div class="body" style="display:grid;grid-template-columns:1fr 1.3fr;gap:18px">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span class="eyebrow">사실</span><span class="badge b-code">규칙 엔진</span></div>
+          <table>
+            <tr><th>지표</th><th>값</th><th>기준</th><th>z</th></tr>
+            <tr><td>심박</td><td>92</td><td>68</td><td style="color:var(--watch)">+2.6</td></tr>
+            <tr><td>EDA</td><td>4.8</td><td>1.9</td><td style="color:var(--alert)">+3.1</td></tr>
+            <tr><td>HRV</td><td>31</td><td>52</td><td style="color:var(--watch)">−2.1</td></tr>
+            <tr><td>수면</td><td>5h10</td><td>6h50</td><td style="color:var(--watch)">−1.8</td></tr>
+          </table>
+          <div style="margin-top:10px"><span class="badge b-watch">주의</span> <span class="mono" style="font-size:11px">z ≥ 2.5 × 2 + 수면 부족</span></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span class="eyebrow">설명</span><span class="badge b-slm">SLM ② · 문서로만</span></div>
+          <p style="margin:0 0 10px;font-size:12.5px;line-height:1.6">오늘 아침 심박과 피부전기활동이 평소보다 뚜렷하게 높고, 수면은 1시간 40분 짧았습니다 <span class="cite">e4:S03</span><span class="cite">sleep:D141</span>. 어지러움·메스꺼움은 수면 부족과 자율신경 반응이 겹칠 때 흔한 조합입니다 <span class="cite">hrp:sm-03</span>.</p>
+          <div class="list">
+            <div><span class="ck y">✓</span>수분 500 mL 후 30분 뒤 재측정 <span class="cite">proc:ortho-01</span></div>
+            <div><span class="ck y">✓</span>기립 시 악화되면 의료 담당에게 알림</div>
+            <div><span class="ck y">✓</span>오늘 고강도 운동은 저강도로</div>
+          </div>
+          <p class="mono" style="margin:12px 0 0;font-size:11px">진단 아님 · 판정은 규칙이 했고 모델은 옮겨 적었다</p>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h2 class="head rv">Facts first.<br>Then words.</h2>
+      <p class="sub rv d1">판정은 코드가, 설명은 모델이</p>
+      <p class="desc rv d2">상태는 개인 기준선 대비 z-score로 규칙 엔진이 정한다. SLM은 그 수치와 검색된 NASA HRP 문서만 보고 사람 말로 옮긴다. 문장마다 출처가 붙는다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 06 verification -->
+<section class="scene">
+  <div class="horizon low"></div><div class="vignette"></div>
+  <div class="inner split">
+    <div>
+      <h2 class="head rv">5 checks.<br>Or nothing.</h2>
+      <p class="sub rv d1">다섯 개 대조, 하나라도 틀리면 침묵</p>
+      <p class="desc rv d2">모델이 쓴 문장을 코드가 다시 읽는다. 상태·수치·출처·숫자·근거량. 하나라도 어긋나면 설명을 버리고 "판단 보류"와 규칙 수치만 보여 준다. 모르는 걸 아는 척하지 못하게.</p>
+    </div>
+    <div style="display:grid;gap:16px">
+      <div class="win rv d1"><div class="body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span class="eyebrow">검증</span><span class="badge b-ok">5 / 5 통과</span></div>
+        <div class="list">
+          <div><span class="ck y">✓</span>상태 일치 — "watch" = "watch"</div>
+          <div><span class="ck y">✓</span>수치 일치 — 92 · 4.8 · 31 · 5h10</div>
+          <div><span class="ck y">✓</span>출처 존재 — 인용 4건 모두 검색 결과 안</div>
+          <div><span class="ck y">✓</span>설명 속 숫자 — "1시간 40분" = 6h50 − 5h10</div>
+          <div><span class="ck y">✓</span>근거 충분 — 점수 0.71 ≥ 0.55</div>
+        </div>
+      </div></div>
+      <div class="win rv d2" style="border-color:rgba(255,176,90,.25)"><div class="body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span class="eyebrow">검증 실패 시</span><span class="badge b-hold">판단 보류</span></div>
+        <div class="list">
+          <div><span class="ck n">✕</span>수치 일치 — 모델 "심박 110" ≠ 계산 92</div>
+          <div><span class="ck n">✕</span>출처 존재 — "hrp:cv-12" 검색 결과에 없음</div>
+        </div>
+        <p style="margin:12px 0 0;font-size:12.5px;color:var(--soft)">설명은 표시하지 않습니다. 수치와 판정은 그대로 유효합니다.</p>
+        <div style="display:flex;gap:8px;margin-top:12px"><span class="chip" style="padding:9px 14px;font-size:13px;box-shadow:none;background:#3A2712;border-color:transparent;color:var(--watch)">의료 담당 승무원 호출</span><span class="chip" style="padding:9px 14px;font-size:13px;box-shadow:none">원본 문서 열기</span></div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 big number -->
+<section class="scene">
+  <div class="vignette"></div>
+  <div class="inner center">
+    <div class="bignum rv">2<span>/6</span></div>
+    <p class="sub rv d1">여섯 단계 중 모델이 맡는 칸은 둘</p>
+    <div class="cloud rv d2">
+      <span class="chip dim" style="left:6%;top:6%"><i>01</i>수집</span>
+      <span class="chip" style="left:14%;top:30%"><i>02</i>이상 탐지</span>
+      <span class="chip slm" style="left:4%;top:60%"><i>03</i>증상 해석</span>
+      <span class="chip dim" style="left:22%;top:84%"><i>e4</i>손목밴드</span>
+      <span class="chip" style="right:10%;top:8%"><i>04</i>근거 검색</span>
+      <span class="chip slm" style="right:4%;top:36%"><i>05</i>설명 생성</span>
+      <span class="chip" style="right:14%;top:64%"><i>06</i>검증</span>
+      <span class="chip dim" style="right:26%;top:88%"><i>hrp</i>NASA HRP 문서</span>
+      <span class="chip dim" style="left:38%;top:0"><i>z</i>개인 기준선</span>
+      <span class="chip dim" style="left:48%;top:90%"><i>db</i>절차서 · 오프라인</span>
+      <div class="inputbar"><div class="ph">Crew Health에게 말하기…</div><div class="row"><span>+</span><span style="color:var(--slm)">SLM 4B · 로컬</span><span>JSON 스키마 강제</span><span>오프라인</span><span class="send">↑</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 compare -->
+<section class="scene">
+  <div class="horizon low"></div><div class="vignette"></div>
+  <div class="inner">
+    <div class="center"><h2 class="head rv">Same input. Two answers.</h2><p class="sub rv d1">같은 입력, 그냥 SLM과 우리 구조</p></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:36px">
+      <div class="win rv d2" style="border-color:rgba(255,122,122,.25)"><div class="body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span class="eyebrow">A · SLM 단독</span><span class="badge b-alert">출처 없음</span></div>
+        <p style="margin:0;font-size:12.5px;line-height:1.7">심박수가 <b>110 이상</b>으로 상승하고<span class="flag">입력에 없는 숫자</span> 어지러움이 동반되면 <b>심근 허혈이나 부정맥</b>을 의심해야 합니다.<span class="flag">진단 단정</span> 즉시 니트로글리세린 0.4 mg을 투여하고<span class="flag">근거 없는 처치</span> 지상 관제에 연락하십시오.<span class="flag">22분 지연</span></p>
+        <div style="margin-top:12px"><span class="badge b-alert">경보 · 모델이 결정</span></div>
+      </div></div>
+      <div class="win rv d3" style="border-color:rgba(142,197,255,.25)"><div class="body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span class="eyebrow">B · 우리 시스템</span><span class="badge b-ok">검증 5/5</span></div>
+        <p style="margin:0;font-size:12.5px;line-height:1.7">심박 92(기준 68)와 EDA 4.8(기준 1.9)이 높고 수면이 1시간 40분 짧습니다 <span class="cite">e4:S03</span>. 어지러움·메스꺼움은 수면 부족과 자율신경 반응이 겹칠 때 흔한 조합입니다 <span class="cite">hrp:sm-03</span>. 수분 섭취 후 30분 뒤 재측정하세요 <span class="cite">proc:ortho-01</span>.</p>
+        <div style="margin-top:12px"><span class="badge b-watch">주의 · 규칙이 결정</span></div>
+      </div></div>
+    </div>
+    <p class="mono rv d3" style="text-align:center;margin-top:22px">평가표 30문항 × 3조건 × 3회 — 정답률 · 수치 오류 · 보류율 · 과잉 보류 · 응답 시간 · 메모리 — 숫자는 행사 중 측정</p>
+  </div>
+</section>
+
+<!-- 09 crew -->
+<section class="scene">
+  <div class="horizon low"></div><div class="vignette"></div>
+  <div class="inner split flip">
+    <div class="win rv d2"><div class="body">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span class="eyebrow">승무원</span><span class="badge b-code">의료 담당 뷰</span></div>
+      <table>
+        <tr><th>승무원</th><th>역할</th><th>기준선</th><th>오늘</th><th>동기화</th></tr>
+        <tr><td>A</td><td>사령관</td><td><span class="badge b-ok">14일</span></td><td><span class="badge b-watch">주의</span></td><td class="mono">10:41</td></tr>
+        <tr><td>B</td><td>의료 담당</td><td><span class="badge b-ok">14일</span></td><td><span class="badge b-ok">정상</span></td><td class="mono">10:40</td></tr>
+        <tr><td>C</td><td>엔지니어</td><td><span class="badge b-hold">9 / 14</span></td><td><span class="badge b-hold">보류</span></td><td class="mono">09:58</td></tr>
+        <tr><td>D</td><td>과학</td><td><span class="badge b-ok">14일</span></td><td><span class="badge b-ok">정상</span></td><td class="mono">10:42</td></tr>
+      </table>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+        <div class="card"><h4>열람 권한</h4><p>본인 전체 · 의료 담당 전체 · 사령관 배지만 · 지구 주간 요약</p></div>
+        <div class="card"><h4>지구 전송</h4><p>대기열 3건 · 다음 창 14:00 · 편도 11분 · 경보는 즉시</p></div>
+      </div>
+    </div></div>
+    <div>
+      <h2 class="head rv">Built for every crew.</h2>
+      <p class="sub rv d1">기준선은 사람마다, 권한도 사람마다</p>
+      <p class="desc rv d2">첫 14일로 개인 기준선을 잡는다. 덜 잡힌 사람은 판정을 "보류"로 표시한다. 데이터 부족도 근거 부족과 똑같이 다룬다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 10 end -->
+<section class="scene">
+  <div class="horizon"></div><div class="vignette"></div>
+  <div class="inner center">
+    <div class="appicon rv" aria-hidden="true">
+      <i></i><i></i><i></i><i class="l"></i><i class="x"></i>
+      <i></i><i></i><i class="l"></i><i class="x"></i><i class="x"></i>
+      <i></i><i class="l"></i><i class="x"></i><i class="x"></i><i class="x"></i>
+      <i class="l"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i>
+      <i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i>
+    </div>
+    <h1 class="big rv d1" style="margin-top:28px">Crew Health</h1>
+    <p class="sub rv d2">우주비행사를 위한 온디바이스 건강 모니터링</p>
+    <p class="mono rv d3" style="margin-top:18px">gather · evaluate · act &nbsp;&nbsp; NASA Space Apps 2026 · Team Nakathon</p>
+  </div>
+</section>
+
+<script>
+  // intro beats
+  setTimeout(()=>{document.getElementById('l1').classList.remove('on');},2200);
+  setTimeout(()=>{document.getElementById('l2').classList.add('on');},2500);
+  setTimeout(()=>{document.getElementById('l3').classList.add('on');},3400);
+
+  // warp lines
+  const cv=document.getElementById('warp'),cx=cv.getContext('2d');
+  let W,H,lines=[];
+  function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight;lines=Array.from({length:260},()=>({a:Math.random()*Math.PI*2,r:Math.random()*Math.max(W,H),v:1+Math.random()*3,l:20+Math.random()*120,o:.15+Math.random()*.5}));}
+  rs();addEventListener('resize',rs);
+  (function draw(){
+    cx.fillStyle='rgba(0,0,0,.35)';cx.fillRect(0,0,W,H);
+    const ox=W/2,oy=H/2;
+    for(const s of lines){
+      s.r+=s.v*(0.6+s.r/700);if(s.r>Math.max(W,H))s.r=Math.random()*80;
+      const x1=ox+Math.cos(s.a)*s.r,y1=oy+Math.sin(s.a)*s.r,x2=ox+Math.cos(s.a)*(s.r+s.l*(s.r/500)),y2=oy+Math.sin(s.a)*(s.r+s.l*(s.r/500));
+      cx.strokeStyle=`rgba(255,255,255,${s.o*Math.min(1,s.r/300)})`;cx.lineWidth=1;cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);cx.stroke();
+    }
+    requestAnimationFrame(draw);
+  })();
+
+  // reveal + hud
+  const scenes=[...document.querySelectorAll('.scene')],dots=document.getElementById('dots');
+  scenes.forEach((s,i)=>{const a=document.createElement('a');a.href='#';a.addEventListener('click',e=>{e.preventDefault();s.scrollIntoView({behavior:'smooth'});});dots.appendChild(a);});
+  const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');const i=scenes.indexOf(e.target);document.getElementById('cur').textContent=String(i+1).padStart(2,'0');[...dots.children].forEach((d,j)=>d.classList.toggle('on',j===i));}});},{threshold:.5});
+  scenes.forEach(s=>io.observe(s));
+</script>
+</body>
+</html>

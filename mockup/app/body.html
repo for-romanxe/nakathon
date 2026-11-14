@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>몸 · Crew Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app"></div>
+<script src="app.js"></script>
+<script>
+(function(){
+const {S,me,META,MK,REGIONS,rLvl,lvl,z,fmt,sig,levelEn,levelName,mountBody,shell,citeA,q,openEvents,esc}=CH;
+const c=me();const root=shell('body','몸');
+let sel=REGIONS.find(r=>r.id===q('r'))||REGIONS.find(r=>rLvl(r)!=='normal'&&rLvl(r)!=='hold')||REGIONS[1];
+root.innerHTML=`<div class="grid" style="grid-template-columns:300px minmax(0,1fr) 360px">
+  <div class="panel"><div class="hd">부위<div class="sp"></div><small>${REGIONS.filter(r=>rLvl(r)==='caution').length} 주의 · ${REGIONS.filter(r=>rLvl(r)==='warning').length} 경보</small></div><div class="bd p0 hairrows regions" id="list"></div>
+    <div class="bd legend"><span><i style="background:#C6E84A"></i>기준선 안 · 참고도 색 없음</span><span><i style="background:#F5C542"></i>주의 ±2σ</span><span><i style="background:#FF5C73"></i>경보 ±3σ</span><span><i style="background:#5C6675"></i>판정 전</span></div></div>
+  <div class="panel"><div class="hd">${c.name}<div class="sp"></div><small>클릭해서 부위 선택 · 벗어난 부위는 셀이 흩어집니다</small></div><div class="bd" style="height:calc(100vh - 150px);min-height:520px"><div class="bodywrap" style="height:100%"><canvas id="bodyCanvas" aria-label="픽셀 바디"></canvas></div></div></div>
+  <div class="panel" id="detail"></div>
+</div>`;
+const body=mountBody(document.getElementById('bodyCanvas'),c.id,{onClick:r=>{if(r){sel=r;render();}},sel:()=>sel&&sel.id});
+function render(){
+  document.getElementById('list').innerHTML=REGIONS.map(r=>{const L=rLvl(r);return `<a href="#" data-id="${r.id}" class="${sel===r?'on':''}" style="${sel===r?'background:var(--raised)':''}"><span class="badge ${L}" style="min-width:60px;text-align:center">${levelEn(L)}</span><span class="nm">${r.name}</span><span class="ms">${r.ms.map(k=>META[k].l).join(' · ')}</span></a>`;}).join('');
+  document.querySelectorAll('#list a').forEach(a=>{a.onclick=ev=>{ev.preventDefault();sel=REGIONS.find(r=>r.id===a.dataset.id);render();};a.onmouseenter=()=>body.setHover(REGIONS.find(r=>r.id===a.dataset.id));a.onmouseleave=()=>body.setHover(null);});
+  const L=rLvl(sel);const evs=openEvents(c.id).filter(e=>e.findings.some(f=>sel.ms.includes(f.m)));
+  document.getElementById('detail').innerHTML=`<div class="hd">${sel.name}<div class="sp"></div><span class="badge ${L}">${levelEn(L)}</span></div>
+    <div class="bd p0">${sel.ms.length?`<table><thead><tr><th>지표</th><th class="num">지금</th><th class="num">기준</th><th class="num">σ</th></tr></thead><tbody>${sel.ms.map(k=>`<tr class="clickable" onclick="location.href='trends.html?m=${k}'"><td>${META[k].l}</td><td class="num">${fmt(c.now[k],k)} ${k==='sleep'?'':META[k].u}</td><td class="num muted">${fmt(c.base[k],k)}</td><td class="num sig ${lvl(k)}">${L==='hold'?'—':sig(z(k))}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">연결된 지표 없음</div>'}</div>
+    <div class="bd"><p style="margin:0 0 8px;color:var(--soft)">${sel.note}</p><div class="note">센서 · ${sel.ms.map(k=>META[k].src).filter((v,i,a)=>a.indexOf(v)===i).join(', ')||'—'} · 절차 ${citeA(sel.doc)}</div></div>
+    <div class="hd" style="border-top:1px solid var(--line)">관련 이벤트<div class="sp"></div><small>${evs.length}</small></div>
+    <div class="bd p0 hairrows">${evs.map(e=>`<a href="event.html?id=${e.id}" class="row between"><span class="row"><span class="badge ${e.level}">${levelEn(e.level)}</span>${esc(e.title)}</span><span class="muted mono" style="font-size:11px">${e.time} →</span></a>`).join('')||'<div class="empty" style="padding:18px">열린 이벤트 없음</div>'}</div>
+    <div class="bd row" style="gap:8px">${sel.ms.map(k=>`<a class="btn sm" href="trends.html?m=${k}">${META[k].l} 추세</a>`).join('')}<a class="btn sm ghost" href="log.html">증상 기록</a></div>`;
+}
+render();
+})();
+</script>
+</body>
+</html>

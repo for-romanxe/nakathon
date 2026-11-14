@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>경보 · Crew Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body class="warn">
+<div id="app"></div>
+<script src="app.js"></script>
+<script>
+(function(){
+const {S,CREW,META,fmt,sig,DOCS,q,esc,save,addLog,toast,hhmm,SOL,me}=CH;
+const id=q('id');let e=S.events.find(x=>x.id===id)||S.events.find(x=>x.level==='warning'&&x.status==='open');
+const host=document.getElementById('app');
+if(!document.getElementById('toast')){const t=document.createElement('div');t.id='toast';t.className='toast';document.body.appendChild(t);}
+if(!e){host.innerHTML='<div class="wrap"><div class="card"><div class="lv">경보 없음</div><h1>열린 Warning 이벤트가 없습니다</h1><p class="soft">기록 화면에서 "가슴이 조이듯 아파요" 예시를 보내면 이 화면이 뜹니다.</p><a class="btn p" href="today.html">오늘로</a></div></div>';return;}
+const c=CREW[e.crew];const v=me();const dId=e.doc||'hrp:emer-01';const doc=DOCS[dId];
+let ack=S.todos['ack:'+e.id];
+function render(){
+host.innerHTML=`<div class="wrap"><div class="card">
+  <div class="row between"><span class="lv warning">WARNING · 경보 · 즉시 조치</span><span class="mono muted" style="font-size:11px">${e.id} · Sol ${e.sol} ${e.time} · ${e.skipModel?'모델 건너뜀 · 규칙 판정':'규칙 판정'}</span></div>
+  <h1>${c.name} · ${esc(e.title)}</h1>
+  <p class="soft" style="margin:0 0 18px;max-width:70ch">${e.symptom?`보고 문장 “${esc(e.symptom)}”. `:''}${e.metric||e.doc?`개인 기준선 ±${CH.thr()[1]}σ를 넘은 값이에요.`:'흉통·호흡곤란은 설명을 만들지 않고 바로 절차로 갑니다.'} 지금 할 일은 세 가지예요.</p>
+  <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+    <div class="panel" style="background:#200C13;border-color:#5A1E28"><div class="hd" style="border-color:#3E1420">절차서 <span class="cite">${dId}</span><div class="sp"></div><small>${esc(doc.t)}</small></div><div class="bd p0 steps" id="steps">${doc.ps.slice(1).map((p,i)=>`<div class="${S.todos['w:'+e.id+':'+i]?'ok':''}"><span>${esc(p)}</span><button class="btn sm ${S.todos['w:'+e.id+':'+i]?'ghost':'w'}" data-i="${i}">${S.todos['w:'+e.id+':'+i]?'되돌리기':'완료'}</button></div>`).join('')}</div></div>
+    <div class="stack">
+      <div class="panel" style="background:#200C13;border-color:#5A1E28"><div class="hd" style="border-color:#3E1420">지금 수치 <small>규칙 · 모델 아님</small></div><div class="bd p0"><table><tbody>${e.findings.map(f=>{const zz=(f.v-c.base[f.m])/c.sd[f.m];return `<tr><td style="border-color:#3E1420">${META[f.m].l}</td><td class="num" style="border-color:#3E1420">${fmt(f.v,f.m)} ${f.m==='sleep'?'':META[f.m].u}</td><td class="num muted" style="border-color:#3E1420">${sig(zz)}</td></tr>`;}).join('')}</tbody></table></div></div>
+      <div class="panel" style="background:#200C13;border-color:#5A1E28"><div class="bd stack" style="gap:8px">
+        <button class="btn w" id="cmo" style="justify-content:center;padding:12px">${S.todos['cmo:'+e.id]?'✓ 승무원 B(CMO) 호출됨':'의료 담당(승무원 B) 호출 · 소리 + 음성'}</button>
+        <button class="btn w" id="earth" style="justify-content:center;padding:12px">${S.tx.some(t=>t.ref===e.id)?'✓ 지구 긴급 큐에 있음 · 응답 +24분':'지구 긴급 큐에 측정값 전송'}</button>
+        <div class="row" style="gap:8px;margin-top:6px"><button class="btn" id="ack" style="flex:1;justify-content:center">${ack?'확인됨 · 이벤트 상세로':'경보 확인 (소리 끔)'}</button><button class="btn ghost" id="ov">오경보로 종결</button></div>
+        <div class="note">종결에는 이유가 필요하고 기록에 남습니다. 설명 모델은 이 경보가 종결된 뒤에만 호출됩니다.</div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="modal" id="ovModal"><div class="box"><h3>오경보로 종결하려면 이유를 선택하세요</h3><div class="opts">${['센서 접촉 불량 · 측정 오류','증상 소실 · CMO 확인','잘못된 입력 · 다른 증상이었음'].map(r=>`<label><input type="radio" name="ov" value="${r}">${r}</label>`).join('')}</div><div class="row" style="justify-content:flex-end;gap:8px"><button class="btn ghost" id="ovCancel">취소</button><button class="btn p" id="ovOk" disabled>기록하고 종결</button></div></div></div>`;
+  host.querySelectorAll('#steps button').forEach(b=>b.onclick=()=>{const k='w:'+e.id+':'+b.dataset.i;S.todos[k]=!S.todos[k];save();if(S.todos[k])addLog('응급 절차 완료 · '+doc.ps[+b.dataset.i+1].slice(0,24)+'…',e.crew);render();});
+  document.getElementById('cmo').onclick=()=>{S.todos['cmo:'+e.id]=true;save();addLog('CMO 호출 · 승무원 B · '+e.id,e.crew);toast('승무원 B 호출 · 기기 알림 + 음성');render();};
+  document.getElementById('earth').onclick=()=>{if(S.tx.some(t=>t.ref===e.id))return;S.tx.unshift({id:'tx-'+e.id,sol:SOL,time:hhmm(),crew:e.crew,kind:'긴급 · '+e.title+' · 측정값 포함',status:'긴급',ref:e.id});save();addLog('지구 긴급 큐 전송 · '+e.id,e.crew);toast('긴급 패킷 전송 · 편도 12분');render();};
+  document.getElementById('ack').onclick=()=>{S.todos['ack:'+e.id]=true;save();if(ack)location.href='event.html?id='+e.id;else{ack=true;addLog('경보 확인 · '+e.id,e.crew);toast('소리를 끕니다 · 경보는 열린 채로 남습니다');render();}};
+  const m=document.getElementById('ovModal');document.getElementById('ov').onclick=()=>m.classList.add('on');document.getElementById('ovCancel').onclick=()=>m.classList.remove('on');
+  m.querySelectorAll('input').forEach(r=>r.onchange=()=>document.getElementById('ovOk').disabled=false);
+  document.getElementById('ovOk').onclick=()=>{const reason=m.querySelector('input:checked').value;S.overrides.push({eventId:e.id,reason,sol:SOL,time:hhmm(),who:v.id});e.status='closed';e.closedNote='오경보 · '+reason;save();addLog('경보 종결 · '+e.id+' · '+reason,v.id);location.href='event.html?id='+e.id;};
+}
+render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>절차서 · Crew Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app"></div>
+<script src="app.js"></script>
+<script>
+(function(){
+const {S,DOCS,shell,q,esc,save,addLog,me}=CH;
+const root=shell('procedures','절차서');
+const ref=q('id')||'';let [docId,pid]=ref.split('#');if(!DOCS[docId])docId=Object.keys(DOCS)[0];
+let query='';
+function render(){
+  const ids=Object.keys(DOCS).filter(id=>!query||DOCS[id].t.includes(query)||DOCS[id].ps.some(p=>p.includes(query))||id.includes(query));
+  const d=DOCS[docId];
+  root.innerHTML=`<div class="grid g-side">
+    <div class="panel"><div class="bd" style="padding:12px"><input class="input" id="srch" placeholder="검색 · 제목·본문·id" value="${esc(query)}"></div>
+      <div class="bd p0 hairrows">${ids.map(id=>`<a href="procedures.html?id=${encodeURIComponent(id)}" data-id="${id}" class="${id===docId?'on':''}" style="display:block;${id===docId?'background:var(--raised)':''}"><span class="cite">${id}</span><div style="margin-top:4px;font-weight:500">${esc(DOCS[id].t)}</div><div class="note">${esc(DOCS[id].org)} · ${DOCS[id].ps.length}문단 · 열람 ${S.procViews[id]||0}</div></a>`).join('')||'<div class="empty">검색 결과 없음</div>'}</div>
+      <div class="bd note">기기 내 ${Object.keys(DOCS).length}개 문서 · 모델이 설명에 쓰는 출처는 이 목록 밖으로 나가지 않습니다. 모든 문서는 가상이며 실제 HRP 문서가 아닙니다.</div></div>
+    <div class="panel"><div class="hd"><span class="cite">${docId}</span><span style="margin-left:8px">${esc(d.t)}</span><div class="sp"></div><small>${esc(d.org)}</small></div>
+      <div class="bd doc">${d.ps.map((p,i)=>`<p id="p${i+1}" class="${pid==='p'+(i+1)?'hl':''}"><span class="pid">#p${i+1}</span>${esc(p)}</p>`).join('')}
+      <hr class="hl"><div class="note">이 문서를 출처로 쓴 이벤트: ${S.events.filter(e=>((e.explanation||'')+(e.risk?(e.risk.why||'')+e.risk.todo:'')).includes(docId)||e.actions.some(a=>a.doc.startsWith(docId))).map(e=>`<a class="cite" href="event.html?id=${e.id}">${e.id}</a>`).join(' ')||'없음'}</div></div></div>
+  </div>`;
+  const s=document.getElementById('srch');s.oninput=()=>{query=s.value.trim();render();document.getElementById('srch').focus();const el=document.getElementById('srch');el.setSelectionRange(el.value.length,el.value.length);};
+  const hl=root.querySelector('.hl');if(hl)hl.scrollIntoView({block:'center'});
+}
+S.procViews[docId]=(S.procViews[docId]||0)+1;save();
+render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>설정 · Crew Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app"></div>
+<script src="app.js"></script>
+<script>
+(function(){
+const {S,CREW,DOCS,CONDS,me,shell,toast,save,reset,addLog,esc,thr,tier}=CH;
+const root=shell('settings','설정');
+function render(){const s=S.settings;const c=me();
+root.innerHTML=`<div class="grid g2">
+  <div class="stack">
+    <div class="panel"><div class="hd">기준선</div><div class="bd p0 hairrows" style="font-size:12.5px">
+      <div class="row between"><span>창 길이</span><span class="seg" id="win">${[7,14,21].map(d=>`<button data-v="${d}" class="${s.window===d?'on':''}">${d}일</button>`).join('')}</span></div>
+      <div class="row between"><span>이벤트 날 제외</span><span class="switch on" aria-disabled="true" title="항상 켜짐"></span></div>
+      <div class="row between"><span>마지막 재계산</span><span class="mono muted">Sol ${CH.SOL-1} 20:05</span></div>
+      <div class="row between"><span>지금 다시 계산</span><button class="btn sm" id="recalc">재계산</button></div>
+    </div></div>
+    <div class="panel"><div class="hd">민감도 <small>주의 / 경보 임계</small></div><div class="bd p0 hairrows" style="font-size:12.5px">
+      <div class="row between"><span>임계</span><span class="seg" id="sens">${[['high','민감 1.8σ / 2.6σ'],['std','표준 2σ / 3σ'],['low','둔감 2.3σ / 3.3σ']].map(([k,l])=>`<button data-v="${k}" class="${s.sens===k?'on':''}">${l}</button>`).join('')}</span></div>
+      <div class="note" style="padding:10px 16px">임계는 ${c.name} 본인에게만 적용됩니다. 흉통·호흡곤란 즉시 경보 규칙은 민감도와 무관합니다. 바꾸면 기록에 남습니다.</div>
+    </div></div>
+    <div class="panel"><div class="hd">알림</div><div class="bd p0 hairrows" style="font-size:12.5px">
+      <div class="row between"><span>경보 · 증상 규칙 또는 ±3σ · 전체 화면 + 소리/음성</span><button class="switch ${s.voice?'on':''}" data-k="voice" role="switch" aria-checked="${s.voice}"></button></div>
+      <div class="row between"><span>주의 · 이틀 연속, 지표 2개 이상, 지표 + 증상 · 노란 상태 문장 + 배지</span><span class="muted">고정</span></div>
+      <div class="row between"><span>참고 · 지표 1개가 하루 · 가이드에 한 줄, 색 없음</span><span class="muted">고정</span></div>
+      <div class="row between"><span>정상 · 알림 없음, 설명 안 만듦</span><span class="muted">고정</span></div>
+    </div></div>
+  </div>
+  <div class="stack">
+    <div class="panel"><div class="hd">열람 권한 · 전송</div><div class="bd p0 hairrows" style="font-size:12.5px">
+      <div class="row between"><span>의료 담당(승무원 B)이 내 데이터를 봄</span><button class="switch ${s.cmoRead?'on':''}" data-k="cmoRead" role="switch" aria-checked="${s.cmoRead}"></button></div>
+      <div class="row between"><span>다른 승무원이 내 상태 배지를 봄</span><button class="switch ${s.crewRead?'on':''}" data-k="crewRead" role="switch" aria-checked="${s.crewRead}"></button></div>
+      <div class="row between"><span>지구 전송 창</span><span class="seg" id="tx">${['08:00','20:00'].map(t=>`<button data-v="${t}" class="${s.txTime===t?'on':''}">${t}</button>`).join('')}</span></div>
+      <div class="note" style="padding:10px 16px">전송은 요약만, 원시 파형은 기기에 남습니다. Warning 패킷은 창과 무관하게 즉시.</div>
+    </div></div>
+    <div class="panel"><div class="hd">모델 · 기기</div><div class="bd"><dl class="kv"><dt>설명 모델</dt><dd>Qwen3-4B · Q4_K_M · 2.6 GB</dd><dt>증상 코드 모델</dt><dd>Qwen3-1.7B · enum 제약 JSON</dd><dt>실행</dt><dd>Ollama · CPU/GPU 기기 내 · 네트워크 없음</dd><dt>검색</dt><dd>BM25 · 기기 내 문서 ${Object.keys(DOCS).length}건</dd><dt>상태 목록</dt><dd>기기 내 고정 ${Object.keys(CONDS).length}개 · 가상 · 목록 밖 이름 금지</dd><dt>검증</dt><dd>5 규칙 · 코드 · 모델 아님</dd><dt>평가</dt><dd class="muted">행사 중 측정 예정 · 아직 수치 없음</dd></dl></div></div>
+    <div class="panel"><div class="hd">데모 전환 <small>회의용</small></div><div class="bd p0 hairrows" style="font-size:12.5px">
+      <div class="row between"><span>보는 사람</span><span class="seg" id="who">${Object.values(CREW).map(x=>`<button data-v="${x.id}" class="${S.me===x.id?'on':''}">${x.id}${x.cmo?' · CMO':''}${x.baselineDays<14?' · 기준선 중':''}${tier(x)==='advisory'?' · 참고':''}</button>`).join('')}</span></div>
+      <div class="row between"><span>저장된 상태 초기화 (이벤트·할 일·체크인·기록)</span><button class="btn sm" id="reset">초기화</button></div>
+    </div></div>
+  </div></div>`;
+  root.querySelectorAll('#win button').forEach(b=>b.onclick=()=>{s.window=+b.dataset.v;save();render();});
+  root.querySelectorAll('#sens button').forEach(b=>b.onclick=()=>{s.sens=b.dataset.v;save();addLog('민감도 변경 · '+b.textContent);toast('임계 '+b.textContent+' · 오늘 화면에 바로 적용');render();});
+  root.querySelectorAll('#tx button').forEach(b=>b.onclick=()=>{s.txTime=b.dataset.v;save();render();});
+  root.querySelectorAll('.switch[data-k]').forEach(b=>b.onclick=()=>{s[b.dataset.k]=!s[b.dataset.k];save();addLog('설정 변경 · '+b.dataset.k+' '+(s[b.dataset.k]?'켬':'끔'));render();});
+  root.querySelectorAll('#who button').forEach(b=>b.onclick=()=>{S.me=b.dataset.v;save();location.href='today.html';});
+  document.getElementById('recalc').onclick=()=>{addLog('기준선 재계산 · '+s.window+'일 창');toast('기준선 재계산 · 이벤트 날 2일 제외 · 완료');};
+  document.getElementById('reset').onclick=()=>{reset();toast('초기화했습니다');setTimeout(()=>location.href='today.html',500);};
+}
+render();
+})();
+</script>
+</body>
+</html>
