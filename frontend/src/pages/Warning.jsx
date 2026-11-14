@@ -33,6 +33,8 @@ export default function Warning() {
   const [closing, setClosing] = useState(false)
   const [reason, setReason] = useState('')
   const [sendNote, setSendNote] = useState(null)
+  const [loadError, setLoadError] = useState(false)
+  const [attempt, setAttempt] = useState(0) // bump to retry the load
 
   useEffect(() => {
     async function load() {
@@ -59,8 +61,22 @@ export default function Warning() {
       }
       setWarning(null)
     }
-    load().catch(() => setWarning(null))
-  }, [params, lang])
+    load().catch(() => setLoadError(true)) // unknown is not the same as "no warning"
+  }, [params, lang, attempt])
+
+  if (loadError) {
+    return (
+      <div className="warning-screen warning-unknown" role="alert">
+        <div className="warning-inner">
+          <h1>{t('warning.unknown_title')}</h1>
+          <p>{t('warning.unknown_body')}</p>
+          <button type="button" className="btn-primary align-start" onClick={() => { setLoadError(false); setWarning(undefined); setAttempt((n) => n + 1) }}>
+            {t('warning.retry')}
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   if (warning === undefined) return <div className="warning-screen"><p className="muted">{t('common.loading')}</p></div>
   if (warning === null) {
@@ -110,12 +126,14 @@ export default function Warning() {
           {steps && <span className="cite">{steps.doc}</span>}
         </section>
 
-        <div className="warning-actions">
-          {/* TODO: no crew-call API yet; local state only */}
-          <button type="button" className="btn-warning" disabled={!!cmoCalledAt} onClick={() => setCmoCalledAt(mission?.clock.time ?? '')}>
-            {cmoCalledAt ? `✔ ${t('warning.cmo_called', { time: cmoCalledAt })}` : t('warning.call_cmo')}
+        {/* The app cannot call anyone yet (no crew-call API), so it must not say it did */}
+        <section className="warning-block warning-contact">
+          <h2>{t('warning.contact_title')}</h2>
+          <p>{t('warning.contact_body')}</p>
+          <button type="button" className="btn-warning align-start" disabled={!!cmoCalledAt} onClick={() => setCmoCalledAt(mission?.clock.time ?? '')}>
+            {cmoCalledAt ? `✔ ${t('warning.contact_noted', { time: cmoCalledAt })}` : t('warning.contact_done')}
           </button>
-        </div>
+        </section>
 
         <section className="warning-block">
           <h2>{t('warning.numbers')}</h2>

@@ -263,3 +263,6 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
   .warning-screen { animation: warning-in 0.25s ease-out; }
   @keyframes warning-in { from { opacity: 0; } to { opacity: 1; } }
 }
+.warning-unknown { background: var(--bg); border-color: var(--hold); }
+.warning-unknown h1 { color: var(--text); }
+.warning-contact { border-color: var(--warning); }
