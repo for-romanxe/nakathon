@@ -70,6 +70,17 @@ async function request(path, fixture, options = {}) {
 }
 
 export const api = {
+  getTrends: (crewId, metric, days) => request(
+    `/crew/${crewId}/trends?${new URLSearchParams({ metric, days })}`,
+    () => {
+      const reading = todayFixture.metrics.find(row => row.metric === metric)
+      return {
+        points: reading?.value == null ? [] : [{ ts: '2026-11-14T06:12:00Z', value: reading.value }],
+        baseline: { mean: reading?.baseline ?? null, sd: reading?.sd ?? null },
+        events: [],
+      }
+    },
+  ),
   getSession: () => request('/session', { login_required: false, crew_id: null }),
   login: (crew_id, access_code) => request('/session/login', null, {
     method: 'POST', body: JSON.stringify({ crew_id, access_code }),
