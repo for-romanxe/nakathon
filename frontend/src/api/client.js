@@ -118,11 +118,16 @@ export function runPipeline(eventId, { urgent, onStage }) {
     let seen = 0
     source.onmessage = (msg) => {
       seen += 1
-      const { stage } = JSON.parse(msg.data)
-      onStage(stage)
-      if (stage === 'done' || stage === 'hold') {
+      try {
+        const { stage } = JSON.parse(msg.data)
+        onStage(stage)
+        if (stage === 'done' || stage === 'hold') {
+          source.close()
+          resolve(stage)
+        }
+      } catch {
         source.close()
-        resolve(stage)
+        resolve('interrupted')
       }
     }
     source.onerror = () => {

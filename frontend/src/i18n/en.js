@@ -189,4 +189,5 @@ export default {
   "event.local_only": "Saved on this screen only for now; it will be logged for the medical officer once the backend supports it.",
   "warning.measured_title": "A reading crossed the warning limit",
   "warning.by_readings": "Raised by the rules because a reading is 3σ or more from your baseline. The on-device model is skipped and cannot lower this.",
+  "log.answer_first": "Answer the question above first.",
 }

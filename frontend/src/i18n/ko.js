@@ -189,4 +189,5 @@ export default {
   "event.local_only": "지금은 이 화면에만 저장돼요. 백엔드가 지원하면 의료 담당이 볼 수 있게 기록돼요.",
   "warning.measured_title": "측정값이 경보 기준을 넘었어요",
   "warning.by_readings": "측정값이 기준선에서 3σ 이상 벗어나 규칙이 올린 경보예요. 기기 안 모델은 건너뛰었고, 이 경보를 낮출 수 없어요.",
+  "log.answer_first": "위 질문에 먼저 답해 주세요.",
 }

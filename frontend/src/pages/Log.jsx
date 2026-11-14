@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, runPipeline } from '../api/client.js'
-import { isUrgentReport } from '../api/contract.js'
+import { isUrgentReport, formatTs } from '../api/contract.js'
 import { CURRENT_CREW } from '../session.js'
 import { useT } from '../i18n/index.jsx'
 import PipelineProgress from '../components/PipelineProgress.jsx'
@@ -13,7 +13,9 @@ const EXAMPLES = ['log.example.dizzy', 'log.example.headache', 'log.example.ches
 export default function Log() {
   const { t, lang } = useT()
   const [text, setText] = useState('')
-  const [busy, setBusy] = useState(false)
+  // idle: can send | question: waiting for the yes/no answer | running: rules + pipeline in progress
+  const [phase, setPhase] = useState('idle')
+  const busy = phase !== 'idle'
   const [items, setItems] = useState([]) // chat items for this session
   const [todayEvents, setTodayEvents] = useState([])
   const [results, setResults] = useState(0) // refetch today's reports only when a new result arrives
@@ -39,13 +41,13 @@ export default function Log() {
     const event = await api.getEvent(eventId)
     push({ kind: 'result', event })
     setResults((n) => n + 1)
-    setBusy(false)
+    setPhase('idle')
   }
 
   async function send(value) {
     const report = value.trim()
     if (!report || busy) return
-    setBusy(true)
+    setPhase('running')
     setText('')
     push({ kind: 'me', text: report })
     try {
@@ -54,23 +56,26 @@ export default function Log() {
       const urgent = first.level === 'warning'
       if (!urgent && res.needs_question) {
         push({ kind: 'question', eventId: res.event_id, question: res.question, answered: null })
-        return // waits for the answer buttons
+        setPhase('question') // input stays closed until this report is answered and finished
+        return
       }
       await finish(res.event_id, urgent)
     } catch {
       push({ kind: 'error' })
-      setBusy(false)
+      setPhase('idle')
     }
   }
 
   async function answer(item, value) {
+    if (phase !== 'question') return
+    setPhase('running')
     update(item.key, { answered: value })
     try {
       await api.postAnswer(item.eventId, value)
       await finish(item.eventId, false)
     } catch {
       push({ kind: 'error' })
-      setBusy(false)
+      setPhase('idle')
     }
   }
 
@@ -94,7 +99,7 @@ export default function Log() {
                         key={v}
                         type="button"
                         className={item.answered === v ? 'selected' : ''}
-                        disabled={item.answered != null}
+                        disabled={item.answered != null || phase !== 'question'}
                         onClick={() => answer(item, v)}
                       >
                         {t(`common.${v}`)}
@@ -119,7 +124,7 @@ export default function Log() {
           rows={2}
           maxLength={4000}
           value={text}
-          placeholder={t('log.placeholder')}
+          placeholder={phase === 'question' ? t('log.answer_first') : t('log.placeholder')}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(text) } }}
           disabled={busy}
@@ -143,7 +148,7 @@ export default function Log() {
                 <Link to={`/events/${e.id}`}>
                   <span className={`badge lv-${e.level}`}>{t(`level.${e.level}`)}</span>
                   <span>{e.symptom_text}</span>
-                  <span className="num muted">{e.ts.slice(11, 16)}</span>
+                  <span className="num muted">{formatTs(e.ts, true)}</span>
                 </Link>
               </li>
             ))}

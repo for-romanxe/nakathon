@@ -10,6 +10,12 @@ export function metricLabel(key, lang) {
   return m ? (lang === 'ko' ? m.label_ko : m.label_en) : key
 }
 
+// "2026-11-14T10:40:00+00:00" -> "2026-11-14 10:40" (or "10:40" with timeOnly); missing or bad -> "–"
+export function formatTs(ts, timeOnly = false) {
+  if (typeof ts !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(ts)) return '–'
+  return timeOnly ? ts.slice(11, 16) : ts.slice(0, 16).replace('T', ' ')
+}
+
 export function formatMetric(key, value) {
   if (value == null) return '–'
   return Number(value).toFixed(METRICS[key]?.decimals ?? 1)
