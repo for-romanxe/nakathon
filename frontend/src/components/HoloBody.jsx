@@ -141,7 +141,10 @@ function palette() {
 export default function HoloBody({ levels, selected, onSelect, onNoSensor, label, unavailableText, sideLabels }) {
   const hostRef = useRef(null)
   const stateRef = useRef({ levels, selected, onSelect, onNoSensor })
-  const [failed, setFailed] = useState(() => !webglAvailable())
+  // decided in the browser after mount (never during render), so a first render without WebGL can't stick
+  const [failed, setFailed] = useState(false)
+  const leftLabel = sideLabels?.left || 'L'
+  const rightLabel = sideLabels?.right || 'R'
   // the render loop reads the latest props from here, so the scene is built once
   useEffect(() => { stateRef.current = { levels, selected, onSelect, onNoSensor } })
 
@@ -150,6 +153,7 @@ export default function HoloBody({ levels, selected, onSelect, onNoSensor, label
     if (!host) return undefined
     let renderer
     try {
+      if (!webglAvailable()) throw new Error('no WebGL')
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     } catch {
       queueMicrotask(() => setFailed(true)) // WebGL refused after all: show the note; the region list still works
@@ -201,7 +205,7 @@ export default function HoloBody({ levels, selected, onSelect, onNoSensor, label
     disposables.push(glowMap, glow.material)
 
     // L / R beside the shoulders: they turn with the figure, so the sides stay readable from the back too
-    for (const [text, x] of [[sideLabels.left, 0.44], [sideLabels.right, -0.44]]) {
+    for (const [text, x] of [[leftLabel, 0.44], [rightLabel, -0.44]]) {
       const map = letterTexture(text)
       const tag = new THREE.Sprite(new THREE.SpriteMaterial({ map, color: looks.plain.color, transparent: true, opacity: 0.9, depthWrite: false }))
       tag.position.set(x, 1.5, 0)
@@ -239,6 +243,7 @@ export default function HoloBody({ levels, selected, onSelect, onNoSensor, label
     resize()
 
     // Pointer: drag turns the figure, a click (little movement) picks the part under it
+    const el = renderer.domElement
     const ray = new THREE.Raycaster()
     const ndc = new THREE.Vector2()
     let down = null
@@ -252,7 +257,12 @@ export default function HoloBody({ levels, selected, onSelect, onNoSensor, label
       // the heart sits inside the see-through torso: a click over it picks the heart, not the torso in front
       return (hits.find((h) => h.object.userData.heart) ?? hits[0])?.object ?? null
     }
-    function onDown(ev) { down = { x: ev.clientX, y: ev.clientY, turn, moved: false } }
+    // The canvas captures the pointer on press, so move / release / cancel reach it even outside the canvas
+    function onDown(ev) {
+      down = { x: ev.clientX, y: ev.clientY, turn, moved: false, id: ev.pointerId }
+      try { el.setPointerCapture(ev.pointerId) } catch { /* capture not possible: the cancel handlers still reset */ }
+    }
+    function onCancel() { down = null }
     function onMove(ev) {
       if (down) {
         const dx = ev.clientX - down.x
@@ -272,10 +282,11 @@ export default function HoloBody({ levels, selected, onSelect, onNoSensor, label
       if (part.userData.region) select(part.userData.region)
       else noSensor?.()
     }
-    const el = renderer.domElement
     el.addEventListener('pointerdown', onDown)
-    window.addEventListener('pointermove', onMove)
-    window.addEventListener('pointerup', onUp)
+    el.addEventListener('pointermove', onMove)
+    el.addEventListener('pointerup', onUp)
+    el.addEventListener('pointercancel', onCancel)
+    el.addEventListener('lostpointercapture', onCancel)
 
     // Render loop: uniforms follow the latest levels and selection without rebuilding the scene
     let frame = 0
@@ -322,13 +333,15 @@ export default function HoloBody({ levels, selected, onSelect, onNoSensor, label
       cancelAnimationFrame(frame)
       ro.disconnect()
       el.removeEventListener('pointerdown', onDown)
-      window.removeEventListener('pointermove', onMove)
-      window.removeEventListener('pointerup', onUp)
+      el.removeEventListener('pointermove', onMove)
+      el.removeEventListener('pointerup', onUp)
+      el.removeEventListener('pointercancel', onCancel)
+      el.removeEventListener('lostpointercapture', onCancel)
       disposables.forEach((d) => d.dispose())
       renderer.dispose()
       el.remove()
     }
-  }, [sideLabels.left, sideLabels.right]) // rebuilt only when the language changes the L / R labels
+  }, [leftLabel, rightLabel]) // rebuilt only when the language changes the L / R labels
 
   if (failed) return <p className="panel-empty muted">{unavailableText}</p>
   return <div ref={hostRef} className="body-figure holo" role="img" aria-label={label} />
