@@ -182,6 +182,7 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
 .pipeline ol { list-style: none; margin: 0; padding: 10px 14px; border: 1px dashed var(--line); border-radius: var(--radius); font-size: 0.9rem; display: flex; flex-direction: column; gap: 4px; }
 .pipeline li.done { color: var(--text-2); }
 .pipeline li.running { color: var(--accent); }
+.pipeline li.stopped { color: var(--warning); }
 .result-card { padding: 12px 14px; border: 1px solid var(--line); border-left: 3px solid var(--status, var(--line)); border-radius: var(--radius); background: var(--bezel-2); display: flex; flex-direction: column; gap: 8px; }
 .result-head { display: flex; align-items: center; gap: 10px; }
 .result-actions { display: flex; flex-wrap: wrap; gap: 8px; }

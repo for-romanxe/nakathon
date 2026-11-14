@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api/client.js'
-import { METRICS, VERIFY_CHECKS, OVERRIDE_REASONS, metricLabel, formatMetric, conditionLabel } from '../api/contract.js'
+import { METRICS, VERIFY_CHECKS, OVERRIDE_REASONS, metricLabel, formatMetric, conditionLabel, isUrgentReport } from '../api/contract.js'
 import { useT } from '../i18n/index.jsx'
 
 const ICONS = { normal: '✔', advisory: '•', caution: '▲', warning: '✖', hold: '↻' }
@@ -98,7 +98,7 @@ function Guidance({ event }) {
   if (event.level === 'warning' && !ex) {
     body = (
       <div className="notice lv-warning">
-        <p>{t('event.urgent_skip')}</p>
+        <p>{t(isUrgentReport(event) ? 'event.urgent_skip' : 'event.measured_skip')}</p>
         <Link className="btn-primary" to="/warning">{t('log.open_warning')}</Link>
       </div>
     )
@@ -116,7 +116,11 @@ function Guidance({ event }) {
         <li>
           <span className="guidance-label">{t('event.line.condition')}</span>
           <div>
-            <b>{t('event.possibility', { name: conditionLabel(ex.condition_id, lang) })}</b>
+            <b>
+              {conditionLabel(ex.condition_id, lang)
+                ? t('event.possibility', { name: conditionLabel(ex.condition_id, lang) })
+                : t('event.condition_unlisted')}
+            </b>
             {ex.lines.map((line, i) => <p key={i}>{line}</p>)}
             <div className="cites">{ex.cites.map((c) => <span key={c} className="cite">{c}</span>)}</div>
           </div>
@@ -223,6 +227,7 @@ function Response({ event }) {
           </form>
         )}
         {overridden && <p className="muted">{t('event.overridden', { reason: t(`override.${overridden}`) })}</p>}
+        {(shared || overridden) && <p className="muted small">{t('event.local_only')}</p>}
       </div>
     </section>
   )
