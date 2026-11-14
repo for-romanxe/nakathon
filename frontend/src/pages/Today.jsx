@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client.js'
 import CheckinSheet from '../components/CheckinSheet.jsx'
+import { useMission } from '../mission.jsx'
 import { METRICS, metricLabel, formatMetric } from '../api/contract.js'
 import { CURRENT_CREW } from '../session.js'
 import { useT } from '../i18n/index.jsx'
@@ -23,28 +24,36 @@ function formatZ(z) {
   return `${r > 0 ? '+' : r < 0 ? '−' : '±'}${Math.abs(r).toFixed(1)}σ`
 }
 
+// Remembers "closed the check-in sheet" per crew and sol, so it stays closed when you come back to Today
+let sheetDismissedFor = null
+
 export default function Today() {
   const { t, lang } = useT()
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
-  const [sheetClosed, setSheetClosed] = useState(false)
   const navigate = useNavigate()
+  const { mission } = useMission()
+  const sol = mission?.clock.sol
+  const sheetKey = `${CURRENT_CREW}:${sol}`
+  const [, setSheetClosed] = useState(false) // re-render trigger; the source of truth is sheetDismissedFor
+  const sheetClosed = sheetDismissedFor === sheetKey
 
   useEffect(() => {
-    // Crew names and the mission clock are extras: if they fail, Today still renders
-    Promise.all([
-      api.getToday(CURRENT_CREW, lang),
-      api.getCrew().catch(() => []),
-      api.getMission().catch(() => null),
-    ])
-      .then(([today, crew, mission]) => setData({ today, crew: crew.find((c) => c.id === CURRENT_CREW), mission }))
+    // Crew names are an extra: if /crew fails, Today still renders. Refetch when the demo clock moves to a new sol
+    Promise.all([api.getToday(CURRENT_CREW, lang), api.getCrew().catch(() => [])])
+      .then(([today, crew]) => setData({ today, crew: crew.find((c) => c.id === CURRENT_CREW) }))
       .catch(setError)
-  }, [lang])
+  }, [lang, sol])
+
+  function closeSheet(closed) {
+    sheetDismissedFor = closed ? sheetKey : null
+    setSheetClosed(closed)
+  }
 
   if (error) return <section className="page"><p className="error">{t('common.error')}</p></section>
   if (!data) return <section className="page"><p className="muted">{t('common.loading')}</p></section>
 
-  const { today, crew, mission } = data
+  const { today, crew } = data
   const level = today.status.level
   const statusText = today.status.text || t(`today.status.${level}`) // backend localises via ?lang
   const showSheet = !today.checkin.morning_done && !sheetClosed
@@ -60,11 +69,11 @@ export default function Today() {
         <CheckinSheet
           onSubmit={submitCheckin}
           onSymptoms={() => navigate('/log')}
-          onClose={() => setSheetClosed(true)}
+          onClose={() => closeSheet(true)}
         />
       )}
       {!today.checkin.morning_done && sheetClosed && (
-        <button type="button" className="btn-secondary align-start" onClick={() => setSheetClosed(false)}>
+        <button type="button" className="btn-secondary align-start" onClick={() => closeSheet(false)}>
           {t('checkin.open')}
         </button>
       )}
@@ -107,17 +116,21 @@ export default function Today() {
         </div>
         <div className="readouts">
           {today.metrics.map((m) => {
-            // Per-metric level comes from the backend rules (metrics[].level); the UI never computes it
-            const flagged = m.level != null && m.level !== 'normal' && m.level !== 'hold'
-            const tint = flagged && (level === 'caution' || level === 'warning') ? level : null // advisory stays uncoloured
-            const z = formatZ(m.z)
+            // Each metric shows its own backend level (CONTRACT §5.3); the UI never recomputes it from z.
+            // caution/warning are coloured, advisory stays uncoloured, hold shows its reason.
+            const lv = m.level ?? 'normal'
+            const tint = lv === 'caution' || lv === 'warning' ? lv : null
+            const badgeClass = tint ? `lv-${tint}` : lv === 'advisory' ? 'neutral' : `lv-${lv}`
             return (
               <div key={m.metric} className={`readout${tint ? ` lv-${tint} off` : ''}`}>
-                <span>{metricLabel(m.metric, lang)}</span>
+                <span className="readout-name">
+                  {metricLabel(m.metric, lang)}
+                  {lv === 'hold' && m.hold_reason && <span className="readout-note">{t(`hold.${m.hold_reason}`)}</span>}
+                </span>
                 <span className="readout-value">{formatMetric(m.metric, m.value)}</span>
                 <span className="readout-unit">{METRICS[m.metric]?.unit}</span>
-                <span className={`badge ${tint ? `lv-${tint}` : flagged ? 'neutral' : z ? 'lv-normal' : 'lv-hold'}`}>
-                  {z ?? `${LEVEL_ICONS.hold} ${t('level.hold')}`}
+                <span className={`badge ${badgeClass}`}>
+                  {lv === 'hold' ? `${LEVEL_ICONS.hold} ${t('level.hold')}` : `${LEVEL_ICONS[lv]} ${formatZ(m.z) ?? ''}`}
                 </span>
               </div>
             )

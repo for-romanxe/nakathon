@@ -67,4 +67,7 @@ export default {
   "checkin.symptoms.yes": "있어요, 기록에 말하기",
   "checkin.submit": "오늘 가이드 확정",
   "checkin.error": "체크인을 저장하지 못했어요. 다시 시도해 주세요.",
+  "hold.insufficient_baseline": "기준선 수집 중 (14일 미만)",
+  "hold.missing_reading": "오늘 측정값 없음",
+  "hold.zero_variance": "기준선 변화 없음",
 }

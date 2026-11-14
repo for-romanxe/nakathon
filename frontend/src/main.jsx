@@ -12,13 +12,16 @@ import '@fontsource/ibm-plex-mono/600.css'
 import './styles/tokens.css'
 import './styles/app.css'
 import { LangProvider } from './i18n/index.jsx'
+import { MissionProvider } from './mission.jsx'
 import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <LangProvider>
-        <App />
+        <MissionProvider>
+          <App />
+        </MissionProvider>
       </LangProvider>
     </BrowserRouter>
   </StrictMode>,

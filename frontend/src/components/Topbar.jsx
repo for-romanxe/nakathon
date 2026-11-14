@@ -1,15 +1,10 @@
 // Topbar.jsx — mission status strip: sol and time, environment, one-way delay to Earth, next comm window
-import { useEffect, useState } from 'react'
-import { api } from '../api/client.js'
+import { useMission } from '../mission.jsx'
 import { useT } from '../i18n/index.jsx'
 
 export default function Topbar() {
   const { t } = useT()
-  const [m, setM] = useState(null)
-
-  useEffect(() => {
-    api.getMission().then(setM).catch(() => setM(null))
-  }, [])
+  const { mission: m } = useMission()
 
   if (!m) return <header className="topbar" />
   const items = [

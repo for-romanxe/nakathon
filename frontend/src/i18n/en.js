@@ -67,4 +67,7 @@ export default {
   "checkin.symptoms.yes": "Yes, tell the log",
   "checkin.submit": "Confirm today's guide",
   "checkin.error": "Could not save the check-in. Try again.",
+  "hold.insufficient_baseline": "Baseline still collecting (under 14 days)",
+  "hold.missing_reading": "No reading today",
+  "hold.zero_variance": "Baseline has no variation",
 }
