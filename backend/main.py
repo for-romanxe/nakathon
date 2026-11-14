@@ -18,7 +18,7 @@ from backend.docs import build_docs
 from backend import event_flow
 from backend.events import EventOverride, SymptomAnswer, SymptomInput, event_payload, save_event
 from backend.link_simulation import LinkSimulation, compare_packet
-from backend.medication import MedicationIntake, load_medication_references, read_intakes, save_intake
+from backend.medication import MedicationIntake, ProductIntake, load_medication_references, read_intakes, save_intake
 from backend.mission import ClockUpdate, DEMO_TIME, active_window, mission_sol, mission_status
 from backend.preflight import PreflightUpdate, read_preflight, save_preflight
 from backend.seed import CONTRACT, CREW, DEMO_DB, seed
@@ -249,7 +249,7 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
 
     @app.get("/medication-references")
     def get_medication_references(member=Depends(viewer)):
-        return {"references": medication_references}
+        return {"references": [reference.model_dump(mode="json", exclude_none=True) for reference in medication_references]}
 
     @app.get("/crew/{crew_id}/medication-intakes")
     def get_medication_intakes(crew_id: str, member=Depends(viewer)):
@@ -265,12 +265,16 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
                 connection.rollback()
 
     @app.post("/crew/{crew_id}/medication-intakes")
-    def post_medication_intake(crew_id: str, entry: MedicationIntake, member=Depends(viewer)):
+    def post_medication_intake(crew_id: str, entry: MedicationIntake | ProductIntake, member=Depends(viewer)):
         crew_id = crew_id.lower()
         if member["id"] != crew_id:
             raise HTTPException(403, "Crew record write denied.")
-        with closing(connect(db_path)) as connection, connection:
-            saved = save_intake(connection, crew_id, entry, clock)
+        try:
+            with closing(connect(db_path)) as connection, connection:
+                connection.execute("BEGIN IMMEDIATE")
+                saved = save_intake(connection, crew_id, entry, clock, medication_references)
+        except ValueError as error:
+            return event_error("intake_product_unavailable", str(error), 422)
         if saved is None:
             return event_error("intake_conflict", "Request ID already used for a different intake.", 409)
         return saved

@@ -8,11 +8,15 @@ export default function MedicationIntakes({ crew }) {
   const [entries, setEntries] = useState(null)
   const [name, setName] = useState('')
   const [amount, setAmount] = useState('')
+  const [reference, setReference] = useState(null)
   const [saving, setSaving] = useState(false)
   const [loadFailed, setLoadFailed] = useState(false)
   const [saveFailed, setSaveFailed] = useState(false)
   const [saved, setSaved] = useState(false)
   const pending = useRef(null)
+  const countUnit = reference?.count_unit
+  const count = Number(amount)
+  const validAmount = countUnit ? Number.isInteger(count) && count > 0 && count <= 1000000 : Boolean(amount.trim())
 
   useEffect(() => {
     let active = true
@@ -27,16 +31,19 @@ export default function MedicationIntakes({ crew }) {
   async function submit(event) {
     event.preventDefault()
     const cleanName = name.trim()
-    const cleanAmount = amount.trim()
-    if (saving || !cleanName || !cleanAmount) return
+    if (saving || !validAmount || (!countUnit && !cleanName)) return
+    const payload = countUnit
+      ? { product_id: reference.id, unit_count: count }
+      : { name: cleanName, amount: amount.trim() }
     setSaving(true)
     setSaveFailed(false)
     setSaved(false)
     try {
-      if (pending.current?.name !== cleanName || pending.current?.amount !== cleanAmount) {
-        pending.current = { request_id: crypto.randomUUID(), name: cleanName, amount: cleanAmount }
+      const key = JSON.stringify(payload)
+      if (pending.current?.key !== key) {
+        pending.current = { key, entry: { request_id: crypto.randomUUID(), ...payload } }
       }
-      const entry = await api.recordMedicationIntake(crew, pending.current)
+      const entry = await api.recordMedicationIntake(crew, pending.current.entry)
       setEntries((current) => [entry, ...(current ?? []).filter((row) => row.id !== entry.id)].slice(0, 50))
       pending.current = null
       setName('')
@@ -52,17 +59,18 @@ export default function MedicationIntakes({ crew }) {
   return (
     <section className="panel">
       <div className="panel-head"><h2>{t('intake.title')}</h2></div>
-      <MedicationReferences />
+      <MedicationReferences reference={reference} disabled={saving} onSelect={(row) => { setReference(row); setAmount('') }} />
       <div className="panel-empty">
         <form className="intake-form" onSubmit={submit}>
-          <label>{t('intake.name')}
+          {!countUnit && <label>{t('intake.name')}
             <input required maxLength={120} value={name} onChange={(e) => setName(e.target.value)} disabled={saving} />
-          </label>
-          <label>{t('intake.amount')}
-            <input required maxLength={80} value={amount} onChange={(e) => setAmount(e.target.value)} disabled={saving} />
+          </label>}
+          <label>{t('intake.amount')}{countUnit && ` (${countUnit})`}
+            <input required type={countUnit ? 'number' : 'text'} min={1} max={1000000} step={1}
+              maxLength={80} value={amount} onChange={(e) => setAmount(e.target.value)} disabled={saving} />
           </label>
           <button type="submit" className="btn-secondary"
-            disabled={saving || entries == null || !name.trim() || !amount.trim()}>{t('intake.save')}</button>
+            disabled={saving || entries == null || (!countUnit && !name.trim()) || !validAmount}>{t('intake.save')}</button>
         </form>
         {loadFailed && <p role="alert" className="error">{t('intake.load_failed')}</p>}
         {saveFailed && <p role="alert" className="error">{t('event.save_failed')}</p>}
@@ -80,11 +88,10 @@ export default function MedicationIntakes({ crew }) {
   )
 }
 
-function MedicationReferences() {
+function MedicationReferences({ reference, disabled, onSelect }) {
   const { t } = useT()
   const [references, setReferences] = useState(null)
   const [failed, setFailed] = useState(false)
-  const [selected, setSelected] = useState('')
 
   useEffect(() => {
     let active = true
@@ -96,7 +103,6 @@ function MedicationReferences() {
     return () => { active = false }
   }, [])
 
-  const reference = references?.find((row) => row.id === selected)
   return (
     <section className="panel-empty">
       <h3>{t('medref.title')}</h3>
@@ -105,7 +111,8 @@ function MedicationReferences() {
       {references?.length === 0 && <p className="muted">{t('medref.hold')}</p>}
       {references?.length > 0 && (
         <label>{t('medref.select')}{' '}
-          <select value={selected} onChange={(e) => setSelected(e.target.value)}>
+          <select value={reference?.id ?? ''} disabled={disabled}
+            onChange={(e) => onSelect(references.find((row) => row.id === e.target.value) ?? null)}>
             <option value="">{t('medref.placeholder')}</option>
             {references.map((row) => <option key={row.id} value={row.id}>{row.product} · {row.strength}</option>)}
           </select>

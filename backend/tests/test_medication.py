@@ -8,8 +8,9 @@ from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
-from backend.db import connect, initialize
+from backend.db import MEDICATION_SCHEMA, connect, initialize
 from backend.main import create_app
+from backend.seed import seed
 
 
 class MedicationIntakeTest(TestCase):
@@ -53,6 +54,53 @@ class MedicationIntakeTest(TestCase):
         with TestClient(create_app(restored)) as api:
             history = api.get(url).raise_for_status().json()["entries"]
         self.assertEqual(history, entries[:0:-1])
+
+    def test_product_intake_preserves_identity_and_replays_without_catalog(self):
+        root = Path(self.enterContext(TemporaryDirectory()))
+        path = root / "crew.sqlite3"
+        initialize(path)
+        legacy_id = str(uuid4())
+        with closing(connect(path)) as db:
+            seed(db)
+            db.execute("DROP TABLE medication_intake")
+            db.executescript(MEDICATION_SCHEMA.read_text(encoding="utf-8"))
+            with db:
+                db.execute(
+                    """INSERT INTO medication_intake (crew_id, request_id, name, amount, ts, mission_day)
+                       VALUES ('c1', ?, 'Legacy test item', 'Reported amount', '2026-11-13T06:12:00+00:00', 15)""",
+                    (legacy_id,),
+                )
+        catalog = root / "catalog.json"
+        reference = {
+            "id": "synthetic-product", "product": "Synthetic product", "strength": "Test strength",
+            "directions": "Synthetic reference text.", "warnings": "Synthetic warning.",
+            "label_revision": "Test revision", "label_url": "https://example.org/label",
+        }
+        catalog.write_text(json.dumps([
+            dict(reference, count_unit="test unit"), dict(reference, id="text-only"),
+        ]), encoding="utf-8")
+        url = "/crew/c1/medication-intakes"
+        data = {"request_id": str(uuid4()), "product_id": "synthetic-product", "unit_count": 2}
+        with patch.dict("os.environ", {"CREW_HEALTH_MEDICATION_REFERENCES": str(catalog)}):
+            with TestClient(create_app(path)) as api:
+                for invalid in (0, 1.5, True, "2"):
+                    self.assertEqual(api.post(url, json={**data, "unit_count": invalid}).status_code, 422)
+                self.assertEqual(api.post(url, json={**data, "product_id": "text-only"}).status_code, 422)
+                saved = api.post(url, json=data).raise_for_status().json()
+                self.assertEqual((saved["product_id"], saved["unit_count"]), ("synthetic-product", 2))
+                self.assertEqual((saved["name"], saved["amount"]), ("Synthetic product · Test strength", "2 × test unit"))
+                self.assertEqual(api.post(url, json={**data, "unit_count": 1}).status_code, 409)
+                self.assertEqual(api.post(url, json={
+                    "request_id": data["request_id"], "name": saved["name"], "amount": saved["amount"],
+                }).status_code, 409)
+        with patch.dict("os.environ", {"CREW_HEALTH_MEDICATION_REFERENCES": ""}):
+            with TestClient(create_app(path)) as api:
+                self.assertEqual(api.post(url, json=data).raise_for_status().json(), saved)
+                self.assertEqual(api.post(url, json={**data, "request_id": str(uuid4())}).status_code, 422)
+                structured, legacy = api.get(url).raise_for_status().json()["entries"]
+                self.assertEqual(structured, saved)
+                self.assertEqual((legacy["name"], legacy["amount"], legacy["product_id"], legacy["unit_count"]),
+                                 ("Legacy test item", "Reported amount", None, None))
 
     def test_history_ends_read_transaction_with_rollback(self):
         path = Path(self.enterContext(TemporaryDirectory())) / "crew.sqlite3"

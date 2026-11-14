@@ -9,16 +9,21 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl, TypeAdapter, field_v
 from backend.mission import mission_sol
 
 
+PRODUCT_ID = r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
+INTAKE_COLUMNS = "id, name, amount, ts, mission_day, product_id, unit_count"
+
+
 class MedicationReference(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    id: str = Field(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$", max_length=80)
+    id: str = Field(pattern=PRODUCT_ID, max_length=80)
     product: str = Field(min_length=1, max_length=160)
     strength: str = Field(min_length=1, max_length=80)
     directions: str = Field(min_length=1, max_length=4000)
     warnings: str = Field(min_length=1, max_length=4000)
     label_revision: str = Field(min_length=1, max_length=100)
     label_url: HttpUrl
+    count_unit: str | None = Field(default=None, min_length=1, max_length=30)
 
     @field_validator("label_url")
     @classmethod
@@ -46,10 +51,18 @@ class MedicationIntake(BaseModel):
     amount: str = Field(min_length=1, max_length=80)
 
 
+class ProductIntake(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    request_id: UUID
+    product_id: str = Field(pattern=PRODUCT_ID, max_length=80)
+    unit_count: int = Field(strict=True, gt=0, le=1_000_000)
+
+
 def read_intakes(connection: sqlite3.Connection, crew_id: str) -> list[dict]:
     # The append-only SQLite primary key preserves creation order within a mission timestamp.
     rows = connection.execute(
-        """SELECT id, name, amount, ts, mission_day FROM medication_intake
+        f"""SELECT {INTAKE_COLUMNS} FROM medication_intake
            WHERE crew_id = ? ORDER BY ts DESC, id DESC LIMIT 50""",
         (crew_id,),
     )
@@ -57,19 +70,36 @@ def read_intakes(connection: sqlite3.Connection, crew_id: str) -> list[dict]:
 
 
 def save_intake(
-    connection: sqlite3.Connection, crew_id: str, entry: MedicationIntake, timestamp: datetime,
+    connection: sqlite3.Connection, crew_id: str, entry: MedicationIntake | ProductIntake,
+    timestamp: datetime, references: list[MedicationReference],
 ) -> dict | None:
     key = (crew_id, str(entry.request_id))
-    connection.execute(
-        """INSERT INTO medication_intake (crew_id, request_id, name, amount, ts, mission_day)
-           VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (crew_id, request_id) DO NOTHING""",
-        (*key, entry.name, entry.amount, timestamp.isoformat(), mission_sol(timestamp)),
-    )
     row = connection.execute(
-        """SELECT id, name, amount, ts, mission_day FROM medication_intake
+        f"""SELECT {INTAKE_COLUMNS} FROM medication_intake
            WHERE crew_id = ? AND request_id = ?""",
         key,
     ).fetchone()
-    if (row["name"], row["amount"]) != (entry.name, entry.amount):
-        return None
+    if row is not None:
+        if isinstance(entry, ProductIntake):
+            matches = (row["product_id"], row["unit_count"]) == (entry.product_id, entry.unit_count)
+        else:
+            matches = row["product_id"] is None and (row["name"], row["amount"]) == (entry.name, entry.amount)
+        return dict(row) if matches else None
+
+    if isinstance(entry, ProductIntake):
+        reference = next((row for row in references if row.id == entry.product_id), None)
+        if reference is None or reference.count_unit is None:
+            raise ValueError("This product has no configured count unit.")
+        product_id, unit_count = entry.product_id, entry.unit_count
+        name = f"{reference.product} · {reference.strength}"
+        amount = f"{unit_count} × {reference.count_unit}"
+    else:
+        product_id, unit_count = None, None
+        name, amount = entry.name, entry.amount
+
+    row = connection.execute(
+        f"""INSERT INTO medication_intake (crew_id, request_id, name, amount, ts, mission_day, product_id, unit_count)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING {INTAKE_COLUMNS}""",
+        (*key, name, amount, timestamp.isoformat(), mission_sol(timestamp), product_id, unit_count),
+    ).fetchone()
     return dict(row)

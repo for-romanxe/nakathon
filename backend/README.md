@@ -172,6 +172,14 @@ The API returns an empty array when the catalog is unconfigured. Label text is
 available offline after loading the file. The original URL is provided for
 verification when connected. Match each row to the exact stocked product.
 
+For products counted in whole units, set the optional `count_unit` to a unit
+label such as `tablet`. The intake endpoint then also accepts `request_id`,
+`product_id`, and a positive integer `unit_count`. It stores the product ID,
+count, and the product name, strength, and unit label as shown when recorded.
+Text-only entries remain available and return null for the structured fields.
+Keep a product ID tied to the same formulation, strength, and count unit across
+catalog updates. A count records what was taken and carries no dose calculation.
+
 ### Event follow-up
 
 - `POST /events/{id}/share` persists the event's share flag for the crew medical
