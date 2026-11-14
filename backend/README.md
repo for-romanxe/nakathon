@@ -180,6 +180,12 @@ Text-only entries remain available and return null for the structured fields.
 Keep a product ID tied to the same formulation, strength, and count unit across
 catalog updates. A count records what was taken and carries no dose calculation.
 
+`GET /crew/{id}/medication-intake-summary?product_id=...` returns the last
+matching intake timestamp, elapsed mission minutes, and recorded unit count
+in the preceding 24 hours. It uses the full saved history, even when the Log
+list shows only 50 entries. Text-only entries are counted separately and
+records later than the current mission time are omitted.
+
 ### Event follow-up
 
 - `POST /events/{id}/share` persists the event's share flag for the crew medical

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '../api/client.js'
 import { formatTs } from '../api/contract.js'
 import { useT } from '../i18n/index.jsx'
+import { useMission } from '../mission.jsx'
 
 export default function MedicationIntakes({ crew }) {
   const { t } = useT()
@@ -60,6 +61,7 @@ export default function MedicationIntakes({ crew }) {
     <section className="panel">
       <div className="panel-head"><h2>{t('intake.title')}</h2></div>
       <MedicationReferences reference={reference} disabled={saving} onSelect={(row) => { setReference(row); setAmount('') }} />
+      {countUnit && <IntakeSummary key={reference.id} crew={crew} reference={reference} entries={entries} />}
       <div className="panel-empty">
         <form className="intake-form" onSubmit={submit}>
           {!countUnit && <label>{t('intake.name')}
@@ -84,6 +86,42 @@ export default function MedicationIntakes({ crew }) {
           </ul>
         )}
       </div>
+    </section>
+  )
+}
+
+function IntakeSummary({ crew, reference, entries }) {
+  const { t } = useT()
+  const { mission } = useMission()
+  const sol = mission?.clock?.sol
+  const time = mission?.clock?.time
+  const [result, setResult] = useState(null)
+
+  useEffect(() => {
+    let active = true
+    api.getMedicationIntakeSummary(crew, reference.id).then((summary) => {
+      if (active) setResult({ summary, sol, time, entries })
+    }).catch(() => {
+      if (active) setResult({ summary: null, sol, time, entries })
+    })
+    return () => { active = false }
+  }, [crew, reference.id, sol, time, entries])
+
+  const current = result?.sol === sol && result?.time === time && result?.entries === entries ? result : null
+  const summary = current?.summary
+  return (
+    <section className="panel-empty">
+      <h3>{t('intake.summary')}</h3>
+      {!current && <p role="status">{t('common.loading')}</p>}
+      {current && !summary && <p role="alert" className="error">{t('intake.summary_failed')}</p>}
+      {summary && (
+        <>
+          <p>{t('intake.recorded_24h', { n: summary.recorded_units_24h, unit: reference.count_unit })}</p>
+          <p>{summary.minutes_since_last == null ? t('intake.no_product_record')
+            : t('intake.elapsed', { n: summary.minutes_since_last })}</p>
+          {summary.text_entries_24h > 0 && <p className="muted">{t('intake.text_excluded', { n: summary.text_entries_24h })}</p>}
+        </>
+      )}
     </section>
   )
 }

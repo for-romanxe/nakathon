@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from uuid import UUID
 
@@ -67,6 +67,24 @@ def read_intakes(connection: sqlite3.Connection, crew_id: str) -> list[dict]:
         (crew_id,),
     )
     return [dict(row) for row in rows]
+
+
+def intake_summary(connection: sqlite3.Connection, crew_id: str, product_id: str, now: datetime) -> dict:
+    cutoff = (now - timedelta(hours=24)).isoformat()
+    row = connection.execute(
+        """SELECT MAX(CASE WHEN product_id = :product THEN ts END) AS last_intake_at,
+                  COALESCE(SUM(CASE WHEN product_id = :product AND ts > :cutoff THEN unit_count END), 0)
+                      AS recorded_units_24h,
+                  COUNT(CASE WHEN product_id IS NULL AND ts > :cutoff THEN 1 END) AS text_entries_24h
+           FROM medication_intake
+           WHERE crew_id = :crew AND ts <= :now AND (product_id = :product OR product_id IS NULL)""",
+        {"crew": crew_id, "product": product_id, "cutoff": cutoff, "now": now.isoformat()},
+    ).fetchone()
+    last = row["last_intake_at"]
+    return {
+        "product_id": product_id, **dict(row),
+        "minutes_since_last": None if last is None else int((now - datetime.fromisoformat(last)).total_seconds() // 60),
+    }
 
 
 def save_intake(

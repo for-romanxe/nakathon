@@ -120,6 +120,38 @@ class MedicationIntakeTest(TestCase):
                     transactions = [sql for sql in statements if sql in ("BEGIN", "COMMIT", "ROLLBACK")]
                     self.assertEqual(transactions, ["BEGIN", "ROLLBACK"])
 
+    def test_product_summary_uses_mission_clock_and_structured_records_only(self):
+        root = Path(self.enterContext(TemporaryDirectory()))
+        url = "/crew/c1/medication-intakes"
+        summary_url = "/crew/c1/medication-intake-summary?product_id=synthetic-product"
+        reference = {
+            "id": "synthetic-product", "product": "Synthetic product", "strength": "Test strength",
+            "directions": "Synthetic text.", "warnings": "Synthetic warning.", "count_unit": "test unit",
+            "label_revision": "Test revision", "label_url": "https://example.org/label",
+        }
+        catalog = root / "catalog.json"
+        catalog.write_text(json.dumps([reference, dict(reference, id="other-product")]), encoding="utf-8")
+        with patch.dict("os.environ", {"CREW_HEALTH_MEDICATION_REFERENCES": str(catalog)}):
+            with TestClient(create_app(root / "db.sqlite3")) as api:
+                self.assertIsNone(api.get(summary_url).raise_for_status().json()["minutes_since_last"])
+                for time, sol, count in (("10:00", 15, 4), ("11:00", 15, 2), ("09:00", 16, 3), ("11:00", 16, 8)):
+                    api.post("/demo/clock", json={"time": time, "sol": sol}).raise_for_status()
+                    api.post(url, json={
+                        "request_id": str(uuid4()), "product_id": "synthetic-product", "unit_count": count,
+                    }).raise_for_status()
+                api.post("/demo/clock", json={"time": "10:00", "sol": 16}).raise_for_status()
+                api.post(url, json={"request_id": str(uuid4()), "name": "Synthetic product",
+                                    "amount": "Unverified text"}).raise_for_status()
+                api.post(url, json={"request_id": str(uuid4()), "product_id": "other-product",
+                                    "unit_count": 7}).raise_for_status()
+                summary = api.get(summary_url).raise_for_status().json()
+                self.assertEqual(summary, {
+                    "product_id": "synthetic-product", "last_intake_at": "2026-11-14T09:00:00+00:00",
+                    "minutes_since_last": 60, "recorded_units_24h": 5, "text_entries_24h": 1,
+                })
+                self.assertEqual(api.get(summary_url, headers={"X-Demo-Viewer": "c3"}).status_code, 403)
+                self.assertEqual(api.get(summary_url.replace("synthetic-product", "unknown")).status_code, 404)
+
     def test_records_survive_upgrade_and_retry_and_respect_crew_permissions(self):
         path = Path(self.enterContext(TemporaryDirectory())) / "crew.sqlite3"
         initialize(path)

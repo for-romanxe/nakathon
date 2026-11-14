@@ -18,7 +18,9 @@ from backend.docs import build_docs
 from backend import event_flow
 from backend.events import EventOverride, SymptomAnswer, SymptomInput, event_payload, save_event
 from backend.link_simulation import LinkSimulation, compare_packet
-from backend.medication import MedicationIntake, ProductIntake, load_medication_references, read_intakes, save_intake
+from backend.medication import (
+    PRODUCT_ID, MedicationIntake, ProductIntake, intake_summary, load_medication_references, read_intakes, save_intake,
+)
 from backend.mission import ClockUpdate, DEMO_TIME, active_window, mission_sol, mission_status
 from backend.preflight import PreflightUpdate, read_preflight, save_preflight
 from backend.seed import CONTRACT, CREW, DEMO_DB, seed
@@ -261,6 +263,22 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
                 if not can_read_crew(connection, crew_id, member):
                     return crew_not_found()
                 return {"entries": read_intakes(connection, crew_id)}
+            finally:
+                connection.rollback()
+
+    @app.get("/crew/{crew_id}/medication-intake-summary")
+    def get_medication_intake_summary(
+        crew_id: str, product_id: str = Query(pattern=PRODUCT_ID, max_length=80), member=Depends(viewer),
+    ):
+        crew_id = crew_id.lower()
+        with closing(connect(db_path)) as connection:
+            connection.execute("BEGIN")
+            try:
+                if not can_read_crew(connection, crew_id, member):
+                    return crew_not_found()
+                if not any(row.id == product_id and row.count_unit for row in medication_references):
+                    return event_error("intake_product_unavailable", "This product has no configured count unit.", 404)
+                return intake_summary(connection, crew_id, product_id, clock)
             finally:
                 connection.rollback()
 
