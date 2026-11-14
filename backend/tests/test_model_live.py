@@ -213,6 +213,19 @@ class LiveModel(unittest.TestCase):
         self.assertEqual(got(codes=["crisis"], severity=2, needs_question=True), (4, False))
         self.assertEqual(got(codes=["none"], onset="unknown", worse_when="unknown", severity=3), (1, False))
 
+    def test_body_parts_are_for_display_and_never_cost_a_report(self):
+        # 부위는 몸 화면 표시용이다. 목록 밖 값·겹친 값은 그 값만 버리고, 보고는 살린다.
+        def got(**reply):
+            Stub.reply = completion(json.dumps({**SYMPTOM, **reply}))
+            return client.extract_symptoms("report", "en")
+        self.assertEqual(got(locations=["left_arm", "tail", "left_arm", 3, "unknown", "back"])["locations"], ["left_arm", "back"])
+        self.assertEqual(got(locations=[])["locations"], [])                       # 모델이 봤고 부위가 없다 → 프론트는 표시하지 않는다
+        self.assertEqual(got(codes=["none"], locations=["head"])["locations"], [])  # 증상이 없으면 부위도 없다
+        for unusable in (["tail"], ["unknown"], "head", None):                     # 쓸 수 있는 값이 없다 → 모른다(프론트가 문장에서 찾는다)
+            self.assertEqual(got(locations=unusable)["locations"], ["unknown"])
+        self.assertNotIn("locations", got())                                       # 모델이 칸을 안 쓰면 키를 만들지 않는다(백엔드가 unknown 으로 둔다)
+        self.assertEqual(got(locations=["chest"], codes=["chest_pain"], severity=1)["severity"], 3)   # 판정 쪽 규칙은 그대로다
+
     def test_number_fields_written_loosely_are_tidied_not_thrown_away(self):
         # 긴 지시문에서 실제 모델이 severity 를 정수가 아닌 값으로, confidence 를 1 넘는 값으로 써서 보고가 통째로 버려졌다.
         for written, kept in ((2.0, 2), (2.6, 3), ("4", 4)):
