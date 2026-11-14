@@ -52,6 +52,7 @@ export default function MedicationIntakes({ crew }) {
   return (
     <section className="panel">
       <div className="panel-head"><h2>{t('intake.title')}</h2></div>
+      <MedicationReferences />
       <div className="panel-empty">
         <form className="intake-form" onSubmit={submit}>
           <label>{t('intake.name')}
@@ -75,6 +76,53 @@ export default function MedicationIntakes({ crew }) {
           </ul>
         )}
       </div>
+    </section>
+  )
+}
+
+function MedicationReferences() {
+  const { t } = useT()
+  const [references, setReferences] = useState(null)
+  const [failed, setFailed] = useState(false)
+  const [selected, setSelected] = useState('')
+
+  useEffect(() => {
+    let active = true
+    api.getMedicationReferences().then((result) => {
+      if (active) setReferences(result.references)
+    }).catch(() => {
+      if (active) setFailed(true)
+    })
+    return () => { active = false }
+  }, [])
+
+  const reference = references?.find((row) => row.id === selected)
+  return (
+    <section className="panel-empty">
+      <h3>{t('medref.title')}</h3>
+      {failed && <p role="alert" className="error">{t('medref.failed')}</p>}
+      {!failed && references == null && <p role="status">{t('common.loading')}</p>}
+      {references?.length === 0 && <p className="muted">{t('medref.hold')}</p>}
+      {references?.length > 0 && (
+        <label>{t('medref.select')}{' '}
+          <select value={selected} onChange={(e) => setSelected(e.target.value)}>
+            <option value="">{t('medref.placeholder')}</option>
+            {references.map((row) => <option key={row.id} value={row.id}>{row.product} · {row.strength}</option>)}
+          </select>
+        </label>
+      )}
+      {reference && (
+        <div>
+          <h4>{t('medref.directions')}</h4>
+          <p>{reference.directions}</p>
+          <h4>{t('medref.warnings')}</h4>
+          <p>{reference.warnings}</p>
+          <p className="muted">{t('medref.confirm')}</p>
+          <a href={reference.label_url} target="_blank" rel="noreferrer">
+            {t('medref.source')} · {reference.label_revision}
+          </a>
+        </div>
+      )}
     </section>
   )
 }

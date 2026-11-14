@@ -161,6 +161,15 @@ The Log page uses this API in backend mode. The amount is the crew member's
 reported text. Product guidance and interaction checks require a separate
 reviewed medication catalog.
 
+In backend mode, the Log page also shows label references from
+`GET /medication-references`. Set `CREW_HEALTH_MEDICATION_REFERENCES` to a
+local UTF-8 JSON array of team-reviewed references and restart the server.
+Each row has a unique lowercase `id`, exact `product` and `strength`,
+`directions`, `warnings`, `label_revision`, and an HTTPS `label_url`.
+The API returns an empty array when the catalog is unconfigured. Label text is
+available offline after loading the file. The original URL is provided for
+verification when connected. Match each row to the exact stocked product.
+
 ### Event follow-up
 
 - `POST /events/{id}/share` persists the event's share flag for the crew medical

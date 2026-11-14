@@ -77,6 +77,7 @@ async function request(path, fixture, options = {}) {
 }
 
 export const api = {
+  getMedicationReferences: () => request('/medication-references'),
   getMedicationIntakes: (crewId) => request(`/crew/${crewId}/medication-intakes`),
   recordMedicationIntake: (crewId, entry) => request(`/crew/${crewId}/medication-intakes`, null, {
     method: 'POST', body: JSON.stringify(entry),

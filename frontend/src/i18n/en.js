@@ -334,4 +334,13 @@ export default {
   "intake.saved": "Intake recorded.",
   "intake.empty": "No intake records.",
   "intake.load_failed": "Could not load intake records. Reload to try again.",
+  "medref.title": "Medication label reference",
+  "medref.failed": "Could not load medication labels.",
+  "medref.hold": "No reviewed medication labels are configured. Check with the crew medical officer.",
+  "medref.select": "Exact product and strength",
+  "medref.placeholder": "Select the product on the package",
+  "medref.directions": "Label directions",
+  "medref.warnings": "Label warnings",
+  "medref.confirm": "Confirm with the crew medical officer.",
+  "medref.source": "Original product label",
 }

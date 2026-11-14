@@ -334,4 +334,13 @@ export default {
   "intake.saved": "복용 기록을 저장했어요.",
   "intake.empty": "복용 기록이 없어요.",
   "intake.load_failed": "복용 기록을 불러오지 못했어요. 새로고침해서 다시 시도해 주세요.",
+  "medref.title": "약품 라벨 참고",
+  "medref.failed": "약품 라벨을 불러오지 못했어요.",
+  "medref.hold": "연결된 검토 완료 라벨이 없어요. 승무원 의료 담당자에게 확인해 주세요.",
+  "medref.select": "제품과 함량",
+  "medref.placeholder": "포장에 표시된 제품을 선택하세요",
+  "medref.directions": "라벨의 복용 안내",
+  "medref.warnings": "라벨의 주의사항",
+  "medref.confirm": "승무원 의료 담당자에게 확인해 주세요.",
+  "medref.source": "제품 라벨 원문",
 }

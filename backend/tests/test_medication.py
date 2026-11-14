@@ -1,7 +1,9 @@
+import json
 from contextlib import closing
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
+from unittest.mock import patch
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
@@ -11,6 +13,28 @@ from backend.main import create_app
 
 
 class MedicationIntakeTest(TestCase):
+    def test_label_reference_requires_a_local_catalog(self):
+        root = Path(self.enterContext(TemporaryDirectory()))
+        path = root / "crew.sqlite3"
+        url = "/medication-references"
+        with patch.dict("os.environ", {"CREW_HEALTH_MEDICATION_REFERENCES": ""}):
+            with TestClient(create_app(path)) as api:
+                self.assertEqual(api.get(url).json(), {"references": []})
+        reference = {
+            "id": "synthetic-product", "product": "Synthetic product", "strength": "Test strength",
+            "directions": "Synthetic reference text.", "warnings": "Synthetic warning.",
+            "label_revision": "Test revision", "label_url": "https://example.org/label",
+        }
+        catalog = root / "catalog.json"
+        with patch.dict("os.environ", {"CREW_HEALTH_MEDICATION_REFERENCES": str(catalog)}):
+            catalog.write_text(json.dumps([reference]), encoding="utf-8")
+            with TestClient(create_app(path)) as api:
+                self.assertEqual(api.get(url).raise_for_status().json(), {"references": [reference]})
+            catalog.write_text(json.dumps([reference, reference]), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "Duplicate medication"):
+                with TestClient(create_app(path)):
+                    pass
+
     def test_records_survive_upgrade_and_retry_and_respect_crew_permissions(self):
         path = Path(self.enterContext(TemporaryDirectory())) / "crew.sqlite3"
         initialize(path)

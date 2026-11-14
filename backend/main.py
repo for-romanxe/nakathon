@@ -18,7 +18,7 @@ from backend.docs import build_docs
 from backend import event_flow
 from backend.events import EventOverride, SymptomAnswer, SymptomInput, event_payload, save_event
 from backend.link_simulation import LinkSimulation, compare_packet
-from backend.medication import MedicationIntake, read_intakes, save_intake
+from backend.medication import MedicationIntake, load_medication_references, read_intakes, save_intake
 from backend.mission import ClockUpdate, DEMO_TIME, active_window, mission_sol, mission_status
 from backend.preflight import PreflightUpdate, read_preflight, save_preflight
 from backend.seed import CONTRACT, CREW, DEMO_DB, seed
@@ -51,15 +51,17 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
     event_locks = [Lock() for _ in range(32)]
     evidence = []
     docs = []
+    medication_references = []
     sessions = None
     frontend_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        nonlocal evidence, sessions, docs
+        nonlocal evidence, sessions, docs, medication_references
         sessions = CrewSessions(crew_id for crew_id, *_ in CREW)
         evidence = event_flow.load_evidence()
         docs = build_docs(evidence)
+        medication_references = load_medication_references()
         initialize(db_path)
         with closing(connect(db_path)) as connection:
             seed(connection)
@@ -244,6 +246,10 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             raise HTTPException(403, "Crew record write denied.")
         with closing(connect(db_path)) as connection, connection:
             return save_preflight(connection, crew_id, update)
+
+    @app.get("/medication-references")
+    def get_medication_references(member=Depends(viewer)):
+        return {"references": medication_references}
 
     @app.get("/crew/{crew_id}/medication-intakes")
     def get_medication_intakes(crew_id: str, member=Depends(viewer)):
