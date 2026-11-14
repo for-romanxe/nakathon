@@ -107,6 +107,19 @@ class LiveModel(unittest.TestCase):
                 with self.assertRaises(client.ModelOutputError):
                     client.explain("caution", [], ["dehydration"], paras, "en")
 
+    def test_retry_prompt_names_what_the_checker_rejected(self):
+        # temperature 0 이라 같은 프롬프트로는 같은 문장이 다시 나온다. 재생성 때는 실패한 검사를 알려 준다.
+        Stub.reply = completion(json.dumps({"category": "sleep", "condition_id": "sleep_deficit",
+                                            "lines": ["Short sleep is possible."], "cites": [1]}))
+        paras = [{"id": "eval:sleep#p1", "text": "Sleep."}]
+        client.explain("advisory", [], ["sleep_deficit"], paras, "en")
+        client.explain("advisory", [], ["sleep_deficit"], paras, "en", rejected={"numbers": ["12"], "wording": ["입니다", "수면 부족"]})
+        first, retry = (seen[1]["messages"][1]["content"] for seen in Stub.seen)
+        self.assertNotIn("rejected", first)
+        self.assertTrue(retry.startswith(first))
+        self.assertIn("write no digits at all (you wrote: 12)", retry)
+        self.assertIn("(you wrote: 입니다, 수면 부족)", retry)
+
     def test_category_follows_the_condition_not_the_model(self):
         # 실제 모델이 category 에 "advisory"(판정 단계)나 상태 이름을 써 넣었다(10문항 중 4개). 범주는 상태 목록이 정한다.
         Stub.reply = completion(json.dumps({"category": "advisory", "condition_id": "sleep_deficit",

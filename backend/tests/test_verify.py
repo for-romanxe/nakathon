@@ -93,3 +93,19 @@ class Numbers(unittest.TestCase):
             out = row["out"]
             with self.subTest(condition=out["condition_id"]):
                 self.assertEqual(verify(out, [], "caution", set(out["cites"]))["fails"], [])
+
+    def test_detail_says_what_each_check_caught(self):
+        # 재생성 때 모델에게 '무엇이' 걸렸는지 알려 주고, 화면의 폐기 이유(runs[].note)에도 쓴다.
+        self.assertEqual(verify(GOOD, FIND, "caution", DOCS)["detail"], {})
+        self.assertEqual(verify(GOOD, FIND, "caution", DOCS)["note"], "")
+        r = verify(dict(GOOD, lines=["12시 전에 물을 마시는 게 좋아요."]), FIND, "caution", DOCS)
+        self.assertEqual((r["fails"], r["detail"]), (["numbers"], {"numbers": ["12"]}))
+        self.assertEqual(r["note"], "numbers: 12")
+        r = verify(dict(GOOD, lines=["주의가 필요한 작업은 미루는 게 좋아요."]), FIND, "advisory", DOCS)
+        self.assertEqual(r["detail"], {"level": ["주의"]})
+        r = verify(dict(GOOD, lines=["수면 부족은 흔한 현상입니다."]), FIND, "caution", DOCS)     # 단정 + 다른 상태 이름
+        self.assertEqual(r["detail"], {"wording": ["입니다", "수면 부족"]})
+        r = verify(dict(GOOD, cites=["hrp:nope#p1"]), FIND, "caution", DOCS)
+        self.assertEqual(r["detail"], {"cites": ["hrp:nope#p1"]})
+        r = verify(dict(GOOD, lines="not a list"), FIND, "caution", DOCS)
+        self.assertIn("schema", r["detail"])
