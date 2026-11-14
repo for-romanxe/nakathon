@@ -6,7 +6,7 @@
 증상은 키워드(mock)와 모델(live)을 같은 문장으로 비교한다. 기분·설명은 모델만 잰다.
 설명은 파이프라인대로 생성 → 검증, 실패하면 한 번 더, 두 번 실패하면 판단 보류로 센다.
 """
-import argparse, datetime, json, os, pathlib, statistics, sys, time
+import argparse, datetime, json, os, pathlib, re, statistics, sys, time
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -138,6 +138,10 @@ if __name__ == "__main__":
     ap.add_argument("--repeat", type=int, default=3)
     ap.add_argument("--check", action="store_true", help="질문셋 점검만 하고 끝낸다")
     a = ap.parse_args()
+    if a.repeat < 1:
+        ap.error("--repeat must be 1 or more")
+    if a.label and not re.fullmatch(r"[A-Za-z0-9._+-]+", a.label):     # 결과 파일 이름이 된다. 경로 글자는 받지 않는다
+        ap.error("--label may only contain letters, digits and . _ + -")
     problems = check_set()
     print("\n".join(problems) or "question set ok: 12 symptom / 8 mood / 10 explain, no sentence found in the training data")
     if a.check or [p for p in problems if "overlap not checked" not in p]:
@@ -149,6 +153,7 @@ if __name__ == "__main__":
             "question_set_version": Q["version"], "model_url": os.environ.get("MODEL_URL", "http://127.0.0.1:8080"),
             "model_name": os.environ.get("MODEL_NAME", "default_model"), "summary": summary(rows)}
     out = HERE / "results" / f"{a.label}.json"
+    out.parent.mkdir(exist_ok=True)
     out.write_text(json.dumps({**head, "rows": rows}, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"== {a.label} · {head['date']} · repeat {a.repeat}")
     print("\n".join(head["summary"]))
