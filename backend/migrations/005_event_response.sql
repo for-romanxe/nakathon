@@ -1,0 +1,9 @@
+BEGIN IMMEDIATE;
+
+ALTER TABLE event ADD COLUMN shared INTEGER NOT NULL DEFAULT 0 CHECK (shared IN (0, 1));
+ALTER TABLE event ADD COLUMN closed_reason TEXT;
+ALTER TABLE event ADD COLUMN closed_at TEXT;
+ALTER TABLE event ADD COLUMN override_note TEXT;
+
+PRAGMA user_version = 5;
+COMMIT;

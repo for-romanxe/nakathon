@@ -20,4 +20,13 @@ Open http://localhost:5173.
 
 ## Screens
 
-Routes follow CONTRACT §5: `/today /body /trends /log /procedures /crew /settings /events/:id /warning`. Only `/today` is built so far.
+Routes follow CONTRACT §5. The Today screen (`/today`) shows the daily guide
+and supports morning check-in. The Crew screen (`/crew`) shows the demo roster
+and the Earth transmission queue.
+
+With the demo backend connected, open Crew and queue daily summaries. Advance
+the demo clock to the next transmission window and send the queued packets.
+Mark a packet missing, advance to the next window, and send it again before
+confirming receipt. The sequence number and hash stay the same across attempts.
+Use **Compare signals** on a packet to see how amplitude affects bit errors,
+successful packets, and relative energy. The queue controls simulate delivery.

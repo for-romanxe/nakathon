@@ -194,7 +194,7 @@ def extract_symptoms(text: str, lang: str, recent_summary: str = "") -> dict:
     for key in ("onset", "worse_when"):      # 보조 필드를 지어내면 unknown 으로 둔다. codes 는 건드리지 않는다(목록 밖이면 거부).
         if key in out and out[key] not in e[key]:
             out[key] = "unknown"
-    return _validated(finish_symptom(out), "symptom")
+    return _validated(finish_symptom(out), "symptom")      # locations 정리도 finish_symptom 에서 한다
 
 
 URGENT_CODES = ("crisis", "chest_pain", "shortness_of_breath")
