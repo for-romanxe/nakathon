@@ -114,6 +114,7 @@ export default {
   "event.possibility": "{name} (possibility)",
   "event.urgent_skip": "Rules raised a warning from the report. The model is skipped for urgent symptoms.",
   "event.withheld": "Judgement withheld: the explanation failed verification twice. The numbers above are the rule verdict.",
+  "event.withheld_hold": "Judgement withheld. The numbers above are the rule verdict.",
   "event.pending": "No explanation yet. The rule verdict above stands.",
   "event.verify": "Verification",
   "event.verified": "{n}/5 passed",
