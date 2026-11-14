@@ -14,7 +14,18 @@ from backend import contracts                    # noqa: E402
 from backend.model import client, pipeline       # noqa: E402
 
 HERE = pathlib.Path(__file__).resolve().parent
-Q = json.loads((HERE / "questions.json").read_text(encoding="utf-8"))
+
+
+def _unique_keys(pairs):
+    """JSON 은 같은 키를 두 번 써도 조용히 뒤의 것만 남긴다. 문단 id 가 겹치면 여기서 멈춘다."""
+    keys = [k for k, _ in pairs]
+    repeated = sorted({k for k in keys if keys.count(k) > 1})
+    if repeated:
+        sys.exit(f"ERROR questions.json repeats the key(s) {repeated}. Fix: give each entry its own id.")
+    return dict(pairs)
+
+
+Q = json.loads((HERE / "questions.json").read_text(encoding="utf-8"), object_pairs_hook=_unique_keys)
 
 
 def check_set(overlap=True):
@@ -26,9 +37,13 @@ def check_set(overlap=True):
         for code in it["expect"] + it.get("allow", []) + it.get("forbid", []):
             if code not in e["symptom_codes"]:
                 bad.append(f"{it['id']}: unknown symptom code {code}")
+    cite = re.compile(contracts.schema("explanation")["properties"]["cites"]["items"]["pattern"])
+    bad += [f"paragraph id {p} does not match the cite format {cite.pattern}" for p in Q["paragraphs"] if p != "_doc" and not cite.match(p)]
     for it in Q["explain"]:
         bad += [f"{it['id']}: unknown condition {c}" for c in it["candidates"] if c not in e["conditions"]]
         bad += [f"{it['id']}: unknown paragraph {p}" for p in it["paragraphs"] if p not in Q["paragraphs"]]
+        if len(set(it["paragraphs"])) != len(it["paragraphs"]):
+            bad.append(f"{it['id']}: the same paragraph is listed twice")
         for f in it["findings"]:
             if abs(round((f["value"] - f["baseline"]) / f["sd"], 1) - f["z"]) > 0.051:
                 bad.append(f"{it['id']}: z of {f['metric']} does not match value/baseline/sd")
@@ -100,8 +115,9 @@ def run(repeat):
                 result, _, sec = call(pipeline.explain_verified, it["level"], it["findings"], it["candidates"], paras, it["lang"])
             finally:
                 client.explain = real
-            if result["runs"][0]["note"].startswith("model unavailable"):
-                sys.exit(f"ERROR {result['runs'][0]['note']}. Fix: start mlx_lm.server (backend/model/README.md) or set MODEL_URL.")
+            down = [r["note"] for r in result["runs"] if r["note"].startswith("model unavailable")]
+            if down:                                 # 재생성 중에 서버가 죽어도 보류로 세지 않고 멈춘다. 일부만 잰 결과는 저장하지 않는다
+                sys.exit(f"ERROR {down[0]}. Fix: start mlx_lm.server (backend/model/README.md) or set MODEL_URL.")
             attempts = [{"out": out, **{k: r[k] for k in ("ok", "fails", "note")}} for out, r in zip(outs, result["runs"])]
             rows.append({"section": "explain", "id": it["id"], "by": "model", "run": n, "attempts": attempts,
                          "sec": round(sec, 2), "ok": not result["hold"], "hold": result["hold"]})
