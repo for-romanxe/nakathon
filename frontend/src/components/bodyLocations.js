@@ -100,13 +100,19 @@ export function reportsByRegion(events) {
   const byRegion = {}
   for (const e of events ?? []) {
     if (!e.symptom_text && !Array.isArray(e.locations)) continue
-    const found = Array.isArray(e.locations)
-      ? e.locations.map((location) => ({ location, sideStated: true, source: 'backend' }))
+    // The backend's locations come first when at least one of them can be shown on the body. It sends ["unknown"]
+    // for old events, warnings that skip the model and unreadable model output: then the report text is read again,
+    // so "My left arm hurts." still marks the left arm.
+    const fromBackend = (Array.isArray(e.locations) ? e.locations : []).filter((l) => REGION_BY_LOCATION[l])
+    const found = fromBackend.length
+      ? fromBackend.map((location) => ({ location, sideStated: true, source: 'backend' }))
       : locationsInText(e.symptom_text).map((l) => ({ ...l, source: 'text' }))
     for (const { location, sideStated, source } of found) {
       const region = REGION_BY_LOCATION[location]
       if (!region) continue
-      ;(byRegion[region] ??= []).push({ event: e, source, sideStated })
+      const list = (byRegion[region] ??= [])
+      if (list.some((r) => r.event === e)) continue // head + neck, abdomen + back: one entry per event and region
+      list.push({ event: e, source, sideStated })
     }
   }
   return byRegion

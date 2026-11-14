@@ -13,4 +13,10 @@ export const REGIONS = [
   { id: 'right_leg', location: 'right_leg', metrics: ['act'], sensor: 'whole', doc: 'hrp:sm-03#p5' },
 ]
 
-export const REGION_BY_LOCATION = Object.fromEntries(REGIONS.map((r) => [r.location, r.id]))
+// body_location (contracts/symptom.schema.json, #37) -> region shown on the body. neck and back have no region of
+// their own and are drawn on the nearest one; "unknown" (and anything else) has none.
+export const REGION_BY_LOCATION = {
+  ...Object.fromEntries(REGIONS.map((r) => [r.location, r.id])),
+  neck: 'head',
+  back: 'core',
+}
