@@ -106,8 +106,48 @@ p { margin: 0; }
 .guide-state { font-size: 0.8rem; color: var(--muted); align-self: start; }
 
 .readouts { display: flex; flex-direction: column; }
+/* Annunciator: a lamp (level word lit in its colour) beside the status sentence, like a cockpit caution panel */
+.annunciator {
+  display: flex; align-items: stretch; gap: 0;
+  border: 1px solid color-mix(in srgb, var(--status) 45%, var(--line));
+  border-radius: var(--radius); background: var(--bezel); overflow: hidden;
+}
+.annunciator-lamp {
+  display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 132px; padding: 14px 18px;
+  font-family: var(--mono); font-weight: 600; font-size: 0.95rem; color: var(--status);
+  background: color-mix(in srgb, var(--status) 16%, var(--well));
+  border-right: 1px solid color-mix(in srgb, var(--status) 45%, var(--line));
+  text-shadow: 0 0 12px color-mix(in srgb, var(--status) 60%, transparent);
+}
+.annunciator-text { display: flex; align-items: center; padding: 14px 18px; font-size: 1.1rem; font-weight: 500; }
+.annunciator.lv-advisory .annunciator-lamp { text-shadow: none; }
+
+/* Deviation gauge: −4σ … +4σ, caution and warning zones at both ends, a tick at the baseline */
+.dev-scale { position: relative; display: block; height: 18px; min-width: 120px; }
+.dev-track {
+  position: absolute; left: 0; right: 0; top: 7px; height: 4px; border-radius: 2px;
+  background: linear-gradient(to right,
+    color-mix(in srgb, var(--warning) 55%, transparent) 0 12.5%,
+    color-mix(in srgb, var(--caution) 45%, transparent) 12.5% 25%,
+    var(--line) 25% 75%,
+    color-mix(in srgb, var(--caution) 45%, transparent) 75% 87.5%,
+    color-mix(in srgb, var(--warning) 55%, transparent) 87.5% 100%);
+}
+.dev-zero { position: absolute; left: 50%; top: 3px; width: 1px; height: 12px; background: var(--muted); }
+.dev-needle {
+  position: absolute; top: 0; width: 3px; height: 18px; margin-left: -1.5px; border-radius: 1px;
+  background: var(--text); box-shadow: 0 0 0 2px var(--bezel);
+}
+.dev-caution { background: var(--caution); }
+.dev-warning { background: var(--warning); }
+.dev-unknown { opacity: 0.35; }
+@media (prefers-reduced-motion: no-preference) {
+  .dev-needle { animation: needle-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+  @keyframes needle-in { from { left: 50%; } }
+}
+
 .readout {
-  display: grid; grid-template-columns: 1fr 120px 56px 96px; align-items: center; column-gap: 14px;
+  display: grid; grid-template-columns: minmax(130px, 1fr) minmax(120px, 200px) 96px 48px 96px; align-items: center; column-gap: 14px;
   min-height: 60px; padding: 8px 16px 8px 13px;
   border-left: 3px solid transparent; border-bottom: 1px solid var(--line);
 }
@@ -123,13 +163,23 @@ p { margin: 0; }
   background: color-mix(in srgb, var(--status) 10%, transparent);
 }
 
+/* With the side rail, five columns need about 880px; below 960px the gauge moves to its own line under the row */
+@media (max-width: 960px) {
+  .readout { grid-template-columns: minmax(0, 1fr) auto auto auto; row-gap: 6px; }
+  .readout .dev-scale { grid-column: 1 / -1; grid-row: 2; min-width: 0; }
+  .readout-name { overflow-wrap: anywhere; }
+}
+
 @media (max-width: 760px) {
   .app { grid-template-columns: 1fr; }
   .rail { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
   .rail-list { flex-direction: row; flex-wrap: wrap; }
   .page, .topbar { padding-left: 16px; padding-right: 16px; }
-  .readout { grid-template-columns: 1fr auto auto; }
+  .readout { grid-template-columns: 1fr auto auto; row-gap: 6px; }
+  .readout .dev-scale { grid-column: 1 / -1; grid-row: 2; }
   .readout .badge { grid-column: 1 / -1; justify-self: start; }
+  .annunciator { flex-direction: column; }
+  .annunciator-lamp { justify-content: flex-start; border-right: 0; border-bottom: 1px solid color-mix(in srgb, var(--status) 45%, var(--line)); }
 }
 
 /* Advisory (one metric off for one day) is shown without colour */
@@ -191,6 +241,13 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
 .pipeline ol { list-style: none; margin: 0; padding: 10px 14px; border: 1px dashed var(--line); border-radius: var(--radius); font-size: 0.9rem; display: flex; flex-direction: column; gap: 4px; }
 .pipeline li.done { color: var(--text-2); }
 .pipeline li.running { color: var(--accent); }
+.pipeline li.done > span:first-child { color: var(--ok); }
+@media (prefers-reduced-motion: no-preference) {
+  .pipeline li.running > span:first-child { display: inline-block; animation: stage-spin 1.2s linear infinite; }
+  @keyframes stage-spin { to { transform: rotate(360deg); } }
+  .pipeline li.done { animation: stage-in 0.3s ease-out; }
+  @keyframes stage-in { from { opacity: 0; transform: translateX(-4px); } }
+}
 .pipeline li.stopped { color: var(--warning); }
 .result-card { padding: 12px 14px; border: 1px solid var(--line); border-left: 3px solid var(--status, var(--line)); border-radius: var(--radius); background: var(--bezel-2); display: flex; flex-direction: column; gap: 8px; }
 .result-head { display: flex; align-items: center; gap: 10px; }
@@ -253,13 +310,24 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
   border: 3px solid var(--warning);
 }
 .warning-inner { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
-.warning-level { margin: 0; font-family: var(--mono); font-weight: 600; letter-spacing: 0.08em; color: var(--warning); }
+.warning-level {
+  align-self: flex-start; margin: 0; padding: 6px 14px; border-radius: 4px;
+  font-family: var(--mono); font-weight: 700; letter-spacing: 0.08em; color: #1a0606; background: var(--warning);
+}
 .warning-screen h1 { font-size: 2rem; color: var(--warning); }
 .warning-report { margin: 0; font-size: 1.1rem; color: var(--text-2); }
 .warning-block { padding: 14px 16px; background: var(--bezel); border: 1px solid var(--line); border-radius: var(--radius); display: flex; flex-direction: column; gap: 8px; }
 .warning-steps { margin: 0; padding-left: 22px; font-size: 1.1rem; display: flex; flex-direction: column; gap: 6px; }
 .warning-numbers { list-style: none; margin: 0; padding: 0; }
-.warning-numbers li { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.warning-numbers li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(110px, 180px) 7.5em 7.5em; gap: 14px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.warning-numbers .dev-needle { box-shadow: 0 0 0 2px var(--bezel); }
+@media (max-width: 560px) {
+  /* name | value on the first line, gauge on its own line, baseline below: nothing can push past the screen */
+  .warning-numbers li { grid-template-columns: minmax(0, 1fr) auto; row-gap: 6px; }
+  .warning-numbers li > span:first-child { overflow-wrap: anywhere; }
+  .warning-numbers .dev-scale { grid-column: 1 / -1; grid-row: 2; min-width: 0; }
+  .warning-numbers li > .muted { grid-column: 1 / -1; grid-row: 3; }
+}
 .warning-numbers li:last-child { border-bottom: 0; }
 .warning-numbers b { color: var(--status); font-size: 1.3rem; }
 .warning-actions, .warning-footer { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
@@ -269,8 +337,12 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
 }
 .btn-warning:disabled { opacity: 0.85; cursor: default; }
 @media (prefers-reduced-motion: no-preference) {
-  .warning-screen { animation: warning-in 0.25s ease-out; }
+  /* fade in once, then the frame breathes slowly (master warning light); the unknown state does not pulse */
+  .warning-screen:not(.warning-unknown) { animation: warning-in 0.25s ease-out, warning-frame 2.4s ease-in-out 0.25s infinite; }
   @keyframes warning-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes warning-frame {
+    50% { box-shadow: inset 0 0 0 3px var(--warning), inset 0 0 60px color-mix(in srgb, var(--warning) 28%, transparent); }
+  }
 }
 .warning-unknown { background: var(--bg); border-color: var(--hold); }
 .warning-unknown h1 { color: var(--text); }
@@ -281,6 +353,11 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
 .crew-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
 .crew-card { border-top: 3px solid var(--status, var(--line)); }
 .crew-card.lv-advisory { border-top-color: var(--line); }
+/* caution/warning cards: the lit top edge glows a little so the off crew member is found at a glance */
+.crew-card.lv-caution, .crew-card.lv-warning {
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--status) 9%, var(--bezel)), var(--bezel) 120px);
+  box-shadow: 0 -1px 14px -4px color-mix(in srgb, var(--status) 60%, transparent);
+}
 .crew-card h2 { display: flex; align-items: center; gap: 8px; }
 .crew-tag { padding: 1px 7px; font-size: 0.72rem; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; }
 .crew-rows { margin: 0; padding: 4px 16px 12px; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 12px; font-size: 0.9rem; }
