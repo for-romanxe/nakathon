@@ -11,6 +11,14 @@ The server creates and seeds `data/crew-health.sqlite3` on startup. It keeps
 existing rows across restarts. The demo clock starts at Sol 16, 06:12 and exposes
 synthetic crew data on localhost. Use only synthetic data with this demo endpoint.
 
+Existing databases keep their original synthetic readings. To see the latest
+series in a separate database, set `CREW_HEALTH_DB` from the repository root:
+
+```powershell
+$env:CREW_HEALTH_DB = 'data/crew-health-trends.sqlite3'
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
 Use the corresponding crew ID in the `X-Demo-Viewer` header for each request.
 
 | Request | Expected status level |

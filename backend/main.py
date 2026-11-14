@@ -1,5 +1,7 @@
 import json
+import os
 from contextlib import asynccontextmanager, closing
+from pathlib import Path
 from threading import Lock
 from typing import Literal
 
@@ -506,4 +508,4 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
     return app
 
 
-app = create_app()
+app = create_app(Path(os.environ.get("CREW_HEALTH_DB") or DEMO_DB))
