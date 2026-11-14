@@ -36,6 +36,14 @@ events within the requested window. The window ends at the current
 mission sol and defaults to 14 sols (range: 1–90). Days without measurements
 have no point. The read permissions are the same as Today.
 
+`GET /crew/{id}/preflight` returns the crew member's preflight values and
+their sources. The owner can use `PUT /crew/{id}/preflight` with a body such
+as `{"values":{"hr":68}}`. Unspecified metrics are preserved. Use the units
+from `contracts/enums.json`. Values entered this way have source `manual`.
+Trends returns the selected metric's comparison value in `preflight` as
+`{value,source}` or `null`. This value is separate from the rolling baseline
+used by the alert rules.
+
 `POST /crew/c1/checkin` saves a check-in and returns the updated Today response.
 Example morning request:
 

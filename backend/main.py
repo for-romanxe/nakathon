@@ -17,6 +17,7 @@ from backend import event_flow
 from backend.events import EventOverride, SymptomAnswer, SymptomInput, event_payload, save_event
 from backend.link_simulation import LinkSimulation, compare_packet
 from backend.mission import ClockUpdate, DEMO_TIME, active_window, mission_sol, mission_status
+from backend.preflight import PreflightUpdate, read_preflight, save_preflight
 from backend.seed import CONTRACT, CREW, DEMO_DB, seed
 from backend.today import today
 from backend.trends import trends
@@ -223,6 +224,23 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             if not can_read_crew(connection, crew_id, member):
                 return crew_not_found()
             return today(connection, crew_id, mission_sol(clock), lang)
+
+    @app.get("/crew/{crew_id}/preflight")
+    def get_preflight(crew_id: str, member=Depends(viewer)):
+        crew_id = crew_id.lower()
+        with closing(connect(db_path)) as connection, connection:
+            connection.execute("BEGIN")
+            if not can_read_crew(connection, crew_id, member):
+                return crew_not_found()
+            return read_preflight(connection, crew_id)
+
+    @app.put("/crew/{crew_id}/preflight")
+    def update_preflight(crew_id: str, update: PreflightUpdate, member=Depends(viewer)):
+        crew_id = crew_id.lower()
+        if member["id"] != crew_id:
+            raise HTTPException(403, "Crew record write denied.")
+        with closing(connect(db_path)) as connection, connection:
+            return save_preflight(connection, crew_id, update)
 
     @app.get("/crew/{crew_id}/trends")
     def read_trends(crew_id: str, metric: str, days: int = Query(14, ge=1, le=90), member=Depends(viewer)):
