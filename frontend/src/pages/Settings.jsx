@@ -3,7 +3,7 @@ import { api } from '../api/client.js'
 import { useT } from '../i18n/index.jsx'
 import { CREW_IDS, CURRENT_CREW, switchViewer } from '../session.js'
 
-export default function Settings() {
+export default function Settings({ loginRequired }) {
   const { t } = useT()
   const [access, setAccess] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -28,7 +28,12 @@ export default function Settings() {
   return (
     <section className="page">
       <h1>{t('nav.settings')}</h1>
-      <label>
+      {loginRequired ? (
+        <button type="button" className="btn-secondary" disabled={busy} onClick={() => update(async () => {
+          await api.logout()
+          window.location.reload()
+        })}>{t('login.logout')}</button>
+      ) : <label>
         {t('settings.viewer')}{' '}
         <select value={CURRENT_CREW} disabled={busy} onChange={event => {
           const id = event.target.value
@@ -36,7 +41,7 @@ export default function Settings() {
         }}>
           {CREW_IDS.map(id => <option key={id} value={id}>{id.toUpperCase()}</option>)}
         </select>
-      </label>
+      </label>}
       <label>
         <input type="checkbox" checked={access === true} disabled={busy || access === null} onChange={event => {
           const cmo_access = event.target.checked

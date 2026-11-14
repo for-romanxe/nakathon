@@ -1,5 +1,10 @@
 // English dictionary (primary). Every key here must also exist in ko.js.
 export default {
+  'login.title': 'Sign in',
+  'login.crew': 'Crew member',
+  'login.code': 'Access code',
+  'login.invalid': 'Invalid crew member or access code.',
+  'login.logout': 'Sign out',
   'settings.viewer': 'Demo crew member',
   'settings.cmo_access': 'Allow the medical officer to view my records',
   'tx.title': 'Earth transmission queue',

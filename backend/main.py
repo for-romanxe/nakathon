@@ -3,11 +3,12 @@ from contextlib import asynccontextmanager, closing
 from threading import Lock
 from typing import Literal
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ConfigDict, StrictBool
+from backend.auth import CrewLogin, CrewSessions, SESSION_COOKIE, SESSION_SECONDS
 
 from backend.checkin import Checkin, save_checkin
 from backend.db import connect, initialize
@@ -15,7 +16,7 @@ from backend import event_flow
 from backend.events import EventOverride, SymptomAnswer, SymptomInput, event_payload, save_event
 from backend.link_simulation import LinkSimulation, compare_packet
 from backend.mission import ClockUpdate, DEMO_TIME, active_window, mission_sol, mission_status
-from backend.seed import DEMO_DB, seed
+from backend.seed import CREW, DEMO_DB, seed
 from backend.today import today
 from backend.transmission import (
     DeliveryResult, QueueRequest, dispatch, enqueue_daily, enqueue_event, packets, record_delivery, visible_packet,
@@ -43,10 +44,13 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
     clock_lock = Lock()
     event_locks = [Lock() for _ in range(32)]
     evidence = []
+    sessions = None
+    frontend_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        nonlocal evidence
+        nonlocal evidence, sessions
+        sessions = CrewSessions(crew_id for crew_id, *_ in CREW)
         evidence = event_flow.load_evidence()
         initialize(db_path)
         with closing(connect(db_path)) as connection:
@@ -56,24 +60,39 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
     app = FastAPI(title="Crew Health Demo API", lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+        allow_origins=frontend_origins,
+        allow_credentials=True,
         allow_methods=["GET", "POST", "PUT"],
         allow_headers=["Content-Type", "X-Demo-Viewer"],
     )
 
     @app.exception_handler(RequestValidationError)
     async def invalid_request(request, error: RequestValidationError):
+        message = "Invalid login request." if request.url.path == "/session/login" else str(error.errors()[0]["msg"])
         return JSONResponse(
             status_code=422,
-            content={"error": {"code": "invalid_request", "message": str(error.errors()[0]["msg"])}},
+            content={"error": {"code": "invalid_request", "message": message}},
         )
 
     def get_crew_member(crew_id):
         with closing(connect(db_path)) as connection:
             return connection.execute("SELECT * FROM crew WHERE id = ?", (crew_id.lower(),)).fetchone()
 
-    def viewer(demo_viewer: str = Header("c1", alias="X-Demo-Viewer")):
-        member = get_crew_member(demo_viewer)
+    def check_origin(request: Request):
+        origin = request.headers.get("origin")
+        if sessions.codes is not None and origin and request.method not in ("GET", "HEAD"):
+            if origin not in frontend_origins and origin != str(request.base_url).rstrip("/"):
+                raise HTTPException(403, "Request origin is not allowed.")
+
+    def viewer(request: Request, demo_viewer: str = Header("c1", alias="X-Demo-Viewer")):
+        check_origin(request)
+        if sessions.codes is not None:
+            crew_id = sessions.member_id(request.cookies.get(SESSION_COOKIE))
+            if crew_id is None:
+                raise HTTPException(401, "Sign in to continue.")
+        else:
+            crew_id = demo_viewer
+        member = get_crew_member(crew_id)
         if member is None:
             raise HTTPException(403, "Invalid demo viewer.")
         return member
@@ -94,8 +113,34 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
 
     @app.exception_handler(HTTPException)
     async def http_error(request, error: HTTPException):
-        code = "forbidden" if error.status_code == 403 else "http_error"
+        code = {401: "unauthorized", 403: "forbidden"}.get(error.status_code, "http_error")
         return event_error(code, error.detail, error.status_code)
+
+    @app.get("/session")
+    def read_session(request: Request):
+        if sessions.codes is None:
+            return {"login_required": False, "crew_id": None}
+        return {"login_required": True, "crew_id": sessions.member_id(request.cookies.get(SESSION_COOKIE))}
+
+    @app.post("/session/login", dependencies=[Depends(check_origin)])
+    def login(request: Request, credentials: CrewLogin):
+        if sessions.codes is None:
+            return event_error("login_disabled", "Login is disabled in demo mode.", 409)
+        token = sessions.login(credentials)
+        if token is None:
+            raise HTTPException(401, "Invalid crew ID or access code.")
+        sessions.logout(request.cookies.get(SESSION_COOKIE))
+        response = JSONResponse({"crew_id": credentials.crew_id.lower()})
+        response.set_cookie(SESSION_COOKIE, token, max_age=SESSION_SECONDS, httponly=True,
+                            secure=request.url.scheme == "https", samesite="strict")
+        return response
+
+    @app.post("/session/logout", dependencies=[Depends(check_origin)])
+    def logout(request: Request):
+        sessions.logout(request.cookies.get(SESSION_COOKIE))
+        response = JSONResponse({"crew_id": None})
+        response.delete_cookie(SESSION_COOKIE)
+        return response
 
     @app.get("/crew")
     def list_crew(member=Depends(cmo_viewer)):
@@ -114,6 +159,8 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
 
     @app.post("/demo/viewer/{crew_id}")
     def select_viewer(crew_id: str):
+        if sessions.codes is not None:
+            raise HTTPException(403, "Demo viewer switching is disabled while login is enabled.")
         member = get_crew_member(crew_id)
         if member is None:
             return crew_not_found()
@@ -134,8 +181,10 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
         return mission_status(clock)
 
     @app.post("/demo/clock")
-    def update_clock(update: ClockUpdate):
+    def update_clock(request: Request, update: ClockUpdate):
         nonlocal clock
+        if sessions.codes is not None:
+            cmo_viewer(viewer(request))
         with clock_lock:
             clock = update.apply(clock)
             return mission_status(clock)
@@ -233,9 +282,9 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             return state["stages"]
 
     @app.get("/events/{event_id}/stream")
-    def stream_event(event_id: int, demo_viewer: str | None = None, member=Depends(viewer)):
-        if demo_viewer is not None:
-            member = viewer(demo_viewer)
+    def stream_event(request: Request, event_id: int, demo_viewer: str | None = None, member=Depends(viewer)):
+        if demo_viewer is not None and sessions.codes is None:
+            member = viewer(request, demo_viewer)
         row = get_event(event_id)
         if row is None:
             return event_error()

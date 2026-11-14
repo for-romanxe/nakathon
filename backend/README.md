@@ -103,6 +103,19 @@ selected viewer's preference and `PUT /settings` accepts
 The caller supplies the role for rehearsal. This is not authentication and is
 intended only for synthetic localhost data.
 
+### Sign-in mode
+
+Set `CREW_HEALTH_ACCESS_CODES` before starting the backend to enable sign-in.
+Its value is a JSON object with keys `c1`, `c2`, `c3`, and `c4`. Give each
+crew member a different randomly generated code of at least 16 characters.
+Keep the codes out of source control. For local testing, use the same host name
+in the frontend and API URLs, such as `127.0.0.1` for both.
+
+The server derives the viewer from an HttpOnly cookie. Demo viewer selection
+is disabled in this mode. Sessions expire after eight hours or on backend
+restart. This setup is for one local backend process; it is not a production
+identity system.
+
 ### Event follow-up
 
 - `POST /events/{id}/share` persists the event's share flag for the crew medical

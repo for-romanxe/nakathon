@@ -1,5 +1,10 @@
 // Korean dictionary (secondary). Keys must match en.js.
 export default {
+  'login.title': '로그인',
+  'login.crew': '승무원',
+  'login.code': '접근 코드',
+  'login.invalid': '승무원 또는 접근 코드가 올바르지 않아요.',
+  'login.logout': '로그아웃',
   'tx.title': '지구 전송 큐',
   'tx.connect': '패킷 전송과 비교를 하려면 시연 백엔드를 연결하세요.',
   'tx.queue_daily': '일일 요약 대기열에 추가',

@@ -58,7 +58,7 @@ async function request(path, fixture, options = {}) {
   }
   const headers = { 'X-Demo-Viewer': CURRENT_CREW, ...options.headers }
   if (options.body) headers['Content-Type'] = 'application/json'
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers, credentials: 'include' })
   const body = res.status === 204 ? null : await res.json().catch(() => null)
   if (!res.ok) {
     // CONTRACT §5 error shape: { "error": { "code", "message" } }
@@ -68,6 +68,11 @@ async function request(path, fixture, options = {}) {
 }
 
 export const api = {
+  getSession: () => request('/session', { login_required: false, crew_id: null }),
+  login: (crew_id, access_code) => request('/session/login', null, {
+    method: 'POST', body: JSON.stringify({ crew_id, access_code }),
+  }),
+  logout: () => request('/session/logout', null, { method: 'POST' }),
   selectViewer: (id) => request(`/demo/viewer/${id}`, () => ({ id }), { method: 'POST' }),
   getSettings: () => request('/settings', () => ({
     cmo_access: localStorage.getItem(`crew-health-cmo-${CURRENT_CREW}`) !== 'false',
@@ -145,7 +150,7 @@ export function runPipeline(eventId, { urgent, onStage }) {
   return new Promise((resolve) => {
     let source
     try {
-      source = new EventSource(`${API_BASE}/events/${eventId}/stream?demo_viewer=${CURRENT_CREW}`)
+      source = new EventSource(`${API_BASE}/events/${eventId}/stream?demo_viewer=${CURRENT_CREW}`, { withCredentials: true })
     } catch {
       resolve('unavailable')
       return
