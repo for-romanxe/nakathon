@@ -47,7 +47,7 @@ function ConsentLine({ proc, step, onApprove, busy, error }) {
   )
 }
 
-export default function ProcedureSteps({ eventId, fallback = null }) {
+export default function ProcedureSteps({ eventId, fallback = null, fallbackWhenHeld = true }) {
   const { t, lang } = useT()
   const { mission } = useMission()
   const [proc, setProc] = useState(undefined) // undefined loading, null none
@@ -99,7 +99,8 @@ export default function ProcedureSteps({ eventId, fallback = null }) {
         ))}
       </ol>
       <button type="button" className="btn-ghost align-start small" onClick={load}>{t('proc.consent.refresh')}</button>
-      {proc.medical_available === false && fallback}
+      {/* clinical steps on hold: the warning screen adds its first steps here; the consent page has none to add */}
+      {proc.medical_available === false && fallbackWhenHeld && fallback}
     </div>
   )
 }

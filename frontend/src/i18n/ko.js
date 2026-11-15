@@ -119,6 +119,7 @@ export default {
   'topbar.window': '다음 통신 창',
   'topbar.minutes': '{n}분',
   'topbar.window_at': 'Sol {sol} · {time}',
+  'fixture.badge': '예시 모드 · 백엔드 없이 예시 데이터로 보여 줘요',
   'comms.label': '지구 통신 상태',
   'comms.connected': '지구 연결',
   'comms.delayed': '지연',

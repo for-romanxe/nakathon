@@ -2,6 +2,7 @@
 // and the autonomy dial (Earth connected / delayed / blackout) when GET /mission sends comms_state (#46, #47 §3).
 // The dial only shows the server's state; it never works the state out from the clock itself.
 import { useMission } from '../mission.jsx'
+import { USE_FIXTURES } from '../api/client.js'
 import { useT } from '../i18n/index.jsx'
 
 const COMMS_STATES = ['connected', 'delayed', 'blackout']
@@ -48,6 +49,8 @@ export default function Topbar() {
           </div>
         ))}
       </div>
+      {/* Fixture mode (team decision 6 in #47): always say the screen is example data, never pass it off as live */}
+      {USE_FIXTURES && <span className="fixture-badge" role="note">{t('fixture.badge')}</span>}
       {state && <AutonomyDial state={state} daysLeft={m.blackout_days_remaining} />}
     </header>
   )

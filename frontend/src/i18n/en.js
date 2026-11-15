@@ -119,6 +119,7 @@ export default {
   'topbar.window': 'Next comm window',
   'topbar.minutes': '{n} min',
   'topbar.window_at': 'Sol {sol} · {time}',
+  'fixture.badge': 'Example mode · sample data, no backend',
   'comms.label': 'Earth comms',
   'comms.connected': 'Earth linked',
   'comms.delayed': 'Delayed',

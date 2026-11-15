@@ -13,7 +13,7 @@ export default function ProcedureConsent() {
       <Link className="back-link" to="/today">{t('proc.consent.back')}</Link>
       <h1>{t('proc.consent.title', { id })}</h1>
       <section className="panel procedure-panel">
-        <ProcedureSteps eventId={id} fallback={<p className="panel-empty muted">{t('proc.consent.none')}</p>} />
+        <ProcedureSteps eventId={id} fallback={<p className="panel-empty muted">{t('proc.consent.none')}</p>} fallbackWhenHeld={false} />
       </section>
     </section>
   )
