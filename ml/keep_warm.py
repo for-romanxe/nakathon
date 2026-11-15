@@ -1,13 +1,18 @@
 """시연 중 모델 서버가 쉬다가 느려지지 않게(맥이 모델 메모리를 내보냄) 한 토큰짜리 요청을 계속 보낸다.
 느리거나(5초 이상) 실패한 요청만 한 줄씩 찍고, Ctrl-C 로 끝내면 요약을 찍는다.
 
-사용: python3 ml/keep_warm.py [간격 초, 기본 2]   (MODEL_URL·MODEL_NAME 을 따른다)
+사용: python3 ml/keep_warm.py [간격 초(양수), 기본 2]   (MODEL_URL·MODEL_NAME 을 따른다)
 """
-import json, os, sys, time, urllib.request
+import json, math, os, sys, time, urllib.request
 
 root = os.environ.get("MODEL_URL", "http://127.0.0.1:8080").rstrip("/").removesuffix("/v1")
 url = root + "/v1/chat/completions"
-interval = float(sys.argv[1]) if len(sys.argv) > 1 else 2.0
+try:
+    interval = float(sys.argv[1]) if len(sys.argv) > 1 else 2.0
+except ValueError:
+    interval = 0.0
+if not (math.isfinite(interval) and interval > 0):
+    sys.exit("usage: python3 ml/keep_warm.py [interval in seconds, a positive number; default 2]")
 body = json.dumps({"model": os.environ.get("MODEL_NAME", "default_model"), "temperature": 0, "max_tokens": 1,
                    "messages": [{"role": "user", "content": "ok"}]}).encode()
 sent = slow = failed = 0
