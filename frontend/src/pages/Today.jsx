@@ -1,6 +1,6 @@
 // Today.jsx — Today screen (spec §7-1): greeting -> status sentence -> today's guide -> evidence (6 metrics) -> check-in streak.
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client.js'
 import CheckinSheet from '../components/CheckinSheet.jsx'
 import GuideWhy from '../components/GuideWhy.jsx'
@@ -113,6 +113,13 @@ export default function Today() {
       </div>
       {today.baseline_progress && today.baseline_progress.collected_days < today.baseline_progress.target_days &&
         <p className="muted">{t('today.baseline_progress', today.baseline_progress)}</p>}
+      {/* Another crew member's procedure step is waiting for my consent (#47 FE-03, draft field) */}
+      {(today.consent_requests ?? []).map((r) => (
+        <Link key={`${r.event_id}:${r.step_id}`} className="consent-request lv-warning" to={`/events/${r.event_id}/procedure`}>
+          <b>{t('today.consent_request', { patient: r.patient?.toUpperCase() ?? '–' })}</b>
+          <span className="num">{t('proc.consent.count', { n: r.approvals ?? 0, of: r.required ?? 2 })} · {t('today.consent_open')}</span>
+        </Link>
+      ))}
 
       <section className="panel">
         <div className="panel-head"><h2>{t('today.guide')}</h2></div>

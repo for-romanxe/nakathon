@@ -1,0 +1,54 @@
+{
+  "_note": "Frontend fixture for GET /events/{id}/procedure (#47 §3, FE-03). Draft shape until the backend sample lands. Steps and cite ids copied from backend/model/procedure_steps.json (#49): AI-written summaries of an older (2001) ISS checklist, not reviewed by a person. client.js fills event_id, patient (the reporter) and consenters (two other crew members, C1 and C3 first, as in the demo where C4 reports chest pain).",
+  "available": true,
+  "required": 2,
+  "steps": [
+    {
+      "step_id": "oxygen",
+      "kind": "treatment",
+      "cite_id": "nasa:card-10#p1",
+      "needs_consent": true,
+      "text": { "ko": "산소 마스크로 산소를 주세요.", "en": "Give oxygen through a mask." }
+    },
+    {
+      "step_id": "describe_pain",
+      "kind": "record",
+      "cite_id": "nasa:card-10#p2",
+      "needs_consent": false,
+      "text": {
+        "ko": "통증을 묻고 적으세요: 위치, 퍼지는지, 세기(1~10), 계속되는지, 얼마나 됐는지, 어떤 느낌인지.",
+        "en": "Ask about the pain and write it down: location, spreading or not, strength (1-10), constant or not, how long, what it feels like."
+      }
+    },
+    {
+      "step_id": "vitals",
+      "kind": "record",
+      "cite_id": "nasa:card-10#p3",
+      "needs_consent": false,
+      "text": {
+        "ko": "활력 징후를 5분마다 재서 30분 동안 적으세요: 혈압, 맥박, 호흡수, 체온, 산소 포화도.",
+        "en": "Measure vital signs every 5 minutes for 30 minutes: blood pressure, pulse, breathing rate, temperature, oxygen saturation."
+      }
+    },
+    {
+      "step_id": "ecg_exam",
+      "kind": "cmo",
+      "cite_id": "nasa:card-10#p4",
+      "needs_consent": false,
+      "text": {
+        "ko": "심전도를 지켜보고, 청진기로 심장 소리와 숨소리를 확인하세요.",
+        "en": "Monitor the ECG and check heart and breath sounds with a stethoscope."
+      }
+    },
+    {
+      "step_id": "contact",
+      "kind": "contact",
+      "cite_id": "nasa:card-10#p5",
+      "needs_consent": false,
+      "text": {
+        "ko": "지상의 담당 의사에게 연락하세요. 연락이 닿지 않을 때의 처치는 약이 들어 있어 이 화면에서 안내하지 않습니다.",
+        "en": "Contact the flight surgeon. Treatment for when the surgeon cannot be reached involves medicines and is not shown on this screen."
+      }
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import missionFixture from './fixtures/mission.json'
 import eventCautionFixture from './fixtures/event_caution.json'
 import eventWarningFixture from './fixtures/event_warning.json'
 import habitatFixture from './fixtures/habitat_actions.json'
+import procedureFixture from './fixtures/procedure.json'
 import { PIPELINE_STAGES } from './contract.js'
 import { CURRENT_CREW } from '../session.js'
 
@@ -104,6 +105,67 @@ function fixtureHabitatSet(id, from, change, lang) {
   return fixtureHabitatAction(a, lang)
 }
 
+// ---- Fixture-only procedure with two-person consent (#47 §3). Consents live in localStorage so two tabs (C1, C3)
+// share them, as they would through the backend. A procedure exists only for an urgent report made in fixture
+// mode: the reporter is recorded as the patient when the report is made (fixtureSymptom). An event no tab has
+// recorded has no procedure; the patient is never guessed ----
+const PROC_KEY = 'fixture-procedure' // { [eventId]: { patient, approvals: { [stepId]: [{ crew, at }] } } }
+function procStore() {
+  try { return JSON.parse(localStorage.getItem(PROC_KEY)) ?? {} } catch { return {} }
+}
+function procSave(store) {
+  try { localStorage.setItem(PROC_KEY, JSON.stringify(store)) } catch { /* private window: this tab only */ }
+}
+function procRegister(eventId, patient) {
+  const store = procStore()
+  store[String(eventId)] = { patient, approvals: {} }
+  procSave(store)
+}
+const CONSENT_ORDER = ['c1', 'c3', 'c2', 'c4']
+function fixtureProcedure(eventId, lang) {
+  const rec = procStore()[String(eventId)]
+  if (!rec?.patient) throw new ApiError('not_found', 'No procedure for this event')
+  const { patient, approvals = {} } = rec
+  const consenters = CONSENT_ORDER.filter((c) => c !== patient).slice(0, 2)
+  const { _note: _procNote, ...base } = procedureFixture
+  const steps = base.steps.map((s) => {
+    // only designated consenters count, each once, however the stored list looks
+    const got = (approvals[s.step_id] ?? []).filter((a, i, all) =>
+      consenters.includes(a?.crew) && all.findIndex((b) => b?.crew === a.crew) === i)
+    return { ...s, text: pickLang(s.text, lang), approvals: got, done: s.needs_consent ? got.length >= base.required : false }
+  })
+  return {
+    ...base,
+    event_id: Number(eventId),
+    patient,
+    consenters,
+    steps,
+    current_step: steps.find((s) => s.needs_consent && !s.done)?.step_id ?? null,
+  }
+}
+function fixtureApprove(eventId, stepId, lang) {
+  const p = fixtureProcedure(eventId, lang)
+  if (!p.consenters.includes(CURRENT_CREW)) throw new ApiError('forbidden', 'Not a designated consenter')
+  const step = p.steps.find((s) => s.step_id === stepId)
+  if (step?.approvals.some((a) => a.crew === CURRENT_CREW)) return p // the same consent again: same result
+  if (stepId !== p.current_step) throw new ApiError('state_conflict', 'Not the current step')
+  const store = procStore()
+  const rec = store[String(eventId)]
+  rec.approvals = { ...rec.approvals, [stepId]: [...(rec.approvals?.[stepId] ?? []), { crew: CURRENT_CREW, at: fixtureMission.clock }] }
+  procSave(store)
+  return fixtureProcedure(eventId, lang)
+}
+// What /today would list for a consenter: steps still waiting for this crew member's consent
+function fixtureConsentRequests(crewId) {
+  return Object.keys(procStore()).flatMap((id) => {
+    let p
+    try { p = fixtureProcedure(id, 'en') } catch { return [] }
+    const step = p.steps.find((s) => s.step_id === p.current_step)
+    if (!step || !p.consenters.includes(crewId) || step.approvals.some((a) => a.crew === crewId)) return []
+    return [{ event_id: p.event_id, patient: p.patient, step_id: step.step_id, approvals: step.approvals.length, required: p.required }]
+  })
+}
+
 // ---- Fixture-only check-ins: kept per crew member and sol, so a check-in stays done for the person who made it ----
 const fixtureCheckins = {} // "c3:16" -> { morning: true, evening: true }
 function fixtureToday(crewId, lang) {
@@ -116,6 +178,7 @@ function fixtureToday(crewId, lang) {
     events: [...base.events, ...mine].sort((a, b) => b.id - a.id),
     checkin: { ...base.checkin, ...(done.morning && { morning_done: true }), ...(done.evening && { evening_done: true }) },
     streak: (base.streak ?? 0) + (done.morning && !base.checkin?.morning_done ? 1 : 0),
+    consent_requests: fixtureConsentRequests(crewId), // draft field (#47 FE-03): another crew member's step needs me
   }
   // the backend localises status.text via ?lang; the fixtures are English, so swap in its Korean sentence
   const ko = lang === 'ko' && STATUS_TEXT_KO[crewId]
@@ -131,14 +194,28 @@ function checkinFixture(crewId, body, lang) {
 // ---- Fixture-only symptom flow (fake data; the real rules live in backend/events.py) ----
 const fixtureEvents = {}
 let fixtureNextId = 101
+// Event ids come from one counter in localStorage, so two tabs (C4 reporting, C1 consenting) never hand out the
+// same id for different reports. Without storage (private window) the tab keeps its own counter.
+const EVENT_ID_KEY = 'fixture-next-event-id'
+function nextFixtureEventId() {
+  let id = fixtureNextId
+  try {
+    id = Math.max(id, Number.parseInt(localStorage.getItem(EVENT_ID_KEY), 10) || 0)
+    localStorage.setItem(EVENT_ID_KEY, String(id + 1))
+  } catch { /* this tab only */ }
+  fixtureNextId = id + 1
+  return id
+}
 // Same phrases as backend/events.py WARNING_PHRASES + CONSCIOUSNESS_CHANGE, so rehearsed demo lines behave the same
 const FIXTURE_URGENT = /\bchest pain\b|흉통|가슴\s*통증|가슴이\s*아파|\bshortness of breath\b|\b(can't|cannot) breathe\b|호흡곤란|숨을\s*못\s*쉬|숨이\s*안\s*쉬어|\bkill myself\b|\bwant to die\b|\bend it all\b|죽고\s*싶|다\s*끝내고\s*싶|\bloss of consciousness\b|\bunresponsive\b|의식 소실|의식이 없/i
+const FIXTURE_CHEST_PAIN = /\bchest pain\b|흉통|가슴\s*통증|가슴이\s*아파/i
 
 function fixtureSymptom({ crewId, text }) {
   const urgent = FIXTURE_URGENT.test(text)
   const base = urgent ? eventWarningFixture : eventCautionFixture
-  const id = fixtureNextId++
-  fixtureEvents[id] = { ...structuredClone(base), id, crew: crewId, symptom_text: text } // the reporter owns it
+  const id = nextFixtureEventId()
+  fixtureEvents[id] ={ ...structuredClone(base), id, crew: crewId, symptom_text: text } // the reporter owns it
+  if (FIXTURE_CHEST_PAIN.test(text)) procRegister(id, crewId) // the #49 steps are for chest pain only
   return urgent
     ? { event_id: id, needs_question: false }
     : { event_id: id, needs_question: true, question: 'Is it worse when you stand up?' }
@@ -313,6 +390,21 @@ export const api = {
   approveHabitatAction: (id, lang = 'en') =>
     request(`/habitat/actions/${id}/approve?lang=${lang}`,
       () => fixtureHabitatSet(id, ['proposed'], { status: 'applied', approved_by: CURRENT_CREW }, lang), { method: 'POST' }),
+  // Procedure with two-person consent (#47 §3, draft until the backend sample): GET /events/{id}/procedure?lang= ->
+  //   { event_id, patient, available, required, consenters:[crew], current_step|null,
+  //     steps:[{ step_id, kind, text, cite_id, needs_consent, approvals:[{crew, at}], done }] }
+  // No such route yet (404) -> null, and the warning screen keeps its first steps.
+  getProcedure: (eventId, lang = 'en') =>
+    request(`/events/${eventId}/procedure?lang=${lang}`, () => fixtureProcedure(eventId, lang))
+      .catch((e) => {
+        if (e.code === 'http_404' || e.code === 'not_found') return null
+        throw e
+      }),
+  // POST /events/{id}/procedure/steps/{step_id}/approve -> the procedure. 403 not a consenter, 409 not the current
+  // step; the same person again gets the same result
+  approveProcedureStep: (eventId, stepId, lang = 'en') =>
+    request(`/events/${eventId}/procedure/steps/${stepId}/approve?lang=${lang}`,
+      () => fixtureApprove(eventId, stepId, lang), { method: 'POST' }),
   // POST /habitat/actions/{id}/undo -> the action, now undone; the cabin goes back to `before`
   undoHabitatAction: (id, lang = 'en') =>
     request(`/habitat/actions/${id}/undo?lang=${lang}`,
