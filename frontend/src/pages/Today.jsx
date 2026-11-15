@@ -110,7 +110,6 @@ export default function Today() {
         </span>
         <p className="annunciator-text">{statusText}</p>
       </div>
-      <HabitatCard crewId={CURRENT_CREW} sol={sol} lang={lang} />
 
       <section className="panel">
         <div className="panel-head"><h2>{t('today.guide')}</h2></div>
@@ -134,6 +133,8 @@ export default function Today() {
           ))}
         </ul>
       </section>
+
+      <HabitatCard crewId={CURRENT_CREW} sol={sol} lang={lang} />
 
       <section className="panel">
         <div className="panel-head">
