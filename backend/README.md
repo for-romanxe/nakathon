@@ -19,6 +19,39 @@ $env:CREW_HEALTH_DB = 'data/crew-health-trends.sqlite3'
 python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 ```
 
+### Mission rehearsal database
+
+The mission rehearsal database is a separate SQLite file for walking through the demo scenario. Creating it does not change the regular development database.
+
+The seed command refuses to run if the target path already exists. It never overwrites or migrates an existing file. Run all commands from the repository root.
+
+To create a fresh database with a unique name, run this in PowerShell. The command sets `CREW_HEALTH_DB` only if seeding succeeds:
+
+```powershell
+$db = "data/crew-health-mission-demo-$([guid]::NewGuid()).sqlite3"; python -m backend.seed $db --mission-demo; if ($LASTEXITCODE -eq 0) { $env:CREW_HEALTH_DB = $db }
+```
+
+Then start the backend in the same PowerShell session:
+
+```powershell
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
+#### What the seed contains
+
+| Sol | Crew | Content |
+|-----|------|---------|
+| 16, 17 | C1 | Pre-seeded measurements |
+| 40 | — | Clock scene |
+| 46 | C4 | Pre-seeded measurements. Submit the chest pain report live during the rehearsal. It is not seeded. |
+| 57 | — | Clock scene |
+
+#### Behavior
+
+- **Regular database:** Unchanged. The backend uses the rehearsal file only while `CREW_HEALTH_DB` points to it.
+- **Restart:** Restarting the backend keeps all data in the rehearsal file, including anything entered live. The mission clock resets to its starting point.
+- **New rehearsal:** Create a fresh file with the command above. Do not reuse or delete a previous rehearsal file.
+
 Use the corresponding crew ID in the `X-Demo-Viewer` header for each request.
 
 | Request | Expected status level |

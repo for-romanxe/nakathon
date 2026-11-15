@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import sqlite3
 from contextlib import closing
 from datetime import UTC, datetime, timedelta
@@ -39,6 +40,40 @@ HISTORICAL_OFFSETS = {
 }
 DEVIATIONS = {"c1": {"hr": 2.5, "hrv": -2.5}, "c4": {"hr": 2.5}}
 
+# Issue 47 mission demo.
+MISSION_DEMO_SCENES = (16, 17, 40, 46, 57)
+BASELINE_WINDOW = 14
+C1_SOL16_SLEEP = 5.1
+C1_SOL17_SLEEP = 7.2
+C1_SOL17_HRV_Z = -0.6
+C4_DEMO_SOL = 46
+# Static scenario input for BE-04; intentionally not written as a guide_item row.
+HYPOTHETICAL_EVA_ASSIGNMENT = {
+    "crew_id": "c1",
+    "mission_day": 16,
+    "activity": "eva",
+    "hypothetical": True,
+}
+
+
+def _profile(crew_id: str, metric: str) -> tuple[float, float, tuple, float, float]:
+    crew_index = next(i for i, crew in enumerate(CREW) if crew[0] == crew_id)
+    center, spread = METRIC_SEEDS[metric]
+    offsets = HISTORICAL_OFFSETS[metric]
+    # Normalize sols 2–15 to preserve the final-sol alert scenarios.
+    return center + crew_index * spread, spread, offsets, mean(offsets[1:]), pstdev(offsets[1:])
+
+
+def _insert_sample(connection: sqlite3.Connection, crew_id: str, metric: str, sol: int, value: float) -> None:
+    ts = MISSION_START + timedelta(days=sol - 1, hours=6)
+    connection.execute(
+        """INSERT INTO sample
+           (crew_id, metric, ts, mission_day, value, source, source_key)
+           VALUES (?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT (source, source_key) DO NOTHING""",
+        (crew_id, metric, ts.isoformat(), sol, round(value, 4), SOURCE, f"{crew_id}:{metric}:{sol}"),
+    )
+
 
 def seed(connection: sqlite3.Connection) -> None:
     with connection:
@@ -54,38 +89,97 @@ def seed(connection: sqlite3.Connection) -> None:
             )
             first_sol = DEMO_SOL - 9 if crew_id == "c3" else 1
             for metric in CONTRACT["metrics"]:
-                center, spread = METRIC_SEEDS[metric]
-                center += crew_index * spread
-                offsets = HISTORICAL_OFFSETS[metric]
-                # Normalize sols 2–15 to preserve the final-sol alert scenarios.
-                baseline_mean = mean(offsets[1:])
-                baseline_sd = pstdev(offsets[1:])
+                center, spread, offsets, baseline_mean, baseline_sd = _profile(crew_id, metric)
                 connection.execute(
                     """INSERT INTO preflight_baseline (crew_id, metric, value, source)
                        VALUES (?, ?, ?, ?) ON CONFLICT (crew_id, metric) DO NOTHING""",
                     (crew_id, metric, center, SOURCE),
                 )
                 for sol in range(first_sol, DEMO_SOL + 1):
-                    ts = MISSION_START + timedelta(days=sol - 1, hours=6)
                     if sol == DEMO_SOL:
                         deviation = DEVIATIONS.get(crew_id, {}).get(metric, 0)
                     else:
                         deviation = (offsets[sol - 1] - baseline_mean) / baseline_sd
-                    connection.execute(
-                        """INSERT INTO sample
-                           (crew_id, metric, ts, mission_day, value, source, source_key)
-                           VALUES (?, ?, ?, ?, ?, ?, ?)
-                           ON CONFLICT (source, source_key) DO NOTHING""",
-                        (crew_id, metric, ts.isoformat(), sol, round(center + spread * deviation, 4),
-                         SOURCE, f"{crew_id}:{metric}:{sol}"),
-                    )
+                    _insert_sample(connection, crew_id, metric, sol, center + spread * deviation)
+
+
+def _default_value(crew_id: str, metric: str, sol: int) -> float:
+    center, spread, offsets, baseline_mean, baseline_sd = _profile(crew_id, metric)
+    if sol == DEMO_SOL:
+        deviation = DEVIATIONS.get(crew_id, {}).get(metric, 0)
+    else:
+        deviation = (offsets[sol - 1] - baseline_mean) / baseline_sd
+    return center + spread * deviation
+
+
+def seed_mission_demo(connection: sqlite3.Connection) -> None:
+    """Insert demo overrides first; default seed and app startup then keep them via DO NOTHING."""
+    with connection:
+        connection.executemany(
+            """INSERT INTO crew (id, name, role, cmo) VALUES (?, ?, ?, ?)
+               ON CONFLICT (id) DO NOTHING""",
+            CREW,
+        )
+        _insert_sample(connection, "c1", "sleep", DEMO_SOL, C1_SOL16_SLEEP)
+        for metric in CONTRACT["metrics"]:
+            center, spread, offsets, baseline_mean, baseline_sd = _profile("c1", metric)
+            if metric == "sleep":
+                value = C1_SOL17_SLEEP
+            elif metric == "hrv":
+                prior = [_default_value("c1", metric, sol) for sol in range(17 - BASELINE_WINDOW, 17)]
+                value = mean(prior) + C1_SOL17_HRV_Z * pstdev(prior)
+            else:
+                value = center + spread * (offsets[0] - baseline_mean) / baseline_sd
+            _insert_sample(connection, "c1", metric, 17, value)
+
+            center, spread, offsets, baseline_mean, baseline_sd = _profile("c4", metric)
+            first = C4_DEMO_SOL - BASELINE_WINDOW
+            for sol in range(first, C4_DEMO_SOL + 1):
+                index = 0 if sol == C4_DEMO_SOL else sol - first + 1
+                _insert_sample(
+                    connection, "c4", metric, sol,
+                    center + spread * (offsets[index] - baseline_mean) / baseline_sd,
+                )
+    seed(connection)
+
+
+def _create_mission_demo(db_path: Path) -> None:
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    for suffix in ("-journal", "-wal", "-shm"):
+        sibling = Path(f"{db_path}{suffix}")
+        if sibling.exists():
+            raise FileExistsError(str(sibling))
+    fd = os.open(db_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+    os.close(fd)
+    try:
+        initialize(db_path)
+        with closing(connect(db_path)) as connection:
+            seed_mission_demo(connection)
+    except BaseException:
+        try:
+            db_path.unlink()
+        except OSError:
+            pass
+        raise
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Load the Crew Health synthetic scenario.")
-    parser.add_argument("db_path", type=Path, nargs="?", default=DEMO_DB)
+    parser.add_argument("db_path", type=Path, nargs="?", default=None)
+    parser.add_argument("--mission-demo", action="store_true",
+                        help="Create a fresh DB (explicit path required) with the Issue 47 mission demo.")
     args = parser.parse_args()
-    initialize(args.db_path)
-    with closing(connect(args.db_path)) as connection:
-        seed(connection)
-    print(f"Crew Health scenario loaded at {args.db_path}")
+    if args.mission_demo:
+        if args.db_path is None:
+            parser.error("--mission-demo requires an explicit fresh db_path")
+        try:
+            _create_mission_demo(args.db_path)
+        except FileExistsError as exc:
+            parser.error(f"refusing to overwrite existing path: {exc.filename or exc}")
+        print(f"Crew Health mission demo loaded at {args.db_path}")
+    else:
+        db_path = args.db_path if args.db_path is not None else DEMO_DB
+        initialize(db_path)
+        with closing(connect(db_path)) as connection:
+            seed(connection)
+        print(f"Crew Health scenario loaded at {db_path}")
