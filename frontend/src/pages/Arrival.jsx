@@ -11,7 +11,8 @@ const SCALE_MAX = 40 // % loss at the right end of every bar, so the bars can be
 
 const fmt = (n) => (Number.isInteger(n) ? String(n) : n.toFixed(1))
 
-// [low, high] % loss by arrival for a system with numbers, or null for a note-only system
+// [low, high] % loss by arrival for a system with numbers, or null for a note-only system. The bone figure is NASA's
+// monthly average times the months (a stated simple conversion; NASA gives no compounding or time course for it)
 function rangeFor(s, months) {
   if (s.kind === 'per_month') return [s.low * months, s.high * months]
   if (s.kind === 'after_flight') return [s.low, s.high]
@@ -25,6 +26,7 @@ function LossBar({ low, high, floor }) {
     <div className="arrival-bar" role="img" aria-label={t('arrival.bar_label', { low: fmt(low), high: fmt(high) })}>
       <div className="arrival-bar-track">
         <span className="arrival-bar-range" style={{ left: pct(low), width: `calc(${pct(high)} - ${pct(low)})` }} />
+        {/* the bar is % lost; keeping `floor`% of the start means losing at most 100 - floor % (80% kept -> 20% lost) */}
         {floor != null && <span className="arrival-bar-floor" style={{ left: pct(100 - floor) }} title={t('arrival.floor', { n: floor })} />}
       </div>
       <div className="arrival-bar-scale muted small num"><span>0%</span><span>{SCALE_MAX}%</span></div>

@@ -70,7 +70,7 @@ export default {
   'arrival.bar_label': 'A {low}% to {high}% decrease',
   'arrival.floor': 'Target: keep at least {n}% of the starting level (marked line)',
   'arrival.bone.title': 'Bone (hip and spine)',
-  'arrival.bone.basis': 'Weight-bearing bones lose on average 1–1.5% of mineral density a month × {months} months',
+  'arrival.bone.basis': 'Weight-bearing bones lose on average 1–1.5% of mineral density a month. This is that average times {months} months, a simple conversion: it does not mean the loss runs at a steady rate, and its time course is not fully known',
   'arrival.bone.help': 'Daily exercise limits the loss, but how much is lost varies widely. Drinking enough also lowers the risk of kidney stones from calcium leaving the bones.',
   'arrival.muscle.title': 'Leg muscle and strength',
   'arrival.muscle.basis': "NASA's published range after a flight, depending on its length and conditions",

@@ -68,7 +68,7 @@ export default {
   'arrival.bar_label': '{low}%에서 {high}% 감소 범위',
   'arrival.floor': '유지 목표: 출발 때의 {n}% 이상 (선 표시)',
   'arrival.bone.title': '뼈 (엉덩이·척추)',
-  'arrival.bone.basis': '체중을 받는 뼈는 한 달에 평균 1~1.5%씩 밀도가 줄어요 × {months}개월',
+  'arrival.bone.basis': '체중을 받는 뼈의 밀도는 한 달에 평균 1~1.5% 줄어요. 이 값에 {months}개월을 곱한 단순 환산이에요. 감소 속도가 일정하다는 뜻은 아니고, 시간에 따른 변화는 아직 다 알려지지 않았어요',
   'arrival.bone.help': '매일 운동이 손실을 줄이지만 줄어드는 정도는 사람마다 크게 달라요. 물을 충분히 마시면 뼈에서 빠진 칼슘으로 생기는 신장 결석 위험도 낮출 수 있어요.',
   'arrival.muscle.title': '하체 근육·근력',
   'arrival.muscle.basis': '비행을 마친 뒤 NASA가 발표한 범위예요. 비행 기간과 조건에 따라 달라요',
