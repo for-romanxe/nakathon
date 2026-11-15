@@ -24,8 +24,32 @@ const STATUS_TEXT_KO = todayOthersFixture.status_text_ko
 // ---- Fixture-only mission clock: the demo clock moves it in memory, as POST /demo/clock does on the backend ----
 const WINDOW_MINUTES = [8 * 60, 20 * 60] // comm windows 08:00 and 20:00 (backend/mission.py)
 const hhmm = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+// Comms state as planned in issue #47 §3: blackout from Sol 43 00:00 up to (not including) Sol 57 00:00, otherwise
+// connected while a 30-minute window is open and delayed in between. TODO: the backend will own these values;
+// until GET /mission sends them, only fixture mode shows the autonomy dial.
+const BLACKOUT = { start: 43, end: 57 }
+const WINDOW_OPEN_MINUTES = 30
+function withComms(m) {
+  const [h, min] = m.clock.time.split(':').map(Number)
+  const minute = h * 60 + min
+  const { sol } = m.clock
+  const blackout = sol >= BLACKOUT.start && sol < BLACKOUT.end
+  const open = WINDOW_MINUTES.some((w) => minute >= w && minute < w + WINDOW_OPEN_MINUTES)
+  const next = WINDOW_MINUTES.find((w) => w > minute)
+  return {
+    ...m,
+    comms_state: blackout ? 'blackout' : open ? 'connected' : 'delayed',
+    blackout_start_sol: BLACKOUT.start,
+    blackout_end_sol: BLACKOUT.end,
+    blackout_days_remaining: blackout ? BLACKOUT.end - sol : null,
+    next_window_at: blackout
+      ? { sol: BLACKOUT.end, time: hhmm(WINDOW_MINUTES[0]) }
+      : { sol: next != null ? sol : sol + 1, time: hhmm(next ?? WINDOW_MINUTES[0]) },
+    simulation: true,
+  }
+}
 const { _note: _missionNote, ...missionStart } = missionFixture
-let fixtureMission = structuredClone(missionStart)
+let fixtureMission = withComms(structuredClone(missionStart))
 function moveFixtureClock(update) {
   const [h, m] = fixtureMission.clock.time.split(':').map(Number)
   let total = (fixtureMission.clock.sol - 1) * 1440 + h * 60 + m
@@ -38,7 +62,7 @@ function moveFixtureClock(update) {
   }
   const minute = total % 1440
   const next = WINDOW_MINUTES.find((w) => w > minute) ?? WINDOW_MINUTES[0]
-  fixtureMission = { ...fixtureMission, clock: { sol: Math.floor(total / 1440) + 1, time: hhmm(minute) }, next_window: hhmm(next) }
+  fixtureMission = withComms({ ...fixtureMission, clock: { sol: Math.floor(total / 1440) + 1, time: hhmm(minute) }, next_window: hhmm(next) })
   return structuredClone(fixtureMission)
 }
 
@@ -227,6 +251,8 @@ export const api = {
   // GET /crew -> [{ id: "c1", name: "C1", ... }] — display names come from here
   getCrew: () => request('/crew', crewFixture),
   // GET /mission -> { clock:{sol,time}, environment, one_way_delay_min, next_window }
+  //   + planned (#47 §3, fixture only for now): comms_state, blackout_start_sol, blackout_end_sol,
+  //     blackout_days_remaining, next_window_at:{sol,time}, simulation
   getMission: () => request('/mission', () => structuredClone(fixtureMission)),
   recordReceipt: (seq, status, attempt) =>
     request(`/tx/${seq}/receipt`, [], { method: 'POST', body: JSON.stringify({ status, attempt }) }),
