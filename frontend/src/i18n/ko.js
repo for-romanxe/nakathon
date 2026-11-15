@@ -1,5 +1,7 @@
 // Korean dictionary (secondary). Keys must match en.js.
 export default {
+  "today.baseline_progress": "기준선 수집 · {target_days}일 중 {collected_days}일",
+  "checkin.band_sleep": "밴드로 측정한 수면 시간 · {hours}시간",
   'preflight.title': '비행 전 기준값',
   'preflight.metric': '지표',
   'preflight.value': '값',
@@ -139,7 +141,8 @@ export default {
   "common.saving": "저장 중",
   "checkin.title": "아침 체크인",
   "checkin.open": "아침 체크인",
-  "checkin.hint": "밴드와 어제 기록으로 미리 채웠어요. 틀린 것만 눌러 고쳐 주세요.",
+  "checkin.hint": "선택된 답을 확인하고 오늘 상태에 맞게 바꿔 주세요.",
+  "checkin.previous_answers": "어제 답변이 있는 항목은 미리 채웠어요.",
   "checkin.sleep_quality": "수면 질",
   "checkin.sleep_quality.low": "아주 나쁨",
   "checkin.sleep_quality.high": "아주 좋음",

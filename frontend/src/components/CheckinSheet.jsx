@@ -2,15 +2,14 @@
 // the crew member only taps to correct. Symptoms default to "none"; "yes" leads to the Log chat.
 //   morning: sleep quality, mood, fatigue (1–5) + symptoms
 //   evening (check-out, optional): how today went, stress (1–5), enough water + symptoms
-// Answer names follow CONTRACT §5 (checkin answers): stress is read by the backend; day_rating and hydration_ok
-// are the spec's evening questions (contract: proposed), stored with the check-in.
+// Answer names follow CONTRACT §5.
 import { useEffect, useRef, useState } from 'react'
+import { formatMetric } from '../api/contract.js'
 import { useT } from '../i18n/index.jsx'
 
 const FORMS = {
   morning: {
     scales: ['sleep_quality', 'mood', 'fatigue'],
-    // TODO: pre-fill should come from the backend (band data + yesterday); fixed defaults until then
     defaults: { sleep_quality: 3, mood: 3, fatigue: 3, symptoms: 'none' },
     title: 'checkin.title',
     hint: 'checkin.hint',
@@ -26,13 +25,14 @@ const FORMS = {
   },
 }
 
-export default function CheckinSheet({ kind = 'morning', onSubmit, onSymptoms, onClose }) {
+export default function CheckinSheet({ kind = 'morning', prefill, onSubmit, onSymptoms, onClose }) {
   const { t } = useT()
   const form = FORMS[kind] ?? FORMS.morning
   // answers belong to the kind they were given for: if kind changes on the same sheet, the old answers are dropped
   // and the new kind starts from its own defaults (never submitting morning answers as an evening check-out)
-  const [state, setState] = useState({ kind, answers: form.defaults })
-  const answers = state.kind === kind ? state.answers : form.defaults
+  const defaults = kind === 'morning' ? { ...form.defaults, ...prefill?.answers } : form.defaults
+  const [state, setState] = useState({ kind, answers: defaults })
+  const answers = state.kind === kind ? state.answers : defaults
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(false)
   const firstButton = useRef(null)
@@ -41,7 +41,7 @@ export default function CheckinSheet({ kind = 'morning', onSubmit, onSymptoms, o
 
   const set = (key, value) => setState((s) => ({
     kind,
-    answers: { ...(s.kind === kind ? s.answers : form.defaults), [key]: value },
+    answers: { ...(s.kind === kind ? s.answers : defaults), [key]: value },
   }))
 
   async function submit() {
@@ -64,6 +64,10 @@ export default function CheckinSheet({ kind = 'morning', onSubmit, onSymptoms, o
           <button type="button" className="btn-ghost" onClick={onClose} aria-label={t('common.close')}>✕</button>
         </div>
         <p className="muted">{t(form.hint)}</p>
+        {kind === 'morning' && Object.keys(prefill?.answers ?? {}).length > 0 &&
+          <p className="muted">{t('checkin.previous_answers')}</p>}
+        {kind === 'morning' && prefill?.sleep_hours != null &&
+          <p className="muted">{t('checkin.band_sleep', { hours: formatMetric('sleep', prefill.sleep_hours) })}</p>}
 
         {form.scales.map((key, i) => (
           <fieldset key={key} className="scale">

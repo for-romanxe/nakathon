@@ -8,7 +8,12 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from backend.seed import CONTRACT
 
 
-SCALES = ("sleep_quality", "mood", "fatigue", "stress")
+MORNING_SCALES = ("sleep_quality", "mood", "fatigue")
+SCALES = (*MORNING_SCALES, "stress", "day_rating")
+
+
+def valid_score(score: Any) -> bool:
+    return type(score) is int and 1 <= score <= 5
 
 
 class Checkin(BaseModel):
@@ -22,13 +27,15 @@ class Checkin(BaseModel):
     def validate_checkin(self) -> "Checkin":
         if self.kind not in CONTRACT["checkin_kind"]:
             raise ValueError("Unknown check-in kind.")
-        if self.kind == "morning" and not set(SCALES[:3]) <= self.answers.keys():
+        if self.kind == "morning" and not set(MORNING_SCALES) <= self.answers.keys():
             raise ValueError("Morning check-in requires sleep_quality, mood, and fatigue.")
         for key in SCALES:
             if key in self.answers:
                 score = self.answers[key]
-                if type(score) is not int or not 1 <= score <= 5:
+                if not valid_score(score):
                     raise ValueError(f"{key} must be an integer from 1 to 5.")
+        if "hydration_ok" in self.answers and type(self.answers["hydration_ok"]) is not bool:
+            raise ValueError("hydration_ok must be a boolean.")
         if "symptoms" in self.answers:
             symptoms = self.answers["symptoms"]
             if not isinstance(symptoms, str) or symptoms not in ("none", "yes"):

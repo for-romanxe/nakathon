@@ -50,6 +50,41 @@ class TodayRegressions(TestCase):
                 self.assertEqual(response.status_code, 422)
                 self.assertEqual(response.json()["error"]["code"], "invalid_request")
 
+    def test_evening_checkin_validates_answers(self):
+        url = "/crew/c1/checkin"
+        answers = {"day_rating": 4, "stress": 2, "hydration_ok": False, "symptoms": "none"}
+        for key, value in (("day_rating", True), ("day_rating", "4"), ("day_rating", 4.0),
+                           ("day_rating", 0), ("day_rating", 6), ("hydration_ok", "false"),
+                           ("hydration_ok", 1), ("hydration_ok", None)):
+            with self.subTest(key=key, value=value):
+                response = self.client.post(url, json={"kind": "evening", "answers": dict(answers, **{key: value})})
+                self.assertEqual(response.status_code, 422)
+        saved = self.client.post(url, json={"kind": "evening", "answers": answers}).raise_for_status().json()
+        self.assertTrue(saved["checkin"]["evening_done"])
+        self.assertFalse(saved["checkin"]["morning_done"])
+        self.assertEqual(saved["guide"], [])
+
+    def test_today_prefill_and_baseline_progress(self):
+        viewer = {"X-Demo-Viewer": "c3"}
+        url = "/crew/c3/today"
+        initial = self.client.get(url, headers=viewer).raise_for_status().json()
+        self.assertEqual(initial["baseline_progress"], {"collected_days": 9, "target_days": 14})
+        self.assertEqual(initial["checkin"]["morning_prefill"]["answers"], {})
+        self.client.post("/demo/clock", json={"sol": 15, "time": "08:00"}).raise_for_status()
+        answers = {"sleep_quality": 4, "mood": 2, "fatigue": 5}
+        self.client.post("/crew/c3/checkin", headers=viewer, json={
+            "kind": "morning", "answers": dict(answers, symptoms="yes"),
+        }).raise_for_status()
+        self.client.post("/crew/c3/symptom", headers=viewer, json={
+            "text": "Headache", "lang": "en",
+        }).raise_for_status()
+        self.client.post("/demo/clock", json={"sol": 16, "time": "08:00"}).raise_for_status()
+        current = self.client.get(url, headers=viewer).raise_for_status().json()
+        sleep = next(metric for metric in current["metrics"] if metric["metric"] == "sleep")
+        self.assertEqual(current["baseline_progress"], {"collected_days": 8, "target_days": 14})
+        self.assertEqual(sleep["baseline_days"], 8)
+        self.assertEqual(current["checkin"]["morning_prefill"], {"answers": answers, "sleep_hours": sleep["value"]})
+
     def test_next_window_after_sol_rollover(self):
         self.client.post("/demo/clock", json={"sol": 16, "time": "23:59"}).raise_for_status()
         self.assertEqual(self.client.get("/mission").json()["next_window"], "08:00")

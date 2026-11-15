@@ -128,10 +128,56 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 | `clock.time` | `"HH:MM"` (24시간) | 가상 시계의 현재 시각 |
 | `environment` | 문자열 | 임무 환경. 현재 값은 `mars_base` 하나. 프론트는 i18n 키 `env.<값>`으로 표시 |
 | `one_way_delay_min` | 정수(분) | 지구까지 편도 통신 지연 |
-| `next_window` | `"HH:MM"` | 다음 통신 창이 열리는 시각. 창은 임무 시각 08:00·20:00 (명세 §16) |
+| `next_window` | `"HH:MM"` | blackout을 건너뛴 다음 통신 창이 열리는 시각. `next_window_at.time`과 같다. 창은 임무 시각 08:00·20:00 (명세 §16) |
 
 - `POST /demo/clock` 요청은 `{sol, time}`(둘 다 필수) 또는 `{advance}` 중 **하나만**. `advance`는 `"<1~9999>h"` 또는 `"<1~9999>m"` (예: `"2h"`, `"30m"`).
 - 응답은 바뀐 시계를 담은 `/mission`과 같은 모양이다.
+
+#### Communication policy (#47)
+
+`GET /mission` and `POST /demo/clock` include these fields:
+
+```json
+{
+  "clock": {"sol": 46, "time": "20:00"},
+  "environment": "mars_base",
+  "one_way_delay_min": 12,
+  "next_window": "08:00",
+  "comms_state": "blackout",
+  "blackout_start_sol": 43,
+  "blackout_end_sol": 57,
+  "blackout_days_remaining": 11,
+  "next_window_at": {"sol": 57, "time": "08:00"},
+  "simulation": true
+}
+```
+
+- `blackout` covers Sol 43 at 00:00 through the end of Sol 56. The remaining
+  day count includes the current Sol and is zero outside blackout.
+- Outside blackout, `connected` covers 08:00–08:29 and 20:00–20:29. All
+  other times are `delayed`.
+- `next_window_at` is the next opening strictly after the current time,
+  skipping blackout. The legacy `next_window` equals `next_window_at.time`
+  and keeps the `HH:MM` format without a sol. Clients should use both fields
+  of `next_window_at` to jump to it. A time-only jump can land on the wrong
+  sol (known frontend issue FE-06).
+- During blackout, warning events and explicit queue requests save packets
+  locally. `POST /tx/send` returns HTTP 200 with the existing queue response.
+  A newly queued packet has `status: "queued"`, `attempts: 0` and
+  `window_id: null` until a window opens. A simulated receipt for an existing
+  send attempt can still be recorded locally.
+
+An authenticated non-CMO calling `POST /tx/send` gets HTTP 403:
+
+```json
+{"error":{"code":"forbidden","message":"Medical officer access required."}}
+```
+
+Submitting a receipt for a visible packet with a mismatched attempt gets HTTP 409:
+
+```json
+{"error":{"code":"invalid_receipt","message":"Receipt does not match the packet's current attempt."}}
+```
 
 ### 5.2 체크인 `answers` 키 **[추가 11/14, PR #1·#2 구현 기준]**
 
@@ -146,10 +192,13 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 | `fatigue` | 정수 1~5 | `morning` 필수 | 없음 → 탈진 |
 | `symptoms` | `"none"` \| `"yes"` | 선택 (프론트 기본 `none`) | `yes`면 프론트가 증상 대화를 열고, 문장은 `POST /crew/{id}/symptom`으로 따로 보낸다 |
 | `stress` | 정수 1~5 | `evening` | 없음 → 매우 높음 (모델 ② `MoodScore.stress`와 같은 방향) |
-| `day_rating` | 정수 1~5 | `evening` **[제안, 미구현]** | 매우 나쁨 → 매우 좋음 (명세 §8 "오늘 어땠는지") |
-| `hydration_ok` | bool | `evening` **[제안, 미구현]** | 물을 충분히 마셨는지 (명세 §8) |
+| `day_rating` | 정수 1~5 | `evening` | 매우 나쁨 → 매우 좋음 (명세 §8 "오늘 어땠는지") |
+| `hydration_ok` | bool | `evening` | 물을 충분히 마셨는지 (명세 §8) |
 
 - 척도 키는 **정수만** 받는다. 문자열 `"3"`, 소수, 범위 밖 값은 422 `invalid_request`.
+- `hydration_ok`는 JSON `true` 또는 `false`만 허용한다. 저녁 응답은 기록으로 저장한다.
+- Today responses include `checkin.morning_prefill` with valid scores from the previous sol's morning check-in and `sleep_hours` from the current sol's band readings. Missing scores are omitted and missing sleep is null.
+- `baseline_progress` reports `collected_days` and `target_days`. Each metric's `baseline_days` counts prior eligible sols for that metric, capped at the target. The overall count is the smallest metric count.
 - `free_text`는 선택, 최대 4000자.
 - 같은 승무원·같은 sol·같은 `kind`로 다시 보내면 덮어쓴다(하루 한 건).
 - 표에 없는 키도 백엔드가 막지는 않지만, **새 키를 쓰려면 먼저 이 표에 추가한다.** `weekly`·`monthly`·`quarterly`의 키는 만들 때 여기에 적는다.

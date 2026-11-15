@@ -19,6 +19,39 @@ $env:CREW_HEALTH_DB = 'data/crew-health-trends.sqlite3'
 python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 ```
 
+### Mission rehearsal database
+
+The mission rehearsal database is a separate SQLite file for walking through the demo scenario. Creating it does not change the regular development database.
+
+The seed command refuses to run if the target path already exists. It never overwrites or migrates an existing file. Run all commands from the repository root.
+
+To create a fresh database with a unique name, run this in PowerShell. The command sets `CREW_HEALTH_DB` only if seeding succeeds:
+
+```powershell
+$db = "data/crew-health-mission-demo-$([guid]::NewGuid()).sqlite3"; python -m backend.seed $db --mission-demo; if ($LASTEXITCODE -eq 0) { $env:CREW_HEALTH_DB = $db }
+```
+
+Then start the backend in the same PowerShell session:
+
+```powershell
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
+#### What the seed contains
+
+| Sol | Crew | Content |
+|-----|------|---------|
+| 16, 17 | C1 | Pre-seeded measurements |
+| 40 | — | Clock scene |
+| 46 | C4 | Pre-seeded measurements. Submit the chest pain report live during the rehearsal. It is not seeded. |
+| 57 | — | Clock scene |
+
+#### Behavior
+
+- **Regular database:** Unchanged. The backend uses the rehearsal file only while `CREW_HEALTH_DB` points to it.
+- **Restart:** Restarting the backend keeps all data in the rehearsal file, including anything entered live. The mission clock resets to its starting point.
+- **New rehearsal:** Create a fresh file with the command above. Do not reuse or delete a previous rehearsal file.
+
 Use the corresponding crew ID in the `X-Demo-Viewer` header for each request.
 
 | Request | Expected status level |
@@ -67,6 +100,16 @@ and stored as entered.
 
 The three morning scores are integers from 1 to 5. Optional `symptoms`
 accepts `none` or `yes`. Symptom details are submitted to the symptom endpoint.
+Evening check-outs store `day_rating` and `stress` as integers from 1 to 5
+and `hydration_ok` as a JSON boolean when supplied. Evening answers are
+stored as self-reports.
+
+Today includes `checkin.morning_prefill`. Its `answers` object includes
+available scores from the previous sol's morning check-in. Its `sleep_hours`
+comes from the current sol's band readings and is displayed separately.
+`baseline_progress.collected_days` is the smallest count of prior eligible
+sols across the metrics, capped at `baseline_progress.target_days` (14).
+Each metric also returns its own `baseline_days` count.
 
 - `GET /crew` returns the synthetic roster with `id`, `name`, `role`, and `cmo`.
 - Today metrics include `level` and `hold_reason` (`insufficient_baseline`,
@@ -74,7 +117,8 @@ accepts `none` or `yes`. Symptom details are submitted to the symptom endpoint.
   or `?lang=en` on Today and check-in. Guide text is currently English.
 - `GET /mission` returns `clock`, `environment`, `one_way_delay_min`, and
   `next_window`. The demo uses a 12-minute one-way delay and windows at
-  08:00 and 20:00 mission time.
+  08:00 and 20:00 mission time. `next_window` matches `next_window_at.time`.
+  Use `next_window_at` for the sol and time of the next eligible opening.
 - `POST /demo/clock` accepts `{"sol":16,"time":"14:00"}` or
   `{"advance":"2h"}`. The clock is process-local and resets on restart.
 

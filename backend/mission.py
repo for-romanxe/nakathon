@@ -8,9 +8,17 @@ from backend.seed import DEMO_SOL, MISSION_START
 DEMO_TIME = MISSION_START + timedelta(days=DEMO_SOL - 1, hours=6, minutes=12)
 WINDOW_HOURS = (8, 20)
 WINDOW_DURATION = timedelta(minutes=30)
+BLACKOUT_START_SOL = 43
+BLACKOUT_END_SOL = 57
+
+
+def in_blackout(sol: int) -> bool:
+    return BLACKOUT_START_SOL <= sol < BLACKOUT_END_SOL
 
 
 def active_window(timestamp: datetime) -> str | None:
+    if in_blackout(mission_sol(timestamp)):
+        return None
     start = timestamp.replace(minute=0, second=0, microsecond=0)
     if timestamp.hour in WINDOW_HOURS and timestamp < start + WINDOW_DURATION:
         return start.isoformat()
@@ -22,15 +30,27 @@ def mission_sol(timestamp: datetime) -> int:
 
 
 def mission_status(timestamp: datetime) -> dict:
+    sol = mission_sol(timestamp)
+    blackout = in_blackout(sol)
+    connected = active_window(timestamp) is not None
     windows = [timestamp.replace(hour=hour, minute=0, second=0, microsecond=0)
                for hour in WINDOW_HOURS]
     next_window = next((window for window in windows if window > timestamp),
                        windows[0] + timedelta(days=1))
+    next_window_at = next_window
+    if in_blackout(mission_sol(next_window_at)):
+        next_window_at = MISSION_START + timedelta(days=BLACKOUT_END_SOL - 1, hours=WINDOW_HOURS[0])
     return {
-        "clock": {"sol": mission_sol(timestamp), "time": timestamp.strftime("%H:%M")},
+        "clock": {"sol": sol, "time": timestamp.strftime("%H:%M")},
         "environment": "mars_base",
         "one_way_delay_min": 12,
-        "next_window": next_window.strftime("%H:%M"),
+        "next_window": next_window_at.strftime("%H:%M"),
+        "comms_state": "blackout" if blackout else "connected" if connected else "delayed",
+        "blackout_start_sol": BLACKOUT_START_SOL,
+        "blackout_end_sol": BLACKOUT_END_SOL,
+        "blackout_days_remaining": BLACKOUT_END_SOL - sol if blackout else 0,
+        "next_window_at": {"sol": mission_sol(next_window_at), "time": next_window_at.strftime("%H:%M")},
+        "simulation": True,
     }
 
 
