@@ -12,12 +12,26 @@ import { useT } from '../i18n/index.jsx'
 
 const POLL_MS = 5000
 const crewList = (ids) => ids.map((c) => c.toUpperCase()).join(' · ')
+const isText = (v) => typeof v === 'string' && v.length > 0
+
+// The procedure as the screen can draw it, or null (then the fallback is shown) when a required field is missing
+// or has the wrong shape. Approvals without a crew id are dropped.
+function usableProcedure(p) {
+  if (p?.available !== true || !Array.isArray(p.steps) || !Array.isArray(p.consenters)) return null
+  if (!p.consenters.every(isText) || !Number.isInteger(p.required) || p.required < 1) return null
+  if (!p.steps.every((s) => isText(s?.step_id) && isText(s?.text))) return null
+  return {
+    ...p,
+    steps: p.steps.map((s) => ({ ...s, approvals: Array.isArray(s.approvals) ? s.approvals.filter((a) => isText(a?.crew)) : [] })),
+  }
+}
 
 function ConsentLine({ proc, step, onApprove, busy, error }) {
   const { t } = useT()
   const mine = step.approvals.some((a) => a.crew === CURRENT_CREW)
   const canConsent = proc.consenters.includes(CURRENT_CREW)
-  const n = step.approvals.length
+  // shown count: designated consenters who agreed, each once. Whether the step is done stays the backend's call
+  const n = proc.consenters.filter((c) => step.approvals.some((a) => a.crew === c)).length
   return (
     <div className={`consent ${step.done ? 'consent-done' : ''}`}>
       <span className="consent-count num">{t('proc.consent.count', { n, of: proc.required })}</span>
@@ -52,7 +66,8 @@ export default function ProcedureSteps({ eventId, fallback = null }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
 
-  const load = useCallback(() => api.getProcedure(eventId, lang).then(setProc).catch(() => setProc((p) => p ?? null)), [eventId, lang])
+  const load = useCallback(() => api.getProcedure(eventId, lang).then((p) => setProc(usableProcedure(p)))
+    .catch(() => setProc((p) => p ?? null)), [eventId, lang])
 
   useEffect(() => {
     if (eventId == null) return undefined // a metrics-only warning has no event, so no procedure
@@ -65,7 +80,7 @@ export default function ProcedureSteps({ eventId, fallback = null }) {
     setBusy(true)
     setError(null)
     try {
-      setProc(await api.approveProcedureStep(eventId, stepId, lang))
+      setProc(usableProcedure(await api.approveProcedureStep(eventId, stepId, lang)))
     } catch (e) {
       setError(e?.code === 'forbidden' || e?.code === 'http_403' ? 'proc.consent.forbidden'
         : e?.code === 'state_conflict' || e?.code === 'http_409' ? 'proc.consent.conflict' : 'proc.consent.failed')
