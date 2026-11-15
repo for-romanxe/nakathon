@@ -17,7 +17,7 @@ from backend.auth import CrewLogin, CrewSessions, SESSION_COOKIE, SESSION_SECOND
 from backend.checkin import Checkin, save_checkin
 from backend.db import connect, initialize
 from backend.docs import build_docs
-from backend import event_flow, habitat
+from backend import event_flow, habitat, procedure_consent
 from backend.model import pipeline
 from backend.events import EventOverride, SymptomAnswer, SymptomInput, event_payload, save_event
 from backend.link_simulation import LinkSimulation, compare_packet
@@ -603,6 +603,51 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
                 content={"error": {"code": "packet_not_found", "message": "Packet not found."}},
             )
         return {"seq": seq, **compare_packet(packet["payload"], simulation)}
+
+    @app.get("/events/{event_id}/procedure")
+    def read_procedure(event_id: int, lang: Literal["en", "ko"] = Query("en"), member=Depends(viewer)):
+        event = get_event(event_id)
+        if event is None:
+            return event_error()
+        with clock_lock:
+            now = clock
+        with closing(connect(db_path)) as connection:
+            ok = procedure_consent.eligible(connection, event, now)
+            if member["id"] in procedure_consent.APPROVERS and not may_access(
+                    member, get_crew_member(event["crew_id"])):
+                if not ok:
+                    raise HTTPException(403, "Event access denied.")
+            else:
+                require_event_access(event, member)
+            return procedure_consent.read(connection, event_id, lang, ok)
+
+    @app.post("/events/{event_id}/procedure/steps/{step_id}/approve")
+    def approve_procedure_step(event_id: int, step_id: str, member=Depends(viewer)):
+        if step_id != procedure_consent.STEP_ID:
+            return event_error("step_not_found", "Step not found.")
+        with clock_lock:
+            now = clock
+            try:
+                with closing(connect(db_path)) as connection, connection:
+                    connection.execute("BEGIN IMMEDIATE")
+                    event = connection.execute("SELECT * FROM event WHERE id = ?", (event_id,)).fetchone()
+                    if event is None:
+                        return event_error()
+                    if member["id"] not in procedure_consent.APPROVERS:
+                        raise HTTPException(403, "Designated approver required.")
+                    if not procedure_consent.eligible(connection, event, now):
+                        return event_error("procedure_unavailable", "Procedure is not available.", 409)
+                    return procedure_consent.approve(connection, event, member["id"], now)
+            except procedure_consent.MissingPacketError:
+                return event_error("packet_unavailable", "Report packet is not available.", 409)
+
+    @app.get("/earth-reports")
+    def read_earth_reports(member=Depends(viewer)):
+        with clock_lock:
+            now = clock
+        with closing(connect(db_path)) as connection:
+            crew_id = None if member["cmo"] else member["id"]
+            return {"reports": procedure_consent.list_reports(connection, crew_id, now)}
 
     @app.get("/events/{event_id}")
     def read_event(event_id: int, member=Depends(viewer)):

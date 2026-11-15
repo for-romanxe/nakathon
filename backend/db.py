@@ -13,6 +13,7 @@ VISIBILITY_SCHEMA = INITIAL_SCHEMA.with_name("006_crew_visibility.sql")
 MEDICATION_SCHEMA = INITIAL_SCHEMA.with_name("007_medication_intake.sql")
 MEDICATION_PRODUCT_SCHEMA = INITIAL_SCHEMA.with_name("008_medication_product.sql")
 HABITAT_SCHEMA = INITIAL_SCHEMA.with_name("009_habitat_action.sql")
+PROCEDURE_SCHEMA = INITIAL_SCHEMA.with_name("010_procedure_consent.sql")
 CREW_HEALTH_APPLICATION_ID = 1129465160
 
 
@@ -35,7 +36,7 @@ def initialize(db_path: str | Path) -> None:
                 raise ValueError("Choose a new database or an initialized Crew Health database.")
             connection.executescript(INITIAL_SCHEMA.read_text(encoding="utf-8"))
             version = 1
-        elif application_id != CREW_HEALTH_APPLICATION_ID or not 1 <= version <= 9:
+        elif application_id != CREW_HEALTH_APPLICATION_ID or not 1 <= version <= 10:
             raise ValueError("Choose a new database or an initialized Crew Health database.")
         if version == 1:
             connection.executescript(EVENT_SCHEMA.read_text(encoding="utf-8"))
@@ -53,6 +54,8 @@ def initialize(db_path: str | Path) -> None:
             connection.executescript(MEDICATION_PRODUCT_SCHEMA.read_text(encoding="utf-8"))
         if version < 9:
             connection.executescript(HABITAT_SCHEMA.read_text(encoding="utf-8"))
+        if version < 10:
+            connection.executescript(PROCEDURE_SCHEMA.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

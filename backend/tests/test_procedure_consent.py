@@ -1,0 +1,101 @@
+import json
+import sqlite3
+from contextlib import closing
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest import TestCase
+
+from fastapi.testclient import TestClient
+
+from backend.main import create_app
+from backend.tests.test_mission_demo_seed import seed_demo
+
+URL = "/events/{}/procedure"
+
+
+def h(c):
+    return {"X-Demo-Viewer": c}
+
+
+class ProcedureConsentTest(TestCase):
+    def setUp(self):
+        d = Path(self.enterContext(TemporaryDirectory()))
+        self.path = d / "demo.sqlite3"
+        r = seed_demo(self.path)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.client = self.enterContext(TestClient(create_app(self.path)))
+        self.client.post("/demo/clock", json={"sol": 46, "time": "08:00"}, headers=h("c2")).raise_for_status()
+        self.event = self.client.post("/crew/c4/symptom", headers=h("c4"),
+                                      json={"text": "I have chest pain", "lang": "en"}).raise_for_status().json()
+        self.eid = self.event["event_id"]
+
+    def approve(self, who, step="save_report"):
+        return self.client.post(f"{URL.format(self.eid)}/steps/{step}/approve", headers=h(who))
+
+    def read(self, who="c4", lang="en"):
+        return self.client.get(URL.format(self.eid), params={"lang": lang}, headers=h(who))
+
+    def count(self, sql):
+        with closing(sqlite3.connect(self.path)) as c:
+            return c.execute(sql).fetchone()[0]
+
+    def test_flow(self):
+        body = self.read().json()
+        self.assertTrue(body["available"])
+        self.assertFalse(body["medical_available"])
+        self.assertEqual(body["steps"][0]["approvals"], [])
+        self.assertEqual(self.count("SELECT COUNT(*) FROM procedure_approval"), 0)
+        self.assertEqual(self.read("c1", "ko").status_code, 200)
+        self.assertEqual(self.read(lang="fr").status_code, 422)
+        self.assertEqual(self.approve("c2").status_code, 403)
+        self.assertEqual(self.approve("c1", "other").status_code, 404)
+        self.approve("c1").raise_for_status()
+        self.approve("c1").raise_for_status()
+        self.assertEqual(self.count("SELECT COUNT(*) FROM earth_report"), 0)
+        half = self.read().json()
+        self.assertEqual(len(half["steps"][0]["approvals"]), 1)
+        self.assertEqual(half["required"], 2)
+        self.assertFalse(half["steps"][0]["done"])
+        self.assertEqual(half["current_step"], "save_report")
+        self.approve("c3").raise_for_status()
+        self.approve("c3").raise_for_status()
+        self.assertEqual(self.count("SELECT COUNT(*) FROM procedure_approval"), 2)
+        self.assertEqual(self.count("SELECT COUNT(*) FROM earth_report"), 1)
+        done = self.read().json()
+        self.assertEqual(len(done["steps"][0]["approvals"]), 2)
+        self.assertTrue(done["steps"][0]["done"])
+        self.assertFalse(done["medical_available"])
+        reports = self.client.get("/earth-reports", headers=h("c4")).json()["reports"]
+        self.assertEqual(len(reports), 1)
+        seq = reports[0]["packet"]["seq"]
+        self.assertEqual(reports[0]["packet"]["status"], "held")
+        text = json.dumps(reports)
+        self.assertNotIn("symptom_text", text)
+        self.assertNotIn("chest pain", text)
+        tx = self.client.get("/tx", headers=h("c2")).json()
+        matches = [p for p in tx if p["seq"] == seq]
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0]["status"], "queued")
+        self.client.post("/demo/clock", json={"sol": 57, "time": "08:00"}, headers=h("c2")).raise_for_status()
+        self.client.post("/tx/send", headers=h("c2")).raise_for_status()
+        tx = self.client.get("/tx", headers=h("c2")).json()
+        self.assertEqual([p["status"] for p in tx if p["seq"] == seq], ["sent"])
+        rep = self.client.get("/earth-reports", headers=h("c4")).json()["reports"]
+        self.assertEqual(len(rep), 1)
+        self.assertEqual(rep[0]["packet"]["seq"], seq)
+        self.assertEqual(rep[0]["packet"]["status"], "sent")
+        self.assertIsNone(rep[0]["packet"]["held_reason"])
+        cmo = self.client.get("/earth-reports", headers=h("c2")).json()["reports"]
+        self.assertEqual([x["packet"]["seq"] for x in cmo], [seq])
+        self.assertEqual(self.client.get("/earth-reports", headers=h("c3")).json()["reports"], [])
+        with TestClient(create_app(self.path)) as again:
+            r = again.get("/earth-reports", headers=h("c4")).json()["reports"]
+            self.assertEqual(r[0]["packet"]["seq"], seq)
+
+    def test_concurrent_approvals(self):
+        with ThreadPoolExecutor(4) as pool:
+            codes = list(pool.map(lambda w: self.approve(w).status_code, ["c1", "c3", "c1", "c3"]))
+        self.assertTrue(all(c == 200 for c in codes))
+        self.assertEqual(self.count("SELECT COUNT(*) FROM earth_report"), 1)
+        self.assertEqual(self.count("SELECT COUNT(*) FROM procedure_approval"), 2)
