@@ -79,10 +79,15 @@ def procedure_steps(condition_id: str, evidence: list, lang: str) -> dict:
     반환: {"available": bool, "steps": [{"step_id", "text", "cite_id", "kind"}]}  (kind 의 뜻은 procedure_steps.json 의 _doc)
     이 상태의 절차가 없거나 단계가 가리키는 문단이 근거 파일에 하나라도 없으면 available 은 False 이고 steps 는 비어 있다.
     출처를 열 수 없는 단계는 보여 주지 않는다. 그때 화면은 경보와 의무관 호출만 보여 준다.
+    예외를 던지지 않는다. 단계 파일을 읽지 못하거나 모양이 어긋나도 available 이 False 다.
     """
-    entry = json.loads(PROCEDURES.read_text(encoding="utf-8")).get(condition_id)
     loaded = {row["id"] for row in evidence}
-    if not isinstance(entry, dict) or not all(step["cite_id"] in loaded for step in entry["steps"]):
+    try:
+        steps = json.loads(PROCEDURES.read_text(encoding="utf-8"))[condition_id]["steps"]
+        steps = [{"step_id": step["step_id"], "text": step["ko" if lang == "ko" else "en"],
+                  "cite_id": step["cite_id"], "kind": step["kind"]} for step in steps]
+    except (OSError, ValueError, LookupError, TypeError):      # 파일이 없거나, JSON 이 깨졌거나, 이 상태의 절차가 없거나, 칸이 빠졌다
         return {"available": False, "steps": []}
-    return {"available": True, "steps": [{"step_id": step["step_id"], "text": step["ko" if lang == "ko" else "en"],
-                                          "cite_id": step["cite_id"], "kind": step["kind"]} for step in entry["steps"]]}
+    if not steps or not all(step["cite_id"] in loaded for step in steps):
+        return {"available": False, "steps": []}
+    return {"available": True, "steps": steps}

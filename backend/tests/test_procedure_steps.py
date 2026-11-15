@@ -1,6 +1,7 @@
 """경보 절차 단계(pipeline.procedure_steps, 이슈 #47): 단계마다 열 수 있는 근거 문단이 있고, 약 이름이 없다."""
-import json, sys, unittest
+import json, sys, tempfile, unittest
 from pathlib import Path
+from unittest import mock
 
 from backend.model import pipeline
 
@@ -32,6 +33,17 @@ class ProcedureSteps(unittest.TestCase):
                     pipeline.procedure_steps("cardiac_emergency", [], "ko"),
                     pipeline.procedure_steps("sleep_deficit", evidence, "ko")):
             self.assertEqual(got, {"available": False, "steps": []})
+
+    def test_missing_broken_or_misshapen_steps_file_withholds_the_steps_without_raising(self):
+        evidence = export_evidence.export("ko")
+        with tempfile.TemporaryDirectory() as tmp:
+            files = {"broken.json": "{not json", "list.json": "[1, 2]", "no_steps.json": '{"cardiac_emergency": {}}',
+                     "no_text.json": '{"cardiac_emergency": {"steps": [{"step_id": "a", "cite_id": "nasa:card-10#p1", "kind": "record"}]}}'}
+            for name, text in files.items():
+                (Path(tmp) / name).write_text(text, encoding="utf-8")
+            for name in ("missing.json", *files):
+                with self.subTest(file=name), mock.patch.object(pipeline, "PROCEDURES", Path(tmp) / name):
+                    self.assertEqual(pipeline.procedure_steps("cardiac_emergency", evidence, "ko"), {"available": False, "steps": []})
 
     def test_no_step_and_no_procedure_paragraph_names_a_medicine(self):
         steps = json.loads(pipeline.PROCEDURES.read_text(encoding="utf-8"))["cardiac_emergency"]["steps"]
