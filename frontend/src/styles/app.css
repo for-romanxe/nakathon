@@ -381,6 +381,21 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
 .warning-report { margin: 0; font-size: 1.1rem; color: var(--text-2); }
 .warning-block { padding: 14px 16px; background: var(--bezel); border: 1px solid var(--line); border-radius: var(--radius); display: flex; flex-direction: column; gap: 8px; }
 .warning-steps { margin: 0; padding-left: 22px; font-size: 1.1rem; display: flex; flex-direction: column; gap: 6px; }
+/* Arrival outlook: published ranges per body system, one trip-length slider */
+.arrival-disclaimer { margin: 0; }
+.arrival-trip { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.arrival-trip-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.arrival-trip-row input[type="range"] { flex: 1 1 200px; accent-color: var(--accent); }
+.arrival-months { font-size: 1.2rem; color: var(--accent); min-width: 5.5em; }
+.arrival-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.arrival-card .arrival-body { padding: 12px 16px 14px; display: flex; flex-direction: column; gap: 8px; }
+.arrival-range { font-size: 1.15rem; font-weight: 600; }
+.arrival-bar-track { position: relative; height: 12px; background: var(--well); border: 1px solid var(--line); border-radius: 6px; }
+.arrival-bar-range { position: absolute; top: 0; bottom: 0; background: var(--caution); border-radius: 6px; opacity: 0.85; }
+.arrival-bar-floor { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ok); }
+.arrival-bar-scale { display: flex; justify-content: space-between; margin-top: 2px; }
+.arrival-sources { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+
 /* Procedure with two-person consent (#47 FE-03): the step waiting for consent is outlined in red */
 .procedure { display: flex; flex-direction: column; gap: 8px; }
 .procedure-panel { padding: 14px 16px; }

@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { useT } from '../i18n/index.jsx'
 import { CURRENT_CREW } from '../session.js'
 
-const ITEMS = ['today', 'body', 'trends', 'log', 'procedures', 'crew']
+const ITEMS = ['today', 'body', 'trends', 'log', 'procedures', 'arrival', 'crew']
 
 export default function Rail() {
   const { t, lang, setLang } = useT()
