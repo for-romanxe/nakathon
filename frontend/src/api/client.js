@@ -41,15 +41,17 @@ function withComms(m) {
   // so a window inside the blackout is skipped: Sol 42 21:00 -> Sol 57 08:00, not Sol 43 08:00
   const next = WINDOW_MINUTES.find((w) => w > minute)
   const nextSol = next != null ? sol : sol + 1
+  const at = inBlackout(nextSol)
+    ? { sol: BLACKOUT.end, time: hhmm(WINDOW_MINUTES[0]) }
+    : { sol: nextSol, time: hhmm(next ?? WINDOW_MINUTES[0]) }
   return {
     ...m,
+    next_window: at.time, // equals next_window_at.time (CONTRACT §5.1, #51)
     comms_state: blackout ? 'blackout' : open ? 'connected' : 'delayed',
     blackout_start_sol: BLACKOUT.start,
     blackout_end_sol: BLACKOUT.end,
-    blackout_days_remaining: blackout ? BLACKOUT.end - sol : null,
-    next_window_at: inBlackout(nextSol)
-      ? { sol: BLACKOUT.end, time: hhmm(WINDOW_MINUTES[0]) }
-      : { sol: nextSol, time: hhmm(next ?? WINDOW_MINUTES[0]) },
+    blackout_days_remaining: blackout ? BLACKOUT.end - sol : 0, // 0 outside the blackout, as the backend sends
+    next_window_at: at,
     simulation: true,
   }
 }
@@ -66,8 +68,7 @@ function moveFixtureClock(update) {
     total = (update.sol - 1) * 1440 + uh * 60 + um
   }
   const minute = total % 1440
-  const next = WINDOW_MINUTES.find((w) => w > minute) ?? WINDOW_MINUTES[0]
-  fixtureMission = withComms({ ...fixtureMission, clock: { sol: Math.floor(total / 1440) + 1, time: hhmm(minute) }, next_window: hhmm(next) })
+  fixtureMission = withComms({ ...fixtureMission, clock: { sol: Math.floor(total / 1440) + 1, time: hhmm(minute) } })
   return structuredClone(fixtureMission)
 }
 
