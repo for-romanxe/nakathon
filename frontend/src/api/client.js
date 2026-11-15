@@ -116,6 +116,17 @@ function procStore() {
 function procSave(store) {
   try { localStorage.setItem(PROC_KEY, JSON.stringify(store)) } catch { /* private window: this tab only */ }
 }
+// A number counter shared by every tab (localStorage); without storage this tab keeps its own
+const localCounters = {}
+function nextSharedNumber(key, first) {
+  let n = Math.max(first, localCounters[key] ?? first)
+  try {
+    n = Math.max(n, Number.parseInt(localStorage.getItem(key), 10) || 0)
+    localStorage.setItem(key, String(n + 1))
+  } catch { /* this tab only */ }
+  localCounters[key] = n + 1
+  return n
+}
 function procRegister(eventId, patient) {
   const store = procStore()
   store[String(eventId)] = { patient, approvals: {} }
@@ -153,7 +164,13 @@ function fixtureApprove(eventId, stepId, lang) {
   const rec = store[String(eventId)]
   rec.approvals = { ...rec.approvals, [stepId]: [...(rec.approvals?.[stepId] ?? []), { crew: CURRENT_CREW, at: fixtureMission.clock }] }
   procSave(store)
-  return fixtureProcedure(eventId, lang)
+  const after = fixtureProcedure(eventId, lang)
+  // the consent that completes the procedure saves its report: its own report id and packet seq, kept with it
+  if (after.current_step === null && !rec.report) {
+    rec.report = { report_id: nextSharedNumber('fixture-next-report-id', 1), seq: nextSharedNumber('fixture-next-seq', 101) }
+    procSave(store)
+  }
+  return after
 }
 // What /today would list for a consenter: steps still waiting for this crew member's consent
 function fixtureConsentRequests(crewId) {
@@ -164,6 +181,25 @@ function fixtureConsentRequests(crewId) {
     if (!step || !p.consenters.includes(crewId) || step.approvals.some((a) => a.crew === crewId)) return []
     return [{ event_id: p.event_id, patient: p.patient, step_id: step.step_id, approvals: step.approvals.length, required: p.required }]
   })
+}
+// What GET /earth-reports would hold: one report per procedure whose consent is complete, readable by the patient
+// and the medical officer. The warning packet is held during the blackout and waits in the queue otherwise.
+function fixtureEarthReports(crewId) {
+  const blackout = fixtureMission.comms_state === 'blackout'
+  const store = procStore()
+  return Object.keys(store).flatMap((id) => {
+    const report = store[id]?.report // ids handed out when the consent completed; none -> no report
+    if (!report) return []
+    let p
+    try { p = fixtureProcedure(id, 'en') } catch { return [] }
+    if (!(crewId === 'c2' || crewId === p.patient)) return []
+    const approvals = p.steps.flatMap((s) => s.approvals).map((a) => ({ crew_id: a.crew, at: a.at }))
+    return [{
+      report_id: report.report_id, event_id: p.event_id, created_at: null, level: 'warning',
+      metrics: [], actions: [], cite_ids: p.steps.map((s) => s.cite_id).filter(Boolean), approvals,
+      packet: { seq: report.seq, status: blackout ? 'held' : 'queued', held_reason: blackout ? 'blackout' : null },
+    }]
+  }).sort((a, b) => a.report_id - b.report_id)
 }
 
 // ---- Fixture-only check-ins: kept per crew member and sol, so a check-in stays done for the person who made it ----
@@ -399,6 +435,16 @@ export const api = {
     request(`/events/${eventId}/procedure?lang=${lang}`, () => fixtureProcedure(eventId, lang))
       .catch((e) => {
         if (e.code === 'http_404' || e.code === 'not_found') return null
+        throw e
+      }),
+  // GET /earth-reports -> { reports:[{ report_id, event_id, created_at, level, metrics, approvals:[{crew_id, at}],
+  //   actions, cite_ids, packet:{ seq, status, held_reason } }] } (CONTRACT #47). The patient and a medical officer
+  // with access can read a report. No such route -> [].
+  getEarthReports: () =>
+    request('/earth-reports', () => ({ reports: fixtureEarthReports(CURRENT_CREW) }))
+      .then((r) => (Array.isArray(r?.reports) ? r.reports : []))
+      .catch((e) => {
+        if (e.code === 'http_404' || e.code === 'not_found') return []
         throw e
       }),
   // POST /events/{id}/procedure/steps/{step_id}/approve -> the procedure. 403 not a consenter, 409 not the current
