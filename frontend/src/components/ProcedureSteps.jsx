@@ -7,31 +7,19 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api/client.js'
 import { CURRENT_CREW } from '../session.js'
 import { useMission } from '../mission.jsx'
+import { agreed, usableProcedure } from '../procedureCheck.js'
 import Cite from './Cite.jsx'
 import { useT } from '../i18n/index.jsx'
 
 const POLL_MS = 5000
 const crewList = (ids) => ids.map((c) => c.toUpperCase()).join(' · ')
-const isText = (v) => typeof v === 'string' && v.length > 0
-
-// The procedure as the screen can draw it, or null (then the fallback is shown) when a required field is missing
-// or has the wrong shape. Approvals without a crew id are dropped.
-function usableProcedure(p) {
-  if (p?.available !== true || !Array.isArray(p.steps) || !Array.isArray(p.consenters)) return null
-  if (!p.consenters.every(isText) || !Number.isInteger(p.required) || p.required < 1) return null
-  if (!p.steps.every((s) => isText(s?.step_id) && isText(s?.text))) return null
-  return {
-    ...p,
-    steps: p.steps.map((s) => ({ ...s, approvals: Array.isArray(s.approvals) ? s.approvals.filter((a) => isText(a?.crew)) : [] })),
-  }
-}
 
 function ConsentLine({ proc, step, onApprove, busy, error }) {
   const { t } = useT()
   const mine = step.approvals.some((a) => a.crew === CURRENT_CREW)
   const canConsent = proc.consenters.includes(CURRENT_CREW)
   // shown count: designated consenters who agreed, each once. Whether the step is done stays the backend's call
-  const n = proc.consenters.filter((c) => step.approvals.some((a) => a.crew === c)).length
+  const n = agreed(proc, step).length
   return (
     <div className={`consent ${step.done ? 'consent-done' : ''}`}>
       <span className="consent-count num">{t('proc.consent.count', { n, of: proc.required })}</span>
