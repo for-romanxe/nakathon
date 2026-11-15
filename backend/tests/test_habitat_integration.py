@@ -9,6 +9,7 @@ from unittest import TestCase, mock
 
 from fastapi.testclient import TestClient
 
+from backend import habitat
 from backend.habitat import FIXED
 from backend.main import create_app, habitat_fallback_evidence
 from backend.mission import ClockUpdate, DEMO_TIME
@@ -42,6 +43,10 @@ def one(items, target):
 class HabitatIntegrationTest(TestCase):
     def setUp(self):
         self.directory = Path(self.enterContext(TemporaryDirectory()))
+        habitat._reason_failed.clear()
+        habitat._reason_jobs.clear()
+        self.enterContext(mock.patch('backend.habitat.pipeline.adjustment_reason', return_value={
+            'reason': None, 'cite_ids': [], 'hold': True, 'verified': 0, 'runs': []}))
 
     def demo_path(self):
         path = self.directory / 'demo.sqlite3'
