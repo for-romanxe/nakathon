@@ -354,6 +354,8 @@ export default {
   "proc.consent.approve": "Consent as {me}",
   "proc.consent.waiting": "Your consent is in. Waiting for {who}.",
   "proc.consent.done": "Both have consented. Go ahead with this step.",
+  "proc.consent.report_saved": "Both have consented. The crew report is saved.",
+  "proc.steps.report_only": "Report only. Clinical guidance is on hold until reviewed by a person",
   "proc.consent.later": "Opens once the earlier step has its consent.",
   "proc.consent.who": "Consent from {who}. The crew member in this tab cannot consent.",
   "proc.consent.forbidden": "You may not consent to this step.",

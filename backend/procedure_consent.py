@@ -35,17 +35,19 @@ def _approvals(conn, event_id):
     return [{"crew_id": r["crew_id"], "at": r["at"]} for r in rows]
 
 
-def read(conn, event_id, lang, available) -> dict:
-    apps = _approvals(conn, event_id) if available else []
+def read(conn, event, lang, available) -> dict:
+    apps = [{**a, "crew": a["crew_id"]} for a in _approvals(conn, event["id"])] if available else []
     done = len(apps) >= 2
-    steps = [{"step_id": STEP_ID, "text": _TEXT.get(lang, _TEXT["en"]), "cite_id": None,
+    steps = [{"step_id": STEP_ID, "kind": "report", "needs_consent": True,
+              "text": _TEXT.get(lang, _TEXT["en"]), "cite_id": None,
               "approvals": apps, "done": done}] if available else []
-    return {"available": bool(available), "medical_available": False, "required": 2,
+    return {"event_id": event["id"], "patient": event["crew_id"], "consenters": list(APPROVERS),
+            "available": bool(available), "medical_available": False, "required": 2,
             "current_step": STEP_ID if available and not done else None,
             "hold_reason": "medical_steps_unreviewed", "steps": steps, "simulation": True}
 
 
-def approve(conn, event, crew_id, now) -> dict:
+def approve(conn, event, crew_id, now, lang=None) -> dict:
     if crew_id not in APPROVERS or not eligible(conn, event, now):
         raise PermissionError("approval not allowed")
     conn.execute("INSERT OR IGNORE INTO procedure_approval(event_id, step_id, crew_id, at) "
@@ -62,7 +64,7 @@ def approve(conn, event, crew_id, now) -> dict:
         conn.execute("INSERT OR IGNORE INTO earth_report(event_id, packet_seq, created_at, "
                      "snapshot) VALUES (?,?,?,?)",
                      (event["id"], pkt["seq"], now.isoformat(), json.dumps(snap, sort_keys=True)))
-    return read(conn, event["id"], event["lang"], True)
+    return read(conn, event, lang or event["lang"], True)
 
 
 def list_reports(conn, crew_id, now) -> list:

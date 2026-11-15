@@ -619,10 +619,12 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
                     raise HTTPException(403, "Event access denied.")
             else:
                 require_event_access(event, member)
-            return procedure_consent.read(connection, event_id, lang, ok)
+            return procedure_consent.read(connection, event, lang, ok)
 
     @app.post("/events/{event_id}/procedure/steps/{step_id}/approve")
-    def approve_procedure_step(event_id: int, step_id: str, member=Depends(viewer)):
+    def approve_procedure_step(event_id: int, step_id: str, lang: str | None = None, member=Depends(viewer)):
+        if lang is not None and lang not in ("en", "ko"):
+            return event_error("invalid_lang", "lang must be en or ko.", 422)
         if step_id != procedure_consent.STEP_ID:
             return event_error("step_not_found", "Step not found.")
         with clock_lock:
@@ -637,7 +639,7 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
                         raise HTTPException(403, "Designated approver required.")
                     if not procedure_consent.eligible(connection, event, now):
                         return event_error("procedure_unavailable", "Procedure is not available.", 409)
-                    return procedure_consent.approve(connection, event, member["id"], now)
+                    return procedure_consent.approve(connection, event, member["id"], now, lang)
             except procedure_consent.MissingPacketError:
                 return event_error("packet_unavailable", "Report packet is not available.", 409)
 

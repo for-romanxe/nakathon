@@ -30,8 +30,17 @@ class ProcedureConsentTest(TestCase):
                                       json={"text": "I have chest pain", "lang": "en"}).raise_for_status().json()
         self.eid = self.event["event_id"]
 
-    def approve(self, who, step="save_report"):
-        return self.client.post(f"{URL.format(self.eid)}/steps/{step}/approve", headers=h(who))
+    def approve(self, who, step="save_report", lang=None):
+        return self.client.post(f"{URL.format(self.eid)}/steps/{step}/approve", headers=h(who),
+                                params={"lang": lang} if lang else None)
+
+    def check(self, body, lang="en"):
+        self.assertEqual((body["event_id"], body["patient"], body["consenters"]), (self.eid, "c4", ["c1", "c3"]))
+        s = body["steps"][0]
+        self.assertEqual((s["kind"], s["needs_consent"]), ("report", True))
+        self.assertIn("보고서" if lang == "ko" else "crew report", s["text"])
+        self.assertTrue(all(a["crew"] == a["crew_id"] for a in s["approvals"]))
+        self.assertEqual(body["current_step"], None if s["done"] else "save_report")
 
     def read(self, who="c4", lang="en"):
         return self.client.get(URL.format(self.eid), params={"lang": lang}, headers=h(who))
@@ -42,16 +51,18 @@ class ProcedureConsentTest(TestCase):
 
     def test_flow(self):
         body = self.read().json()
+        self.check(body)
         self.assertTrue(body["available"])
         self.assertFalse(body["medical_available"])
         self.assertEqual(body["steps"][0]["approvals"], [])
         self.assertEqual(self.count("SELECT COUNT(*) FROM procedure_approval"), 0)
-        self.assertEqual(self.read("c1", "ko").status_code, 200)
+        self.check(self.read("c1", "ko").json(), "ko")
         self.assertEqual(self.read(lang="fr").status_code, 422)
         self.assertEqual(self.approve("c2").status_code, 403)
         self.assertEqual(self.approve("c1", "other").status_code, 404)
-        self.approve("c1").raise_for_status()
-        self.approve("c1").raise_for_status()
+        self.check(self.approve("c1", lang="ko").raise_for_status().json(), "ko")
+        self.check(self.approve("c1").raise_for_status().json())
+        self.assertEqual(self.approve("c1", lang="fr").status_code, 422)
         self.assertEqual(self.count("SELECT COUNT(*) FROM earth_report"), 0)
         half = self.read().json()
         self.assertEqual(len(half["steps"][0]["approvals"]), 1)
@@ -63,11 +74,13 @@ class ProcedureConsentTest(TestCase):
         self.assertEqual(self.count("SELECT COUNT(*) FROM procedure_approval"), 2)
         self.assertEqual(self.count("SELECT COUNT(*) FROM earth_report"), 1)
         done = self.read().json()
+        self.check(done)
         self.assertEqual(len(done["steps"][0]["approvals"]), 2)
         self.assertTrue(done["steps"][0]["done"])
         self.assertFalse(done["medical_available"])
         reports = self.client.get("/earth-reports", headers=h("c4")).json()["reports"]
         self.assertEqual(len(reports), 1)
+        self.assertEqual([sorted(a) for a in reports[0]["approvals"]], [["at", "crew_id"]] * 2)
         seq = reports[0]["packet"]["seq"]
         self.assertEqual(reports[0]["packet"]["status"], "held")
         text = json.dumps(reports)

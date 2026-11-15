@@ -30,7 +30,7 @@ function ConsentLine({ proc, step, onApprove, busy, error }) {
         })}
       </ul>
       {step.done ? (
-        <p className="small">{t('proc.consent.done')}</p>
+        <p className="small">{t(step.kind === 'report' ? 'proc.consent.report_saved' : 'proc.consent.done')}</p>
       ) : step.step_id !== proc.current_step ? (
         <p className="muted small">{t('proc.consent.later')}</p>
       ) : mine ? (
@@ -86,19 +86,20 @@ export default function ProcedureSteps({ eventId, fallback = null }) {
   return (
     <div className="procedure">
       <p className="muted small">
-        {t('proc.steps.source')} · {t('proc.steps.viewer', { me: CURRENT_CREW.toUpperCase(), patient: proc.patient?.toUpperCase() ?? '–' })}
+        {t(proc.medical_available === false ? 'proc.steps.report_only' : 'proc.steps.source')} · {t('proc.steps.viewer', { me: CURRENT_CREW.toUpperCase(), patient: proc.patient?.toUpperCase() ?? '–' })}
       </p>
       <ol className="procedure-steps">
         {proc.steps.map((s) => (
           <li key={s.step_id} className={s.step_id === proc.current_step ? 'current' : ''}>
             <p>{s.text}</p>
-            <p className="small"><Cite id={s.cite_id} /></p>
+            {s.cite_id && <p className="small"><Cite id={s.cite_id} /></p>}
             {s.kind === 'contact' && blackout && <p className="small proc-blackout">{t('proc.steps.contact_blackout')}</p>}
             {s.needs_consent && <ConsentLine proc={proc} step={s} onApprove={approve} busy={busy} error={error} />}
           </li>
         ))}
       </ol>
       <button type="button" className="btn-ghost align-start small" onClick={load}>{t('proc.consent.refresh')}</button>
+      {proc.medical_available === false && fallback}
     </div>
   )
 }
