@@ -11,6 +11,7 @@ import txFixture from './fixtures/tx.json'
 import missionFixture from './fixtures/mission.json'
 import eventCautionFixture from './fixtures/event_caution.json'
 import eventWarningFixture from './fixtures/event_warning.json'
+import habitatFixture from './fixtures/habitat_actions.json'
 import { PIPELINE_STAGES } from './contract.js'
 import { CURRENT_CREW } from '../session.js'
 
@@ -68,6 +69,38 @@ function moveFixtureClock(update) {
   const next = WINDOW_MINUTES.find((w) => w > minute) ?? WINDOW_MINUTES[0]
   fixtureMission = withComms({ ...fixtureMission, clock: { sol: Math.floor(total / 1440) + 1, time: hhmm(minute) }, next_window: hhmm(next) })
   return structuredClone(fixtureMission)
+}
+
+// ---- Fixture-only habitat adjustments (#47 §3): approve / undo change them in memory. On the sol they were made
+// they show as they are now; the next sol an applied one is released with its before / after outcome, an undone
+// one stays undone and an unanswered proposal is gone. Other sols and crew members have none ----
+const fixtureHabitat = {} // id -> { status, approved_by }
+const pickLang = (v, lang) => (v && typeof v === 'object' ? (v[lang] ?? v.en) : v)
+function fixtureHabitatAction(a, lang) {
+  const now = { ...a, ...fixtureHabitat[a.id] }
+  const sol = fixtureMission.clock.sol
+  if (sol === a.sol + 1) {
+    if (now.status === 'proposed') return null
+    if (now.status === 'applied') now.status = 'released'
+  } else if (sol !== a.sol) return null
+  return {
+    ...now,
+    before: pickLang(now.before, lang),
+    after: pickLang(now.after, lang),
+    reason_text: pickLang(now.reason_text, lang),
+    outcome: now.status === 'released' ? now.outcome : null,
+  }
+}
+function fixtureHabitatList(crewId, lang) {
+  return habitatFixture.actions.filter((a) => a.crew === crewId).map((a) => fixtureHabitatAction(a, lang)).filter(Boolean)
+}
+function fixtureHabitatSet(id, from, change, lang) {
+  const a = habitatFixture.actions.find((x) => x.id === id)
+  const cur = a && fixtureHabitatAction(a, lang)
+  if (!cur) throw new ApiError('not_found', 'No such adjustment')
+  if (!from.includes(cur.status)) throw new ApiError('state_conflict', `Adjustment is ${cur.status}`)
+  fixtureHabitat[id] = { ...fixtureHabitat[id], ...change }
+  return fixtureHabitatAction(a, lang)
 }
 
 // ---- Fixture-only check-ins: kept per crew member and sol, so a check-in stays done for the person who made it ----
@@ -264,6 +297,25 @@ export const api = {
     request(`/tx/${seq}/simulate`, null, { method: 'POST', body: JSON.stringify({ wide_amplitude: amplitude }) }),
   setDemoClock: (clock) =>
     request('/demo/clock', () => moveFixtureClock(clock), { method: 'POST', body: JSON.stringify(clock) }),
+
+  // Habitat adjustments (#47 §3, draft until the backend sample): GET /habitat/actions?crew=&lang= ->
+  //   [{ id, crew, sol, target: lighting|schedule, tier: auto|approve, status: proposed|applied|undone|released,
+  //      reason:{metric,value,z}, before, after, reason_text|null, cite_ids, approved_by, outcome|null }]
+  // The backend has no such route yet (404) -> [] so Today simply shows no card.
+  getHabitatActions: (crewId, lang = 'en') =>
+    request(`/habitat/actions?crew=${crewId}&lang=${lang}`, () => fixtureHabitatList(crewId, lang))
+      .catch((e) => {
+        if (e.code === 'http_404' || e.code === 'not_found') return []
+        throw e
+      }),
+  // POST /habitat/actions/{id}/approve -> the action, now applied (409 state_conflict when it is not proposed)
+  approveHabitatAction: (id, lang = 'en') =>
+    request(`/habitat/actions/${id}/approve?lang=${lang}`,
+      () => fixtureHabitatSet(id, ['proposed'], { status: 'applied', approved_by: CURRENT_CREW }, lang), { method: 'POST' }),
+  // POST /habitat/actions/{id}/undo -> the action, now undone; the cabin goes back to `before`
+  undoHabitatAction: (id, lang = 'en') =>
+    request(`/habitat/actions/${id}/undo?lang=${lang}`,
+      () => fixtureHabitatSet(id, ['applied'], { status: 'undone' }, lang), { method: 'POST' }),
 }
 
 // Pipeline progress for one event (CONTRACT §4 stage names). Calls onStage(stage) as stages arrive and
