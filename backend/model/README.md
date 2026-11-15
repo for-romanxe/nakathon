@@ -38,12 +38,12 @@ MODEL=live python3 -c "from backend.model import client; print(client.extract_sy
 # 1) 모델 서버: 위의 live 명령 (포트 8080)
 # 2) 근거 파일: 없으면 설명 없이 보류로 끝난다
 python3 ml/knowledge/export_evidence.py ko > data/evidence-ko.json
-# 3) 백엔드
-MODEL=live CREW_HEALTH_EVIDENCE=data/evidence-ko.json python3 -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
-# 4) 프론트 (http://localhost:5173)
-(cd frontend && npm install && printf 'VITE_USE_FIXTURES=false\n' > .env.development.local && npm run dev)
-# 5) 시연 중에는 모델이 쉬지 않게 다른 터미널에서 켜 둔다 (느리거나 실패한 요청만 한 줄씩 찍는다)
+# 3) 모델이 쉬지 않게 다른 터미널에서 켜 둔다 (느리거나 실패한 요청만 한 줄씩 찍는다). 1분 30초쯤 기다린 뒤 다음 단계로 간다 (모델이 쉬고 있었으면 깨어날 때 slow 줄이 찍힌다)
 python3 ml/keep_warm.py
+# 4) 백엔드
+MODEL=live CREW_HEALTH_EVIDENCE=data/evidence-ko.json python3 -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+# 5) 프론트 (http://localhost:5173)
+(cd frontend && npm install && printf 'VITE_USE_FIXTURES=false\n' > .env.development.local && npm run dev)
 ```
 
 M5 Pro 24GB에서 이 구성으로 보고 6건을 HTTP로 끝까지 보냈다(모델은 어댑터 포함, 문단은 한국어). 급하지 않은 5건은 모두 설명이 검사 5개를 통과했고(1건은 두 번째 실행에서), 가슴 통증은 모델을 건너뛰고 경보가 됐다. 연달아 보낼 때 증상 추출은 2~3초, 설명은 6~7초였다.
@@ -73,6 +73,7 @@ out = pipeline.adjustment_reason("lighting", "caution", findings, evidence, "ko"
 - `MODEL=mock`에서도 문장이 나온다. 이번에 mock 설명이 받은 문단을 인용하도록 고쳤다(전에는 없는 문단 id 를 인용해 실제 근거 파일과 함께 쓰면 항상 보류였다).
 - 어느 문단을 어느 조정에 붙일지는 AI가 고른 초안이고, 2026-11-15에 팀원 한 명이 한국어 문단과 함께 읽었다(의료 전문가 검토 아님). 일정 조정에는 수면 문단을 쓴다. 심박변이 문단(`lit:card-09#p2`)은 "변화가 작고 연구마다 일정하지 않다"고 적혀 있어 일정을 바꾸는 근거로 쓰지 않았다.
 - 백엔드 연결: `GET /habitat/actions`가 `reason_text`가 없는 조정마다 이 함수를 뒤에서 한 번 부르고, 통과한 문장을 조정 기록에 저장한다(`backend/habitat.py`의 `rows_with_reasons`). 요청은 생성이 시작된 뒤 10초까지만 기다리고, 그 뒤의 요청은 기다리지 않는다. 통과하지 못한 시도는 서버를 다시 띄울 때까지 다시 하지 않는다.
+- 병합된 main(`5d10dd3`)에서 실제 백엔드, 새 리허설 DB, 실제 모델로 3번 확인했다(2026-11-15 16:53~16:57). `ml/keep_warm.py`를 켠 지 40초 뒤에 백엔드를 띄운 2번은 모델이 깨어나는 데 46.4초와 50.1초가 걸려, 첫 요청의 10초 대기 안에 두 문장이 다 오지 않았다. 두 문장은 첫 요청을 시작한 지 약 11초와 14초 뒤에 채워졌다. 80초 뒤에 백엔드를 띄운 1번은 첫 한국어 요청이 4.8초, 첫 영어 요청이 4.0초에 두 문장을 모두 돌려줬고, 저장된 뒤에는 0.0초였다. 카드는 처음 열릴 때 한 번만 요청하므로 조정 카드를 열기 전에 모델이 깨어 있어야 한다. 3번이라 넓은 표본이 아니다.
 
 ## 경보 절차 단계 (이슈 #47, 2026-11-15)
 
