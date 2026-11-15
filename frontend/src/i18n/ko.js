@@ -368,7 +368,7 @@ export default {
   "proc.doc_missing": "{id}는 아직 기기 안 문서에 없어요.",
   "proc.para_missing": "{id} 문단은 이 문서에 없어요. 문서 전체를 보여 줘요.",
   "proc.korean_only": "문서 본문은 한국어로만 있어요.",
-  "proc.steps.source": "옛 NASA 우주정거장 점검표(2001)를 요약한 단계예요. 원문이 아니고, 사람 검토 전이에요",
+  "proc.steps.source": "옛 NASA 우주정거장 점검표(2001)를 요약한 단계예요. 원문이 아니에요. 팀원 한 명이 읽었고, 의료 전문가 검토는 받지 않았어요",
   "proc.steps.viewer": "이 탭: {me} (모의 신원) · 환자: {patient}",
   "proc.steps.contact_blackout": "지금은 두절이라 지구에 연락할 수 없어요. 보고는 통신이 돌아오면 나가요.",
   "proc.consent.count": "동의 {n}/{of}",

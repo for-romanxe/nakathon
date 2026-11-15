@@ -367,7 +367,7 @@ export default {
   "proc.sample": "Sample documents: the backend does not serve /docs yet.",
   "proc.doc_missing": "{id} is not among the on-device documents yet.",
   "proc.para_missing": "{id} is not in this document. The whole document is shown.",
-  "proc.steps.source": "Steps summarised from an older NASA space station checklist (2001). Not the original text, not yet reviewed by a person",
+  "proc.steps.source": "Steps summarised from an older NASA space station checklist (2001). Not the original text. One team member read the Korean wording; no medical review",
   "proc.steps.viewer": "This tab: {me} (simulated identity) · Patient: {patient}",
   "proc.steps.contact_blackout": "Earth cannot be reached during the blackout. The report goes out when contact returns.",
   "proc.consent.count": "Consent {n}/{of}",
