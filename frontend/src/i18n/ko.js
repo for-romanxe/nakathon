@@ -355,6 +355,8 @@ export default {
   "proc.consent.approve": "{me}로 동의하기",
   "proc.consent.waiting": "내 동의 완료. {who}의 동의를 기다려요.",
   "proc.consent.done": "두 사람이 동의했어요. 이 단계를 진행하세요.",
+  "proc.consent.report_saved": "두 사람이 동의했어요. 승무원 보고서를 저장했어요.",
+  "proc.steps.report_only": "보고서 저장만 해요. 의료 지침은 사람 검토 전까지 보류돼요",
   "proc.consent.later": "앞 단계의 동의가 끝나면 열려요.",
   "proc.consent.who": "동의할 사람: {who}. 이 탭의 승무원은 동의할 수 없어요.",
   "proc.consent.forbidden": "이 단계에 동의할 권한이 없어요.",
