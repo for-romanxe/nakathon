@@ -13,7 +13,8 @@ const HHMM = /^(?:[01]\d|2[0-3]):[0-5]\d$/
 function validMission(m) {
   return Number.isInteger(m?.clock?.sol) && HHMM.test(m?.clock?.time ?? '')
 }
-const hasWindow = (m) => HHMM.test(m?.next_window ?? '')
+const hasWindowAt = (m) => Number.isInteger(m?.next_window_at?.sol) && HHMM.test(m?.next_window_at?.time ?? '')
+const hasWindow = (m) => hasWindowAt(m) || HHMM.test(m?.next_window ?? '')
 
 // Scenes from the demo script. Each returns the body for POST /demo/clock, given a valid mission state,
 // or null when the scene cannot be built from it (no comm window in the response).
@@ -21,10 +22,12 @@ const SCENES = [
   { key: 'morning', body: ({ clock }) => ({ sol: clock.sol, time: '06:10' }) }, // S1 wake-up, band synced
   { key: 'recheck', body: ({ clock }) => ({ sol: clock.sol, time: '14:00' }) }, // S4 afternoon re-check
   { key: 'evening', body: ({ clock }) => ({ sol: clock.sol, time: '19:00' }) }, // evening check-out on Today
-  { // S7 / S14: next comm window (tomorrow's first one if today's have passed)
+  { // S7 / S14: next comm window. next_window_at carries the sol and skips the blackout (CONTRACT §5.1, #51);
+    // the time-only next_window is the fallback for a backend without it (tomorrow's first one if today's passed)
     key: 'window',
     needsWindow: true,
-    body: (m) => (hasWindow(m) ? { sol: m.clock.sol + (m.next_window <= m.clock.time ? 1 : 0), time: m.next_window } : null),
+    body: (m) => (hasWindowAt(m) ? { sol: m.next_window_at.sol, time: m.next_window_at.time }
+      : hasWindow(m) ? { sol: m.clock.sol + (m.next_window <= m.clock.time ? 1 : 0), time: m.next_window } : null),
   },
   { key: 'hour', body: () => ({ advance: '1h' }) },
   { key: 'next_sol', body: ({ clock }) => ({ sol: clock.sol + 1, time: '06:10' }) }, // a second day in a row
