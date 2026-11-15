@@ -44,6 +44,8 @@ python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 | 16, 17 | C1 | Pre-seeded measurements |
 | 40 | — | Clock scene |
 | 46 | C4 | Pre-seeded measurements. Submit the chest pain report live during the rehearsal. It is not seeded. |
+
+Sol 46 note: C4's seeded HR (z=+2.5) and HRV (z=-2.2) are caution-level outliers only; the urgent event comes from the live chest pain report. Re-seed a fresh database to get these values.
 | 57 | — | Clock scene |
 
 #### Behavior

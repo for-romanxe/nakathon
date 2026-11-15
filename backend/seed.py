@@ -50,6 +50,9 @@ C1_DEMO_SLEEP_SD = 0.96
 C1_SOL17_SLEEP = 7.2
 C1_SOL17_HRV_Z = -0.6
 C4_DEMO_SOL = 46
+# Opt-in demo only: two caution outliers (|z| < 3) in normalized spread units; the
+# emergency itself is triggered by the live symptom report. Needs a fresh DB.
+C4_SOL46_Z = {"hr": 2.5, "hrv": -2.2}
 # Static scenario input for BE-04; intentionally not written as a guide_item row.
 HYPOTHETICAL_EVA_ASSIGNMENT = {
     "crew_id": "c1",
@@ -144,10 +147,10 @@ def seed_mission_demo(connection: sqlite3.Connection) -> None:
             first = C4_DEMO_SOL - BASELINE_WINDOW
             for sol in range(first, C4_DEMO_SOL + 1):
                 index = 0 if sol == C4_DEMO_SOL else sol - first + 1
-                _insert_sample(
-                    connection, "c4", metric, sol,
-                    center + spread * (offsets[index] - baseline_mean) / baseline_sd,
-                )
+                z = (offsets[index] - baseline_mean) / baseline_sd
+                if sol == C4_DEMO_SOL:
+                    z = C4_SOL46_Z.get(metric, z)
+                _insert_sample(connection, "c4", metric, sol, center + spread * z)
     seed(connection)
 
 

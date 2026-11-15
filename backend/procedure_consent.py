@@ -28,6 +28,39 @@ def eligible(conn: sqlite3.Connection, event, now) -> bool:
     )
 
 
+def pending_requests(conn: sqlite3.Connection, crew_id, now) -> list:
+    """Open C4 Sol46 save_report consents still awaiting this designated approver."""
+    if crew_id not in APPROVERS:
+        return []
+    sol = mission_sol(now)
+    if sol < 46 or not in_blackout(sol):
+        return []
+    rows = conn.execute(
+        "SELECT * FROM event WHERE crew_id='c4' AND mission_day=46 AND level='warning' "
+        "AND closed_at IS NULL ORDER BY id").fetchall()
+    out = []
+    for ev in rows:
+        if not eligible(conn, ev, now):
+            continue
+        apps = _approvals(conn, ev["id"])
+        if len(apps) >= 2 or any(a["crew_id"] == crew_id for a in apps):
+            continue
+        out.append({"event_id": ev["id"], "patient": ev["crew_id"], "step_id": STEP_ID,
+                    "approvals": len(apps), "required": 2})
+    return out
+
+
+def _event_metrics(event) -> list:
+    """Report metrics as [{metric,value}] taken only from the event's saved findings."""
+    findings = json.loads(event["findings"] or "[]")
+    if isinstance(findings, dict):
+        pairs = findings.items()
+    else:
+        pairs = ((f.get("metric"), f.get("value")) for f in findings if isinstance(f, dict))
+    return [{"metric": m, "value": v} for m, v in pairs
+            if m is not None and isinstance(v, (int, float)) and not isinstance(v, bool)]
+
+
 def _approvals(conn, event_id):
     rows = conn.execute(
         "SELECT crew_id, at FROM procedure_approval WHERE event_id=? AND step_id=? "
@@ -54,12 +87,11 @@ def approve(conn, event, crew_id, now, lang=None) -> dict:
                  "VALUES (?,?,?,?)", (event["id"], STEP_ID, crew_id, now.isoformat()))
     apps = _approvals(conn, event["id"])
     if len(apps) >= 2:
-        pkt = conn.execute("SELECT seq, payload FROM tx_packet WHERE event_id=? ORDER BY seq "
+        pkt = conn.execute("SELECT seq FROM tx_packet WHERE event_id=? ORDER BY seq "
                            "LIMIT 1", (event["id"],)).fetchone()
         if pkt is None:
             raise MissingPacketError(f"no tx_packet for event {event['id']}")
-        payload = json.loads(pkt["payload"])
-        snap = {"level": event["level"], "metrics": payload.get("readings", {}),
+        snap = {"level": event["level"], "metrics": _event_metrics(event),
                 "approvals": apps, "actions": [], "cite_ids": []}
         conn.execute("INSERT OR IGNORE INTO earth_report(event_id, packet_seq, created_at, "
                      "snapshot) VALUES (?,?,?,?)",
