@@ -123,6 +123,25 @@ html[data-comms="blackout"] .app::after {
 .guide li.done .guide-target { color: var(--muted); text-decoration: line-through; }
 .guide-state { font-size: 0.8rem; color: var(--muted); align-self: start; }
 
+/* Habitat card (#47 FE-02): what the ship changed. Applied rows carry a sky-blue edge, waiting ones yellow */
+.habitat-list { list-style: none; margin: 0; padding: 0; }
+.habitat-row { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--line); border-left: 3px solid transparent; }
+.habitat-row:last-child { border-bottom: 0; }
+.habitat-applied, .habitat-released { border-left-color: var(--accent); }
+.habitat-proposed { border-left-color: var(--caution); }
+.habitat-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; }
+.habitat-target { font-weight: 600; }
+.habitat-state { font-size: 0.8rem; color: var(--muted); }
+.habitat-proposed .habitat-state { color: var(--caution); }
+.habitat-change { font-family: var(--mono); font-size: 0.95rem; }
+.habitat-before { color: var(--muted); text-decoration: line-through; }
+.habitat-after { font-weight: 600; }
+.habitat-why { display: flex; flex-direction: column; gap: 2px; }
+.habitat-why .cite { margin-right: 8px; }
+.habitat-outcome { padding: 8px 12px; background: var(--well); border-radius: var(--radius); display: flex; flex-direction: column; gap: 4px; }
+.habitat-outcome ul { margin: 0; padding-left: 18px; }
+.habitat-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+
 .readouts { display: flex; flex-direction: column; }
 /* Annunciator: a lamp (level word lit in its colour) beside the status sentence, like a cockpit caution panel */
 .annunciator {
