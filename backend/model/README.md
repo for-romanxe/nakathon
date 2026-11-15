@@ -42,11 +42,15 @@ python3 ml/knowledge/export_evidence.py ko > data/evidence-ko.json
 MODEL=live CREW_HEALTH_EVIDENCE=data/evidence-ko.json python3 -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 # 4) 프론트 (http://localhost:5173)
 (cd frontend && npm install && printf 'VITE_USE_FIXTURES=false\n' > .env.development.local && npm run dev)
+# 5) 시연 중에는 모델이 쉬지 않게 다른 터미널에서 켜 둔다 (느리거나 실패한 요청만 한 줄씩 찍는다)
+python3 ml/keep_warm.py
 ```
 
 M5 Pro 24GB에서 이 구성으로 보고 6건을 HTTP로 끝까지 보냈다(모델은 어댑터 포함, 문단은 한국어). 급하지 않은 5건은 모두 설명이 검사 5개를 통과했고(1건은 두 번째 실행에서), 가슴 통증은 모델을 건너뛰고 경보가 됐다. 연달아 보낼 때 증상 추출은 2~3초, 설명은 6~7초였다.
 
 **쉬었다 보내면 느리다.** 맥의 메모리가 꽉 찬 상태(스왑 30GB 중 29GB 사용)에서, 연달아 보낸 요청은 2초대였지만 12초 넘게 쉰 뒤의 요청은 38~58초 걸렸다(5번). 3초 쉬면 4초, 6초 쉬면 7.5초였다. 쉬는 동안 맥이 모델 메모리를 압축하는 것으로 보인다(서버 12GB 중 8.9GB가 압축돼 있었다). 2초마다 한 토큰짜리 요청을 보내 두면 40초 쉰 뒤에도 2초에 답했지만, 다른 프로그램이 메모리를 쓸 때는 그 요청 자체가 멈췄다(26분 동안 13번, 17~53초). 시연 전에 다른 프로그램을 닫아 메모리를 비우고, 직전에 한 번 호출해 둔다. 메모리를 비운 상태에서 다시 재서 확인하지는 않았다.
+
+**`ml/keep_warm.py`를 켜 두면 줄어든다 (2026-11-15 15:25~15:45, 스왑 18GB 중 17GB 사용).** 조정 이유 한 건을 1분·3분·5분 쉰 뒤에 보냈다. 켜 두지 않았을 때는 28.0초·23.6초·27.9초였고, 2초 간격으로 켜 뒀을 때는 5.1초·4.0초·4.0초였다(연달아 보내면 4.0초). 쉬는 시간마다 한 번씩 잰 값이라 넓은 표본이 아니다. 켜 둔 9분여 동안 보낸 250번 가운데 한 번은 그 요청 자체가 20.7초 걸렸다. 그 순간에 실제 요청이 겹치면 느릴 수 있으므로 시연 전에 메모리를 비우는 일은 여전히 필요하다.
 
 ## 우주선 조정 이유 (이슈 #47, 2026-11-15)
 
@@ -73,7 +77,7 @@ out = pipeline.adjustment_reason("lighting", "caution", findings, evidence, "ko"
 
 ```python
 out = pipeline.procedure_steps("cardiac_emergency", evidence, "ko")
-# {"available": True, "steps": [{"step_id": "oxygen", "text": "산소 마스크로 산소를 주세요.", "cite_id": "nasa:card-10#p1", "kind": "treatment"}, ...5개]}
+# {"available": True, "steps": [{"step_id": "oxygen", "text": "환자에게 산소 마스크를 씌워 주세요.", "cite_id": "nasa:card-10#p1", "kind": "treatment"}, ...5개]}
 ```
 
 - 모델을 부르지 않는다. 단계와 근거 문단은 `model/procedure_steps.json`에 고정돼 있고 지금은 가슴 통증 하나다. 예외를 던지지 않는다(단계 파일을 읽지 못해도 `available: False`).
