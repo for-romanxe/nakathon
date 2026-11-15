@@ -24,19 +24,23 @@ class DocsTest(TestCase):
         path = self.directory / "evidence.json"
         base = {"codes": ["dizziness"], "condition_id": "orthostatic_intolerance"}
         rows = [
-            {**base, "id": "test:example#p10", "text": "Synthetic tenth paragraph.", "title": "Test source"},
-            {**base, "id": "test:example#p2", "text": "Synthetic second paragraph.", "org": "Test organization"},
+            {**base, "id": "test:example#p10", "text": "Synthetic tenth paragraph.", "title": "Test source", "lang": "en"},
+            {**base, "id": "test:example#p2", "text": "Synthetic second paragraph.", "org": "Test organization", "lang": "en"},
             {**base, "id": "test:legacy#p1", "text": "Synthetic legacy paragraph."},
         ]
         path.write_text(json.dumps(rows), encoding="utf-8")
         with patch.dict("os.environ", {"CREW_HEALTH_EVIDENCE": str(path)}), TestClient(self.app) as api:
             expected = {
-                "id": "test:example", "title": "Test source", "org": "Test organization", "kind": "",
-                "paragraphs": [{"n": 2, "text": rows[1]["text"]}, {"n": 10, "text": rows[0]["text"]}],
+                "id": "test:example", "title": "Test source", "org": "Test organization", "kind": "", "lang": "en",
+                "paragraphs": [{"n": 2, "text": rows[1]["text"], "lang": "en"},
+                               {"n": 10, "text": rows[0]["text"], "lang": "en"}],
             }
             self.assertEqual(api.get("/docs").raise_for_status().json()[0], expected)
             self.assertEqual(api.get("/docs/test%3Aexample").raise_for_status().json(), expected)
-            self.assertEqual(api.get("/docs/test%3Alegacy").raise_for_status().json()["title"], "test:legacy")
+            legacy = api.get("/docs/test%3Alegacy").raise_for_status().json()
+            self.assertEqual(legacy["title"], "test:legacy")
+            self.assertNotIn("lang", legacy)
+            self.assertEqual(legacy["paragraphs"], [{"n": 1, "text": rows[2]["text"]}])
             missing = api.get("/docs/test%3Amissing")
             self.assertEqual((missing.status_code, missing.json()["error"]["code"]), (404, "doc_not_found"))
         with self.assertRaisesRegex(ValueError, "Conflicting title"):

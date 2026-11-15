@@ -77,12 +77,14 @@ export default function Procedures() {
                 <span className="muted small">{shown.data.org}</span>
               </div>
               {paraMissing && <p className="notice lv-hold">{t('proc.para_missing', { id: `${shown.id}#p${n}` })}</p>}
-              {lang !== 'ko' && <p className="panel-empty muted small">{t('proc.korean_only')}</p>}
+              {shown.data.lang && shown.data.lang !== lang && (
+                <p className="panel-empty muted small">{t(shown.data.lang === 'ko' ? 'proc.doc_in_ko' : 'proc.doc_in_en')}</p>
+              )}
               <ol className="proc-paras">
                 {paragraphs.map((p) => {
                   const on = p.n === n
                   return (
-                    <li key={p.n} id={`p${p.n}`} ref={on ? highlight : null} className={on ? 'hl' : ''} lang="ko">
+                    <li key={p.n} id={`p${p.n}`} ref={on ? highlight : null} className={on ? 'hl' : ''} lang={p.lang ?? shown.data.lang}>
                       <span className="cite proc-pid">#p{p.n}</span>
                       <p>{p.text}</p>
                     </li>
@@ -117,7 +119,7 @@ export default function Procedures() {
             <Link className="panel proc-card" to={withQuery(query, { id: d.id })}>
               <span className="cite">{d.id}</span>
               <span className="proc-title">{d.title}</span>
-              {d.paragraphs?.[0]?.text && <span className="proc-excerpt" lang="ko">{d.paragraphs[0].text}</span>}
+              {d.paragraphs?.[0]?.text && <span className="proc-excerpt" lang={d.paragraphs[0].lang ?? d.lang}>{d.paragraphs[0].text}</span>}
               <span className="muted small proc-meta">
                 {d.org}{d.paragraphs && ` · ${t('proc.paragraphs', { n: d.paragraphs.length })}`}
               </span>

@@ -376,14 +376,15 @@ export const api = {
   sendTx: () => request('/tx/send', txFixture, { method: 'POST' }),
   getDocs: () => request('/docs', docsFixture.docs).then((docs) => {
     if (!Array.isArray(docs)) throw new ApiError('invalid_docs', 'Invalid document list.')
-    return { docs, sample: USE_FIXTURES }
+    // Fixture paragraphs are Korean only; runtime docs carry their own optional lang
+    return { docs: USE_FIXTURES ? docs.map((d) => ({ lang: 'ko', ...d })) : docs, sample: USE_FIXTURES }
   }),
   // GET /docs/{id} -> {id,title,org,kind,paragraphs:[{n,text}]}; fixture only in fixture mode. Unknown id -> ApiError doc_not_found
   getDoc: (id) => {
     const fromFixture = () => {
       const doc = docsFixture.docs.find((d) => d.id === id)
       if (!doc) throw new ApiError('doc_not_found', 'Document not on device.')
-      return structuredClone(doc)
+      return { lang: 'ko', ...structuredClone(doc) }
     }
     if (USE_FIXTURES) return wait(150).then(fromFixture)
     return request(`/docs/${encodeURIComponent(id)}`, null)

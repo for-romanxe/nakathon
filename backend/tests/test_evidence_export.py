@@ -24,7 +24,11 @@ class EvidenceExport(unittest.TestCase):
             with self.subTest(lang=lang):
                 rows = loaded(lang)
                 self.assertEqual(len(rows), 146)
-                self.assertEqual(len(docs.build_docs(rows)), 81)      # 문서 안에서 제목·기관이 하나로 맞아야 묶인다
+                self.assertEqual({row["lang"] for row in rows}, {lang})
+                built = docs.build_docs(rows)
+                self.assertEqual(len(built), 81)      # 문서 안에서 제목·기관이 하나로 맞아야 묶인다
+                self.assertEqual({d["lang"] for d in built}, {lang})
+                self.assertEqual({p["lang"] for d in built for p in d["paragraphs"]}, {lang})
 
     def test_every_symptom_code_gets_a_reason_and_an_action_first(self):
         rows = loaded("ko")
