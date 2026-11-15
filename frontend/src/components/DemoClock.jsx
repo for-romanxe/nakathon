@@ -30,6 +30,16 @@ const SCENES = [
   { key: 'next_sol', body: ({ clock }) => ({ sol: clock.sol + 1, time: '06:10' }) }, // a second day in a row
 ]
 
+// Presentation scenes from issue #47 (FE-06): one press puts the clock on that act, so no one sets a date by hand
+// on stage. Fixed sol and time; the backend decides what each sol looks like (comms state, data).
+const ACTS = [
+  { key: 'act1', sol: 16, time: '06:10' }, // C1 slept badly: the habitat adjusts
+  { key: 'act1_result', sol: 17, time: '06:10' }, // next morning: before / after
+  { key: 'act2', sol: 40, time: '09:00' }, // D-3 before the solar conjunction
+  { key: 'act3', sol: 46, time: '09:00' }, // blackout, 11 days to go: C4 chest pain
+  { key: 'act4', sol: 57, time: '08:00' }, // first window after the blackout opens
+].map((a) => ({ ...a, body: () => ({ sol: a.sol, time: a.time }) }))
+
 export default function DemoClock() {
   const { t } = useT()
   const { mission, refresh } = useMission()
@@ -62,6 +72,20 @@ export default function DemoClock() {
           {validMission(mission) ? t('demo.clock.now', { sol: mission.clock.sol, time: mission.clock.time }) : '–'}
         </span>
       </div>
+      <h3 className="demo-clock-group">{t('demo.clock.acts')}</h3>
+      <div className="demo-clock">
+        {ACTS.map((a) => {
+          const here = mission?.clock?.sol === a.sol && mission?.clock?.time === a.time
+          return (
+            <button key={a.key} type="button" className="btn-secondary" onClick={() => go(a)} disabled={busy}
+              aria-current={here ? 'step' : undefined}>
+              <span>{t(`demo.clock.${a.key}`)}</span>
+              <span className="muted small num">{t('demo.clock.at', { sol: a.sol, time: a.time })}</span>
+            </button>
+          )
+        })}
+      </div>
+      <h3 className="demo-clock-group">{t('demo.clock.steps')}</h3>
       <div className="demo-clock">
         {SCENES.map((s) => (
           <button key={s.key} type="button" className="btn-secondary" onClick={() => go(s)}
