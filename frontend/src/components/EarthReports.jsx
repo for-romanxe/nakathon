@@ -36,7 +36,10 @@ function Report({ r }) {
         <p className="earth-packet">
           <span className={`badge ${PACKET_CLASS[status] ?? 'neutral'}`}>{t(`earth.packet.${status}`, { seq: r.packet.seq })}</span>{' '}
           <span className="small">
-            {status === 'queued' && t('earth.packet.queued_when', { window: nextWindowLabel(mission) })}
+            {/* in an open window a waiting packet can go now; next_window_at is the opening after this one */}
+            {status === 'queued' && (mission?.comms_state === 'connected'
+              ? t('earth.packet.queued_open')
+              : t('earth.packet.queued_when', { window: nextWindowLabel(mission) }))}
             {/* a reason is shown only when the backend gives one this screen knows; it is never guessed */}
             {status === 'held' && (HELD_REASONS.includes(r.packet.held_reason)
               ? t('earth.packet.held_when', { reason: t(`earth.held.${r.packet.held_reason}`), window: nextWindowLabel(mission) })

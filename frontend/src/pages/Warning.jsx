@@ -136,7 +136,9 @@ export default function Warning() {
   // Earliest reply, only for a packet still waiting: it leaves at the next window (Sol 57 in a blackout). A packet
   // already out has no send time in /tx, so no estimate is shown for it rather than one counted from now
   const out = packet && packet.status !== 'queued' && packet.status !== 'missing'
-  const leaves = out ? null : nextWindowJump(mission)
+  // a window open now: a waiting packet can leave now (next_window_at is the opening after this one)
+  const windowOpen = mission?.comms_state === 'connected'
+  const leaves = out ? null : windowOpen ? { sol: mission.clock.sol, time: mission.clock.time } : nextWindowJump(mission)
   const hasTime = leaves != null
   // 3) step list for the current language, falling back to English, never undefined
   const stepList = steps?.steps?.[lang] ?? steps?.steps?.en ?? []
@@ -193,7 +195,8 @@ export default function Warning() {
           <h2>{t('warning.tx')}</h2>
           <p>
             {!canTransmit ? t('warning.tx.cmo_only') : packet
-              ? t(`warning.tx.${packet.status}`, { time: nextWindowLabel(mission) })
+              ? t(windowOpen && (packet.status === 'queued' || packet.status === 'missing') ? 'warning.tx.window_open' : `warning.tx.${packet.status}`,
+                { time: nextWindowLabel(mission) })
               : t('warning.tx.none')}
           </p>
           {canTransmit && mission && hasTime && (
