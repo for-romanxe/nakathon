@@ -10,6 +10,7 @@
 - `model/explain_prompt.json` — 설명 프롬프트. 출력 언어(ko·en)별로 지시문 한 벌과 예시 2개를 둔다. 예시는 앞선 대화로 들어가고, 예시 답은 검증기를 통과해야 한다(테스트로 확인). 후보가 여럿이면 첫 번째 후보를 우선하게 적혀 있다
 - 평가 질문셋 30문항과 결과: `ml/eval/README.md`
 - `model/pipeline.py` — `explain_verified(level, findings, condition_candidates, paragraphs, lang)`. 설명 생성 → 검증 → 폐기되면 걸린 표현을 알려 주고 한 번 더(상한 2회) → 두 번 폐기되면 판단 보류. 반환은 `{explanation | None, hold, verified, runs[{n, ok, fails, note}]}`이고 이벤트의 `explanation`·`runs`·`verified`에 그대로 넣는다. **백엔드는 설명이 필요할 때 `explain` 대신 이 함수를 부른다**
+- `model/pipeline.py`의 `adjustment_reason(target, level, findings, evidence, lang)` — 우주선 조정(이슈 #47) 한 건에 붙일 이유. 근거 문단은 `model/adjustment_evidence.json` 표가 정하고 모델은 이유 문장만 쓴다. 아래 "우주선 조정 이유" 참고
 - `verify.py` — 설명 검증기 5검사 (`numbers cites level schema wording`). 숫자는 findings의 value·baseline·z만, 그 지표의 화면 표시 자릿수(`contracts/enums.json`의 `decimals`, z는 1자리)보다 거칠지 않게 반올림한 것만 통과. 부호를 적으면 부호도 맞아야 한다. 결과의 `detail`에 검사별로 걸린 표현이 들어가고, `note`는 그것을 한 줄로 적은 것이다(예: `numbers: 12; wording: 입니다`). 모델 문장에는 시각·분량 같은 다른 숫자를 쓰지 않는다
 
 ```sh
@@ -46,3 +47,25 @@ MODEL=live CREW_HEALTH_EVIDENCE=data/evidence-ko.json python3 -m uvicorn backend
 M5 Pro 24GB에서 이 구성으로 보고 6건을 HTTP로 끝까지 보냈다(모델은 어댑터 포함, 문단은 한국어). 급하지 않은 5건은 모두 설명이 검사 5개를 통과했고(1건은 두 번째 실행에서), 가슴 통증은 모델을 건너뛰고 경보가 됐다. 연달아 보낼 때 증상 추출은 2~3초, 설명은 6~7초였다.
 
 **쉬었다 보내면 느리다.** 맥의 메모리가 꽉 찬 상태(스왑 30GB 중 29GB 사용)에서, 연달아 보낸 요청은 2초대였지만 12초 넘게 쉰 뒤의 요청은 38~58초 걸렸다(5번). 3초 쉬면 4초, 6초 쉬면 7.5초였다. 쉬는 동안 맥이 모델 메모리를 압축하는 것으로 보인다(서버 12GB 중 8.9GB가 압축돼 있었다). 2초마다 한 토큰짜리 요청을 보내 두면 40초 쉰 뒤에도 2초에 답했지만, 다른 프로그램이 메모리를 쓸 때는 그 요청 자체가 멈췄다(26분 동안 13번, 17~53초). 시연 전에 다른 프로그램을 닫아 메모리를 비우고, 직전에 한 번 호출해 둔다. 메모리를 비운 상태에서 다시 재서 확인하지는 않았다.
+
+## 우주선 조정 이유 (이슈 #47, 2026-11-15)
+
+조정할지, 무엇을 얼마나 바꿀지는 규칙이 정한다. 이 함수는 그 조정 카드에 붙일 이유 문장과 근거 문단 id 만 돌려준다.
+
+```python
+from backend import event_flow
+from backend.model import pipeline
+
+evidence = event_flow.load_evidence()            # CREW_HEALTH_EVIDENCE 가 가리키는 근거 파일
+out = pipeline.adjustment_reason("lighting", "caution", findings, evidence, "ko")      # target: lighting | schedule
+# {"reason": "…어요. …어요." | None, "cite_ids": ["hrp:sleep-01#p1", "hrp:sleep-02#p1"], "hold": False, "verified": 5, "runs": [...]}
+```
+
+- `cite_ids`는 표가 정한 문단이라 모델과 무관하다. 조정을 만들 때 바로 저장하면 되고, 모델 답을 기다릴 필요가 없다.
+- `reason`은 설명과 같은 길(생성 → 5검사 → 한 번 더)을 거친 문장이다. 통과하지 못했거나 모델 서버에 닿지 못하면 `None`이고 `hold`가 `True`다. 그때는 규칙이 쓴 수치 문장과 `cite_ids`만 보여 주면 된다. 조정 자체는 이유 없이도 적용된다.
+- 예외를 던지지 않는다. 근거 파일을 안 줬거나, 표에 없는 `target`이거나, 표 파일(`adjustment_evidence.json`)을 읽지 못하면 모델을 부르지 않고 `cite_ids`가 빈 보류로 끝난다.
+- `findings`는 이벤트의 `findings`와 같은 모양이다. `level`은 그날 규칙이 낸 단계를 그대로 넘긴다.
+- 두절 중 "승인 없이 적용, 거부 가능"은 백엔드 정책이고 이 함수는 달라지지 않는다. 거부 처리에는 모델을 쓰지 않는다.
+- `MODEL=mock`에서도 문장이 나온다. 이번에 mock 설명이 받은 문단을 인용하도록 고쳤다(전에는 없는 문단 id 를 인용해 실제 근거 파일과 함께 쓰면 항상 보류였다).
+- 어느 문단을 어느 조정에 붙일지는 AI가 고른 초안이고 사람이 검토하지 않았다. 일정 조정에는 수면 문단을 쓴다. 심박변이 문단(`lit:card-09#p2`)은 "변화가 작고 연구마다 일정하지 않다"고 적혀 있어 일정을 바꾸는 근거로 쓰지 않았다.
+
