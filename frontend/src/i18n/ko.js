@@ -99,7 +99,7 @@ export default {
   'habitat.state.undone': '되돌림, 원래대로',
   'habitat.state.released': '회복되어 해제됨',
   'habitat.to': '다음으로 바뀜:',
-  'habitat.reason_hold': '설명 보류: 문장이 검증을 통과하지 못했어요. 아래 규칙과 수치는 그대로 적용돼요.',
+  'habitat.reason_hold': '설명 문장 보류 중이에요. 아래 규칙과 수치는 그대로 적용돼요.',
   'habitat.because': '규칙 입력: {metric} {value}',
   'habitat.outcome': '조정 다음 날 관찰된 변화',
   'habitat.released': '정상 범위로 돌아와서 조정을 해제했어요.',
@@ -109,6 +109,8 @@ export default {
   'habitat.undo': '되돌리기',
   'habitat.veto': '거부',
   'habitat.failed': '저장되지 않았어요. 다시 눌러 주세요.',
+  'habitat.stale': '이 조정의 상태가 이미 바뀌었어요. 최신 상태를 다시 불러왔어요.',
+  'habitat.forbidden': '이 조정은 본인만 승인하거나 되돌릴 수 있어요.',
 
   'topbar.sol': 'Sol',
   'topbar.env': '환경',

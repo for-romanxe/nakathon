@@ -99,8 +99,8 @@ function fixtureHabitatList(crewId, lang) {
 function fixtureHabitatSet(id, from, change, lang) {
   const a = habitatFixture.actions.find((x) => x.id === id)
   const cur = a && fixtureHabitatAction(a, lang)
-  if (!cur) throw new ApiError('not_found', 'No such adjustment')
-  if (!from.includes(cur.status)) throw new ApiError('state_conflict', `Adjustment is ${cur.status}`)
+  if (!cur) throw new ApiError('action_not_found', 'No such adjustment') // same codes as the backend (#59)
+  if (!from.includes(cur.status)) throw new ApiError('action_stale', `Adjustment is ${cur.status}`)
   fixtureHabitat[id] = { ...fixtureHabitat[id], ...change }
   return fixtureHabitatAction(a, lang)
 }
@@ -386,7 +386,8 @@ export const api = {
         if (e.code === 'http_404' || e.code === 'not_found') return []
         throw e
       }),
-  // POST /habitat/actions/{id}/approve -> the action, now applied (409 state_conflict when it is not proposed)
+  // POST /habitat/actions/{id}/approve -> the action, now applied (CONTRACT #59: 403 owner only,
+  // 404 action_not_found, 409 action_stale when it is not proposed)
   approveHabitatAction: (id, lang = 'en') =>
     request(`/habitat/actions/${id}/approve?lang=${lang}`,
       () => fixtureHabitatSet(id, ['proposed'], { status: 'applied', approved_by: CURRENT_CREW }, lang), { method: 'POST' }),
