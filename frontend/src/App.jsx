@@ -36,6 +36,12 @@ export default function App() {
     return () => { active = false }
   }, [])
 
+  // The browser tab names the crew member it is for, so C1, C3 and C4 tabs are told apart during Act 3
+  const viewerKnown = !!session && (!!session.crew_id || (!session.login_required && VIEWER_CHOSEN))
+  useEffect(() => {
+    document.title = viewerKnown ? `${CURRENT_CREW.toUpperCase()} · Crew Health` : 'Crew Health'
+  }, [viewerKnown])
+
   async function signIn(event) {
     event.preventDefault()
     const form = new FormData(event.currentTarget)

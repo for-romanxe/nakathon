@@ -66,6 +66,8 @@ p { margin: 0; }
 .topbar-label { font-size: 0.74rem; color: var(--muted); }
 .topbar-value { font-family: var(--mono); font-weight: 600; font-size: 0.95rem; }
 
+.fixture-badge { padding: 3px 10px; font-size: 0.78rem; font-weight: 600; color: var(--caution); border: 1px dashed var(--caution); border-radius: var(--radius); }
+
 /* Autonomy dial: which way Earth is (#46). The lit step takes its state's colour; the word is always shown */
 .comms-dial { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 .comms-connected { --comms: var(--ok); }
