@@ -194,6 +194,18 @@ function checkinFixture(crewId, body, lang) {
 // ---- Fixture-only symptom flow (fake data; the real rules live in backend/events.py) ----
 const fixtureEvents = {}
 let fixtureNextId = 101
+// Event ids come from one counter in localStorage, so two tabs (C4 reporting, C1 consenting) never hand out the
+// same id for different reports. Without storage (private window) the tab keeps its own counter.
+const EVENT_ID_KEY = 'fixture-next-event-id'
+function nextFixtureEventId() {
+  let id = fixtureNextId
+  try {
+    id = Math.max(id, Number.parseInt(localStorage.getItem(EVENT_ID_KEY), 10) || 0)
+    localStorage.setItem(EVENT_ID_KEY, String(id + 1))
+  } catch { /* this tab only */ }
+  fixtureNextId = id + 1
+  return id
+}
 // Same phrases as backend/events.py WARNING_PHRASES + CONSCIOUSNESS_CHANGE, so rehearsed demo lines behave the same
 const FIXTURE_URGENT = /\bchest pain\b|흉통|가슴\s*통증|가슴이\s*아파|\bshortness of breath\b|\b(can't|cannot) breathe\b|호흡곤란|숨을\s*못\s*쉬|숨이\s*안\s*쉬어|\bkill myself\b|\bwant to die\b|\bend it all\b|죽고\s*싶|다\s*끝내고\s*싶|\bloss of consciousness\b|\bunresponsive\b|의식 소실|의식이 없/i
 const FIXTURE_CHEST_PAIN = /\bchest pain\b|흉통|가슴\s*통증|가슴이\s*아파/i
@@ -201,10 +213,8 @@ const FIXTURE_CHEST_PAIN = /\bchest pain\b|흉통|가슴\s*통증|가슴이\s*�
 function fixtureSymptom({ crewId, text }) {
   const urgent = FIXTURE_URGENT.test(text)
   const base = urgent ? eventWarningFixture : eventCautionFixture
-  // ids are per tab; skip any another tab already used for a procedure, so two tabs never share a patient
-  let id = fixtureNextId++
-  while (procStore()[String(id)]) id = fixtureNextId++
-  fixtureEvents[id] = { ...structuredClone(base), id, crew: crewId, symptom_text: text } // the reporter owns it
+  const id = nextFixtureEventId()
+  fixtureEvents[id] ={ ...structuredClone(base), id, crew: crewId, symptom_text: text } // the reporter owns it
   if (FIXTURE_CHEST_PAIN.test(text)) procRegister(id, crewId) // the #49 steps are for chest pain only
   return urgent
     ? { event_id: id, needs_question: false }
