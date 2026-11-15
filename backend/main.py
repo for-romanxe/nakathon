@@ -310,7 +310,8 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
         with closing(connect(db_path)) as connection:
             if not can_read_crew(connection, crew_id, member):
                 return crew_not_found()
-            return [habitat.payload(row, lang) for row in habitat.list_actions(connection, crew_id, mission_sol(clock))]
+            return [habitat.payload(row, lang) for row in
+                    habitat.rows_with_reasons(connection, db_path, evidence, crew_id, mission_sol(clock), lang)]
 
     def change_habitat(action_id, command, body, member, lang="en"):
         reason = body.reason if body is not None else None

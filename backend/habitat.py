@@ -1,5 +1,11 @@
 """C1 Sol16/17 opt-in rehearsal habitat actions. No medical decisions; simulation only."""
 import json
+import logging
+import threading
+import time
+from contextlib import closing
+from backend.db import connect
+from backend.model import pipeline
 from backend.mission import mission_sol, mission_status
 from backend.today import today
 from backend.seed import SOURCE, C1_SOL16_SLEEP, HYPOTHETICAL_EVA_ASSIGNMENT
@@ -105,6 +111,71 @@ def change(connection, row, command, actor_id, now, reason=None):
         return None
     return action(connection, row["id"])
 
+REASON_WAIT = 10.0      # seconds after a reason job starts during which GETs wait for it
+_LEVELS = ("normal", "advisory", "caution", "warning")
+_reason_jobs = {}       # (db path, action id, lang) -> (thread, start time) of a job still running
+_reason_failed = set()  # keys whose attempt ended without a verified sentence; not retried in this process
+_reason_lock = threading.Lock()
+
+def _stored_reason(data, lang):
+    texts = data.get("reason_text")
+    text = texts.get(lang) if isinstance(texts, dict) else None
+    return text if isinstance(text, str) and text.strip() else None
+
+def _write_reason(db_path, action_id, lang, evidence):
+    """Background job: ask the model for the reason of one action and store it. Never raises."""
+    key, done = (str(db_path), action_id, lang), False
+    try:
+        with closing(connect(db_path)) as connection:
+            row = action(connection, action_id)
+            metrics = _metrics(connection, row["sol"]) if row is not None else {}
+        if row is None:
+            return
+        findings = [metrics[k] for k in ("sleep", "hrv") if (metrics.get(k) or {}).get("z") is not None]
+        level = max((f.get("level") for f in findings if f.get("level") in _LEVELS),
+                    key=_LEVELS.index, default="caution")
+        out = pipeline.adjustment_reason(row["target"], level, findings, evidence, lang)
+        if not out.get("reason"):
+            return
+        with closing(connect(db_path)) as connection, connection:
+            connection.execute("BEGIN IMMEDIATE")
+            row = action(connection, action_id)  # re-read inside the write transaction: data may have changed meanwhile
+            if row is None:
+                return
+            data = json.loads(row["data"])
+            texts = data.get("reason_text") if isinstance(data.get("reason_text"), dict) else {}
+            data["reason_text"] = {**texts, lang: out["reason"]}
+            connection.execute("UPDATE habitat_action SET data=? WHERE id=?", (json.dumps(data), action_id))
+        done = True
+    except Exception:
+        logging.getLogger(__name__).warning("Habitat reason could not be written.", exc_info=True)
+    finally:
+        with _reason_lock:
+            _reason_jobs.pop(key, None)
+            if not done:
+                _reason_failed.add(key)
+
+def rows_with_reasons(connection, db_path, evidence, crew_id, sol, lang, wait=None):
+    """list_actions(), after making sure a reason sentence is being written for every listed action that lacks one.
+    Each job is waited for only until `wait` seconds (default REASON_WAIT) after it started, then the rows are returned as they are now."""
+    rows = list_actions(connection, crew_id, sol)
+    threads = []
+    with _reason_lock:
+        for row in rows:
+            key = (str(db_path), row["id"], lang)
+            if _stored_reason(json.loads(row["data"]), lang) or key in _reason_failed:
+                continue
+            job = _reason_jobs.get(key)
+            if job is None:
+                thread = threading.Thread(target=_write_reason, args=(db_path, row["id"], lang, evidence), daemon=True)
+                job = _reason_jobs[key] = (thread, time.monotonic())
+                thread.start()
+            threads.append(job)
+    limit = REASON_WAIT if wait is None else wait
+    for thread, started in threads:
+        thread.join(max(0.0, started + limit - time.monotonic()))
+    return list_actions(connection, crew_id, sol) if threads else rows
+
 def _text(target, values, lang):
     v = values if isinstance(values, dict) else {}
     ko = lang == "ko"
@@ -162,7 +233,7 @@ def payload(row, lang="en"):
             "approved_by": row["approved_by"],
             "applied_at": row["applied_at"], "undone_by": row["undone_by"], "undone_at": row["undone_at"],
             "undo_reason": row["undo_reason"], "released_at": row["released_at"],
-            "rule": d.get("rule"), "reason": _reason(target, trig), "reason_text": None,
+            "rule": d.get("rule"), "reason": _reason(target, trig), "reason_text": _stored_reason(d, lang),
             "before": _text(target, d.get("before"), lang), "after": _text(target, d.get("after"), lang),
             "before_values": d.get("before"), "after_values": d.get("after"),
             "trigger": d.get("trigger"), "cite_ids": d.get("cite_ids", []),
