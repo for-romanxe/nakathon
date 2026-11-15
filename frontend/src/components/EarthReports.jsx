@@ -10,7 +10,8 @@ import { nextWindowLabel } from '../nextWindow.js'
 import { useT } from '../i18n/index.jsx'
 
 const POLL_MS = 5000
-const PACKET_CLASS = { held: 'lv-warning', queued: 'lv-caution', sent: 'neutral', missing: 'lv-caution', acked: 'lv-normal' }
+const HELD_REASONS = ['blackout'] // CONTRACT #47: held_reason values with their own wording
+const PACKET_CLASS ={ held: 'lv-warning', queued: 'lv-caution', sent: 'neutral', missing: 'lv-caution', acked: 'lv-normal' }
 
 function Report({ r }) {
   const { t, lang } = useT()
@@ -35,9 +36,11 @@ function Report({ r }) {
         <p className="earth-packet">
           <span className={`badge ${PACKET_CLASS[status] ?? 'neutral'}`}>{t(`earth.packet.${status}`, { seq: r.packet.seq })}</span>{' '}
           <span className="small">
-            {status === 'held' || status === 'queued'
-              ? t(`earth.packet.${status}_when`, { reason: t(`earth.held.${r.packet.held_reason ?? 'blackout'}`), window: nextWindowLabel(mission) })
-              : null}
+            {status === 'queued' && t('earth.packet.queued_when', { window: nextWindowLabel(mission) })}
+            {/* a reason is shown only when the backend gives one this screen knows; it is never guessed */}
+            {status === 'held' && (HELD_REASONS.includes(r.packet.held_reason)
+              ? t('earth.packet.held_when', { reason: t(`earth.held.${r.packet.held_reason}`), window: nextWindowLabel(mission) })
+              : t('earth.packet.held_plain', { window: nextWindowLabel(mission) }))}
           </span>
         </p>
       )}

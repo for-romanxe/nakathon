@@ -318,6 +318,7 @@ export default {
   "earth.packet.acked": "패킷 #{seq} 지구 수신 확인",
   "earth.packet.held_when": "{reason}. {window} 창이 열리면 나가요.",
   "earth.packet.queued_when": "다음 통신 창 {window}에 나가요.",
+  "earth.packet.held_plain": "보류 중이에요. {window} 창이 열리면 나가요.",
   "earth.held.blackout": "태양 합으로 지구와 연락이 끊겼어요",
   "earth.note": "보고서는 저장된 순간의 기록이에요. 경보와 의무관 연결은 보고서와 상관없이 계속돼요.",
   "crew.cmo": "의료 담당",

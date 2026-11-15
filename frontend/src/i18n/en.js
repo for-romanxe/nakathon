@@ -318,6 +318,7 @@ export default {
   "earth.packet.acked": "Packet #{seq} received on Earth",
   "earth.packet.held_when": "{reason}. It goes out when the {window} window opens.",
   "earth.packet.queued_when": "It goes out in the next comm window, {window}.",
+  "earth.packet.held_plain": "Held for now. It goes out when the {window} window opens.",
   "earth.held.blackout": "Solar conjunction: no contact with Earth",
   "earth.note": "A report is a record of the moment it was saved. The warning and the medical officer call go on regardless.",
   "crew.cmo": "Medical officer",

@@ -133,10 +133,11 @@ export default function Warning() {
     }
   }
 
-  // Earliest reply: a packet still waiting leaves at the next window (Sol 57 in a blackout); one already out left now
+  // Earliest reply, only for a packet still waiting: it leaves at the next window (Sol 57 in a blackout). A packet
+  // already out has no send time in /tx, so no estimate is shown for it rather than one counted from now
   const out = packet && packet.status !== 'queued' && packet.status !== 'missing'
-  const leaves = !mission ? null : out ? { sol: mission.clock.sol, time: mission.clock.time } : nextWindowJump(mission)
-  const hasTime = typeof leaves?.time === 'string' && /^\d{2}:\d{2}$/.test(leaves.time)
+  const leaves = out ? null : nextWindowJump(mission)
+  const hasTime = leaves != null
   // 3) step list for the current language, falling back to English, never undefined
   const stepList = steps?.steps?.[lang] ?? steps?.steps?.en ?? []
 

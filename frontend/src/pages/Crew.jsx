@@ -192,7 +192,9 @@ export default function Crew() {
   // Demo: move the clock to the next comm window in which packets can go out (past the blackout)
   function nextWindow() {
     return run(async () => {
-      await api.setDemoClock(nextWindowJump(await api.getMission()))
+      const to = nextWindowJump(await api.getMission())
+      if (!to) throw new Error('no next window') // shown as "failed"; the clock stays where it is
+      await api.setDemoClock(to)
       refresh()
       return true
     })

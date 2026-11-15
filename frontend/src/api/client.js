@@ -116,6 +116,17 @@ function procStore() {
 function procSave(store) {
   try { localStorage.setItem(PROC_KEY, JSON.stringify(store)) } catch { /* private window: this tab only */ }
 }
+// A number counter shared by every tab (localStorage); without storage this tab keeps its own
+const localCounters = {}
+function nextSharedNumber(key, first) {
+  let n = Math.max(first, localCounters[key] ?? first)
+  try {
+    n = Math.max(n, Number.parseInt(localStorage.getItem(key), 10) || 0)
+    localStorage.setItem(key, String(n + 1))
+  } catch { /* this tab only */ }
+  localCounters[key] = n + 1
+  return n
+}
 function procRegister(eventId, patient) {
   const store = procStore()
   store[String(eventId)] = { patient, approvals: {} }
@@ -153,7 +164,13 @@ function fixtureApprove(eventId, stepId, lang) {
   const rec = store[String(eventId)]
   rec.approvals = { ...rec.approvals, [stepId]: [...(rec.approvals?.[stepId] ?? []), { crew: CURRENT_CREW, at: fixtureMission.clock }] }
   procSave(store)
-  return fixtureProcedure(eventId, lang)
+  const after = fixtureProcedure(eventId, lang)
+  // the consent that completes the procedure saves its report: its own report id and packet seq, kept with it
+  if (after.current_step === null && !rec.report) {
+    rec.report = { report_id: nextSharedNumber('fixture-next-report-id', 1), seq: nextSharedNumber('fixture-next-seq', 101) }
+    procSave(store)
+  }
+  return after
 }
 // What /today would list for a consenter: steps still waiting for this crew member's consent
 function fixtureConsentRequests(crewId) {
@@ -169,17 +186,20 @@ function fixtureConsentRequests(crewId) {
 // and the medical officer. The warning packet is held during the blackout and waits in the queue otherwise.
 function fixtureEarthReports(crewId) {
   const blackout = fixtureMission.comms_state === 'blackout'
-  return Object.keys(procStore()).flatMap((id, i) => {
+  const store = procStore()
+  return Object.keys(store).flatMap((id) => {
+    const report = store[id]?.report // ids handed out when the consent completed; none -> no report
+    if (!report) return []
     let p
     try { p = fixtureProcedure(id, 'en') } catch { return [] }
-    if (p.current_step !== null || !(crewId === 'c2' || crewId === p.patient)) return []
+    if (!(crewId === 'c2' || crewId === p.patient)) return []
     const approvals = p.steps.flatMap((s) => s.approvals).map((a) => ({ crew_id: a.crew, at: a.at }))
     return [{
-      report_id: i + 1, event_id: p.event_id, created_at: null, level: 'warning',
+      report_id: report.report_id, event_id: p.event_id, created_at: null, level: 'warning',
       metrics: [], actions: [], cite_ids: p.steps.map((s) => s.cite_id).filter(Boolean), approvals,
-      packet: { seq: p.event_id, status: blackout ? 'held' : 'queued', held_reason: blackout ? 'blackout' : null },
+      packet: { seq: report.seq, status: blackout ? 'held' : 'queued', held_reason: blackout ? 'blackout' : null },
     }]
-  })
+  }).sort((a, b) => a.report_id - b.report_id)
 }
 
 // ---- Fixture-only check-ins: kept per crew member and sol, so a check-in stays done for the person who made it ----
