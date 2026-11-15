@@ -133,6 +133,50 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 - `POST /demo/clock` 요청은 `{sol, time}`(둘 다 필수) 또는 `{advance}` 중 **하나만**. `advance`는 `"<1~9999>h"` 또는 `"<1~9999>m"` (예: `"2h"`, `"30m"`).
 - 응답은 바뀐 시계를 담은 `/mission`과 같은 모양이다.
 
+#### Communication policy (#47)
+
+`GET /mission` and `POST /demo/clock` include these fields:
+
+```json
+{
+  "clock": {"sol": 46, "time": "20:00"},
+  "environment": "mars_base",
+  "one_way_delay_min": 12,
+  "next_window": "08:00",
+  "comms_state": "blackout",
+  "blackout_start_sol": 43,
+  "blackout_end_sol": 57,
+  "blackout_days_remaining": 11,
+  "next_window_at": {"sol": 57, "time": "08:00"},
+  "simulation": true
+}
+```
+
+- `blackout` covers Sol 43 at 00:00 through the end of Sol 56. The remaining
+  day count includes the current Sol and is zero outside blackout.
+- Outside blackout, `connected` covers 08:00–08:29 and 20:00–20:29. All
+  other times are `delayed`.
+- `next_window_at` is the next opening strictly after the current time,
+  skipping blackout. The legacy `next_window` still shows the time of the
+  next nominal opening. Use both fields of `next_window_at` to jump to it.
+- During blackout, warning events and explicit queue requests save packets
+  locally. `POST /tx/send` returns HTTP 200 with the existing queue response.
+  A newly queued packet has `status: "queued"`, `attempts: 0` and
+  `window_id: null` until a window opens. A simulated receipt for an existing
+  send attempt can still be recorded locally.
+
+An authenticated non-CMO calling `POST /tx/send` gets HTTP 403:
+
+```json
+{"error":{"code":"forbidden","message":"Medical officer access required."}}
+```
+
+Submitting a receipt for a visible packet with a mismatched attempt gets HTTP 409:
+
+```json
+{"error":{"code":"invalid_receipt","message":"Receipt does not match the packet's current attempt."}}
+```
+
 ### 5.2 체크인 `answers` 키 **[추가 11/14, PR #1·#2 구현 기준]**
 
 ```json
