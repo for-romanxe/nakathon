@@ -99,7 +99,7 @@ export default {
   'habitat.state.undone': 'Undone, back as before',
   'habitat.state.released': 'Released after recovery',
   'habitat.to': 'changed to',
-  'habitat.reason_hold': 'Explanation on hold: the sentence did not pass its checks. The rule and numbers below still apply.',
+  'habitat.reason_hold': 'Explanation sentence on hold. The rule and numbers below still apply.',
   'habitat.because': 'Rule input: {metric} {value}',
   'habitat.outcome': 'Observed the day after the change',
   'habitat.released': 'Back in range, so the change was released.',
@@ -109,6 +109,8 @@ export default {
   'habitat.undo': 'Undo',
   'habitat.veto': 'Veto',
   'habitat.failed': 'Not saved. Try again.',
+  'habitat.stale': 'This adjustment already changed. The latest state was loaded again.',
+  'habitat.forbidden': 'Only the crew member it is for can approve or undo this adjustment.',
 
   'topbar.sol': 'Sol',
   'topbar.env': 'Environment',

@@ -19,18 +19,27 @@ function stateKey(a) {
   return `habitat.state.${a.status}`
 }
 
-function Row({ action: a, lang, onChange }) {
+// CONTRACT (#59): 403 owner only, 404 action_not_found, 409 action_stale
+function failureKey(e) {
+  if (e?.code === 'action_stale' || e?.code === 'http_409' || e?.code === 'action_not_found' || e?.code === 'http_404') return 'habitat.stale'
+  if (e?.code === 'forbidden' || e?.code === 'http_403') return 'habitat.forbidden'
+  return 'habitat.failed'
+}
+
+function Row({ action: a, lang, onChange, onStale }) {
   const { t } = useT()
   const [busy, setBusy] = useState(false)
-  const [failed, setFailed] = useState(false)
+  const [failed, setFailed] = useState(null)
 
   async function run(call) {
     setBusy(true)
-    setFailed(false)
+    setFailed(null)
     try {
       onChange(await call(a.id, lang))
-    } catch {
-      setFailed(true)
+    } catch (e) {
+      const key = failureKey(e)
+      setFailed(key)
+      if (key === 'habitat.stale') onStale() // the action changed elsewhere: show what it is now
     } finally {
       setBusy(false)
     }
@@ -81,9 +90,10 @@ function Row({ action: a, lang, onChange }) {
               {t(noApproval(a) ? 'habitat.veto' : 'habitat.undo')}
             </button>
           )}
-          {failed && <span role="alert" className="error small">{t('habitat.failed')}</span>}
         </div>
       )}
+      {/* outside the buttons: after a 409 the reloaded action may have none, and the note must stay */}
+      {failed && <p role="alert" className="error small">{t(failed)}</p>}
     </li>
   )
 }
@@ -91,17 +101,19 @@ function Row({ action: a, lang, onChange }) {
 export default function HabitatCard({ crewId, sol, lang }) {
   const { t } = useT()
   const [actions, setActions] = useState(null)
+  const [reload, setReload] = useState(0) // bump to read the list again (after a 409)
 
   useEffect(() => {
     let alive = true
     api.getHabitatActions(crewId, lang)
       .then((list) => alive && setActions(list))
-      .catch(() => alive && setActions([])) // the card is extra: a failed fetch leaves Today as it was
+      .catch(() => alive && setActions((prev) => prev ?? [])) // the card is extra: a failed fetch leaves Today as it was
     return () => { alive = false }
-  }, [crewId, sol, lang])
+  }, [crewId, sol, lang, reload])
 
   if (!actions?.length) return null
   const replace = (next) => setActions((list) => list.map((a) => (a.id === next.id ? next : a)))
+  const stale = () => setReload((n) => n + 1)
   return (
     <section className="panel habitat">
       <div className="panel-head">
@@ -109,7 +121,7 @@ export default function HabitatCard({ crewId, sol, lang }) {
         <span className="muted small">{t('habitat.simulated')}</span>
       </div>
       <ul className="habitat-list">
-        {actions.map((a) => <Row key={a.id} action={a} lang={lang} onChange={replace} />)}
+        {actions.map((a) => <Row key={a.id} action={a} lang={lang} onChange={replace} onStale={stale} />)}
       </ul>
     </section>
   )
