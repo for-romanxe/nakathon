@@ -46,6 +46,14 @@ def _stopped(runs: list, n: int, note: str) -> dict:
     return {"explanation": None, "hold": True, "verified": 0, "runs": runs}
 
 
+def _texts(evidence) -> dict:
+    """근거 목록을 {문단 id: 본문}으로 바꾼다. id 와 text 가 둘 다 문자열인 dict 행만 남기고 나머지 행은 하나씩 건너뛰며, 목록이 아니면 빈 dict 를 돌려준다."""
+    try:
+        return {row["id"]: row["text"] for row in evidence if isinstance(row, dict) and isinstance(row.get("id"), str) and isinstance(row.get("text"), str)}
+    except TypeError:      # 목록이 아니다 (순회할 수 없는 값)
+        return {}
+
+
 def adjustment_reason(target: str, level: str, findings: list, evidence: list, lang: str) -> dict:
     """우주선 조정(조명·일정) 한 건에 붙일 이유 (이슈 #47). 조정할지와 전후 값은 규칙이 정한다. 여기서는 이유 문장만 만든다.
 
@@ -55,15 +63,15 @@ def adjustment_reason(target: str, level: str, findings: list, evidence: list, l
     - reason 은 검증을 통과한 설명 문장(1~2개)을 이은 것. 통과하지 못했거나 모델을 못 불렀으면 None 이고 hold 가 True 다.
       그때 화면에는 규칙이 쓴 수치 문장과 cite_ids 만 보여 준다. 조정 자체는 이유가 없어도 적용된다.
     - 예외를 던지지 않는다. 표 파일을 읽지 못하거나, 모르는 target 이거나, 근거 문단이 하나도 없으면 모델을 부르지 않고
-      cite_ids 가 빈 보류로 끝낸다.
+      cite_ids 가 빈 보류로 끝낸다. evidence 에 id 나 text 가 빠진 행이 있으면 그 행만 건너뛴다.
     """
     try:
         entry = json.loads(ADJUSTMENTS.read_text(encoding="utf-8")).get(target)
         note = "" if isinstance(entry, dict) else f"unknown adjustment target: {target}"
     except (OSError, ValueError, AttributeError) as error:      # 표 파일이 없거나, JSON 이 깨졌거나, 객체가 아니다
         entry, note = None, f"adjustment table unreadable: {type(error).__name__}"
-    rows = {row["id"]: row for row in evidence}
-    paragraphs = [{"id": i, "text": rows[i]["text"]} for i in (entry or {}).get("cite_ids", []) if i in rows]
+    texts = _texts(evidence)
+    paragraphs = [{"id": i, "text": texts[i]} for i in (entry or {}).get("cite_ids", []) if i in texts]
     cite_ids = [p["id"] for p in paragraphs]
     if not paragraphs:
         note = note or f"no evidence paragraph loaded for {target}"
@@ -80,8 +88,9 @@ def procedure_steps(condition_id: str, evidence: list, lang: str) -> dict:
     이 상태의 절차가 없거나 단계가 가리키는 문단이 근거 파일에 하나라도 없으면 available 은 False 이고 steps 는 비어 있다.
     출처를 열 수 없는 단계는 보여 주지 않는다. 그때 화면은 경보와 의무관 호출만 보여 준다.
     예외를 던지지 않는다. 단계 파일을 읽지 못하거나 모양이 어긋나도 available 이 False 다.
+    evidence 에 id 나 text 가 빠진 행이 있으면 그 행은 없는 것으로 본다.
     """
-    loaded = {row["id"] for row in evidence}
+    loaded = _texts(evidence)
     try:
         steps = json.loads(PROCEDURES.read_text(encoding="utf-8"))[condition_id]["steps"]
         steps = [{"step_id": step["step_id"], "text": step["ko" if lang == "ko" else "en"],

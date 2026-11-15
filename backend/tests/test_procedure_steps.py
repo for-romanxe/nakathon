@@ -34,6 +34,15 @@ class ProcedureSteps(unittest.TestCase):
                     pipeline.procedure_steps("sleep_deficit", evidence, "ko")):
             self.assertEqual(got, {"available": False, "steps": []})
 
+    def test_malformed_evidence_rows_count_as_missing_and_never_raise(self):
+        evidence = export_evidence.export("ko")
+        junk = [{"text": "no id"}, {"id": "x:y#p1"}, "not a row", None, {"id": ["unhashable"], "text": "t"}]
+        self.assertTrue(pipeline.procedure_steps("cardiac_emergency", junk + evidence, "ko")["available"])
+        no_text = [{"id": row["id"]} if row["id"] == "nasa:card-10#p2" else row for row in evidence]
+        for bad in (junk, no_text, None, 7):
+            with self.subTest(evidence=str(bad)[:40]):
+                self.assertEqual(pipeline.procedure_steps("cardiac_emergency", bad, "ko"), {"available": False, "steps": []})
+
     def test_missing_broken_or_misshapen_steps_file_withholds_the_steps_without_raising(self):
         evidence = export_evidence.export("ko")
         with tempfile.TemporaryDirectory() as tmp:
