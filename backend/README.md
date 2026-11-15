@@ -117,7 +117,8 @@ Each metric also returns its own `baseline_days` count.
   or `?lang=en` on Today and check-in. Guide text is currently English.
 - `GET /mission` returns `clock`, `environment`, `one_way_delay_min`, and
   `next_window`. The demo uses a 12-minute one-way delay and windows at
-  08:00 and 20:00 mission time.
+  08:00 and 20:00 mission time. `next_window` matches `next_window_at.time`.
+  Use `next_window_at` for the sol and time of the next eligible opening.
 - `POST /demo/clock` accepts `{"sol":16,"time":"14:00"}` or
   `{"advance":"2h"}`. The clock is process-local and resets on restart.
 

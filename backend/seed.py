@@ -144,11 +144,16 @@ def seed_mission_demo(connection: sqlite3.Connection) -> None:
 
 
 def _create_mission_demo(db_path: Path) -> None:
+    # Refuse an occupied target or SQLite sidecar before creating any parent
+    # directory. lexists also catches directories and dangling symlinks.
+    sidecars = (Path(f"{db_path}{suffix}") for suffix in ("-journal", "-wal", "-shm"))
+    for path in (db_path, *sidecars):
+        if os.path.lexists(path):
+            raise FileExistsError(str(path))
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    for suffix in ("-journal", "-wal", "-shm"):
-        sibling = Path(f"{db_path}{suffix}")
-        if sibling.exists():
-            raise FileExistsError(str(sibling))
+    # O_EXCL still rejects a path created after the check. It runs before the
+    # try block, so a failed create never reaches the cleanup below. Cleanup
+    # only removes the file this call created.
     fd = os.open(db_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
     os.close(fd)
     try:

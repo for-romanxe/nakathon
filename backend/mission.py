@@ -44,7 +44,7 @@ def mission_status(timestamp: datetime) -> dict:
         "clock": {"sol": sol, "time": timestamp.strftime("%H:%M")},
         "environment": "mars_base",
         "one_way_delay_min": 12,
-        "next_window": next_window.strftime("%H:%M"),
+        "next_window": next_window_at.strftime("%H:%M"),
         "comms_state": "blackout" if blackout else "connected" if connected else "delayed",
         "blackout_start_sol": BLACKOUT_START_SOL,
         "blackout_end_sol": BLACKOUT_END_SOL,

@@ -128,7 +128,7 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 | `clock.time` | `"HH:MM"` (24시간) | 가상 시계의 현재 시각 |
 | `environment` | 문자열 | 임무 환경. 현재 값은 `mars_base` 하나. 프론트는 i18n 키 `env.<값>`으로 표시 |
 | `one_way_delay_min` | 정수(분) | 지구까지 편도 통신 지연 |
-| `next_window` | `"HH:MM"` | 다음 통신 창이 열리는 시각. 창은 임무 시각 08:00·20:00 (명세 §16) |
+| `next_window` | `"HH:MM"` | blackout을 건너뛴 다음 통신 창이 열리는 시각. `next_window_at.time`과 같다. 창은 임무 시각 08:00·20:00 (명세 §16) |
 
 - `POST /demo/clock` 요청은 `{sol, time}`(둘 다 필수) 또는 `{advance}` 중 **하나만**. `advance`는 `"<1~9999>h"` 또는 `"<1~9999>m"` (예: `"2h"`, `"30m"`).
 - 응답은 바뀐 시계를 담은 `/mission`과 같은 모양이다.
@@ -157,8 +157,10 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 - Outside blackout, `connected` covers 08:00–08:29 and 20:00–20:29. All
   other times are `delayed`.
 - `next_window_at` is the next opening strictly after the current time,
-  skipping blackout. The legacy `next_window` still shows the time of the
-  next nominal opening. Use both fields of `next_window_at` to jump to it.
+  skipping blackout. The legacy `next_window` equals `next_window_at.time`
+  and keeps the `HH:MM` format without a sol. Clients should use both fields
+  of `next_window_at` to jump to it. A time-only jump can land on the wrong
+  sol (known frontend issue FE-06).
 - During blackout, warning events and explicit queue requests save packets
   locally. `POST /tx/send` returns HTTP 200 with the existing queue response.
   A newly queued packet has `status: "queued"`, `attempts: 0` and

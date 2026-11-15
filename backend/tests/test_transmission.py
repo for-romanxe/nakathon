@@ -32,6 +32,8 @@ class TransmissionTest(TestCase):
                     self.assertEqual((mission["blackout_start_sol"], mission["blackout_end_sol"]), (43, 57))
                     self.assertEqual(mission["blackout_days_remaining"], remaining)
                     self.assertEqual(mission["next_window_at"], {"sol": next_sol, "time": next_time})
+                    # Sol 43 08:00 has a nominal 20:00 opening, but blackout moves it.
+                    self.assertEqual(mission["next_window"], next_time)
                     self.assertIs(mission["simulation"], True)
 
     def test_blackout_blocks_dispatch_until_the_first_recovery_window(self):

@@ -81,6 +81,25 @@ class MissionDemoSeedTest(TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(path.read_bytes(), before)
 
+    def test_existing_directory_file_or_sidecar_is_rejected(self):
+        directory = self.directory / "dir.sqlite3"
+        directory.mkdir()
+        plain = self.directory / "plain.sqlite3"
+        plain.write_bytes(b"keep")
+        sidecar_target = self.directory / "sidecar.sqlite3"
+        sidecar = self.directory / "sidecar.sqlite3-wal"
+        sidecar.write_bytes(b"wal")
+        for path in (directory, plain, sidecar_target):
+            with self.subTest(path=path.name):
+                result = seed_demo(path)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("refusing to overwrite existing path", result.stderr)
+        self.assertTrue(directory.is_dir())
+        self.assertEqual(list(directory.iterdir()), [])
+        self.assertEqual(plain.read_bytes(), b"keep")
+        self.assertFalse(sidecar_target.exists())
+        self.assertEqual(sidecar.read_bytes(), b"wal")
+
     def test_startup_and_restart_keep_scenario_and_live_event(self):
         path = self.demo_path()
         with TestClient(create_app(path)) as client:
