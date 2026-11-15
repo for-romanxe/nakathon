@@ -10,13 +10,14 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel, ConfigDict, StrictBool
+from pydantic import BaseModel, ConfigDict, StrictBool, field_validator
 from backend.auth import CrewLogin, CrewSessions, SESSION_COOKIE, SESSION_SECONDS
 
 from backend.checkin import Checkin, save_checkin
 from backend.db import connect, initialize
 from backend.docs import build_docs
-from backend import event_flow
+from backend import event_flow, habitat
+from backend.model import pipeline
 from backend.events import EventOverride, SymptomAnswer, SymptomInput, event_payload, save_event
 from backend.link_simulation import LinkSimulation, compare_packet
 from backend.medication import (
@@ -48,12 +49,47 @@ class CrewVisibility(BaseModel):
     cmo_access: StrictBool
 
 
+class HabitatChange(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    reason: str | None = None
+
+    @field_validator("reason")
+    @classmethod
+    def trim_reason(cls, value):
+        if value is None:
+            return None
+        value = value.strip()
+        if len(value) > 240:
+            raise ValueError("Reason must be at most 240 characters.")
+        return value or None
+
+
+def habitat_cite_ids(evidence) -> dict:
+    known = set()
+    for item in evidence:
+        if isinstance(item, dict) and isinstance(item.get("id"), str) and isinstance(item.get("text"), str):
+            known.add(item["id"])
+    try:
+        data = json.loads(pipeline.ADJUSTMENTS.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError, AttributeError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    result = {}
+    for target, entry in data.items():
+        ids = entry.get("cite_ids") if isinstance(entry, dict) else None
+        if isinstance(target, str) and isinstance(ids, list):
+            result[target] = tuple(i for i in ids if isinstance(i, str) and i in known)
+    return result
+
+
 def create_app(db_path=DEMO_DB) -> FastAPI:
     clock = DEMO_TIME
     clock_lock = Lock()
     event_locks = [Lock() for _ in range(32)]
     evidence = []
     docs = []
+    cite_ids = {}
     medication_references = []
     medication_catalog_failed = False
     sessions = None
@@ -61,7 +97,7 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        nonlocal evidence, sessions, docs, medication_references, medication_catalog_failed
+        nonlocal evidence, sessions, docs, medication_references, medication_catalog_failed, cite_ids
         sessions = CrewSessions(crew_id for crew_id, *_ in CREW)
         evidence = event_flow.load_evidence()
         docs = build_docs(evidence)
@@ -75,6 +111,10 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
         initialize(db_path)
         with closing(connect(db_path)) as connection:
             seed(connection)
+        cite_ids = habitat_cite_ids(evidence)
+        with clock_lock, closing(connect(db_path)) as connection, connection:
+            connection.execute("BEGIN IMMEDIATE")
+            habitat.sync(connection, clock, cite_ids)
         yield
 
     app = FastAPI(title="Crew Health Demo API", lifespan=lifespan, docs_url="/api/docs",
@@ -229,8 +269,44 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
         if sessions.codes is not None:
             cmo_viewer(resolve_viewer(request))
         with clock_lock:
-            clock = update.apply(clock)
+            upcoming = update.apply(clock)
+            with closing(connect(db_path)) as connection, connection:
+                connection.execute("BEGIN IMMEDIATE")
+                habitat.sync(connection, upcoming, cite_ids)
+            clock = upcoming
             return mission_status(clock)
+
+    @app.get("/habitat/actions")
+    def read_habitat_actions(crew: str = Query(...), lang: Literal["en", "ko"] = "en", member=Depends(viewer)):
+        crew_id = crew.lower()
+        with closing(connect(db_path)) as connection:
+            if not can_read_crew(connection, crew_id, member):
+                return crew_not_found()
+            return [habitat.payload(row, lang) for row in habitat.list_actions(connection, crew_id, mission_sol(clock))]
+
+    def change_habitat(action_id, command, body, member, lang="en"):
+        reason = body.reason if body is not None else None
+        with clock_lock, closing(connect(db_path)) as connection, connection:
+            connection.execute("BEGIN IMMEDIATE")
+            row = habitat.action(connection, action_id) if action_id > 0 else None
+            if row is None:
+                return event_error("action_not_found", "Habitat action not found.")
+            if row["crew_id"] != member["id"]:
+                raise HTTPException(403, "Habitat action write denied.")
+            updated = habitat.change(connection, row, command, member["id"], clock, reason=reason)
+            if updated is None:
+                return event_error("action_stale", "Habitat action is no longer in that state.", 409)
+            return habitat.payload(updated, lang)
+
+    @app.post("/habitat/actions/{action_id}/approve")
+    def approve_habitat(action_id: int, body: HabitatChange | None = None, lang: Literal["en", "ko"] = "en",
+                        member=Depends(viewer)):
+        return change_habitat(action_id, "approve", body, member, lang)
+
+    @app.post("/habitat/actions/{action_id}/undo")
+    def undo_habitat(action_id: int, body: HabitatChange | None = None, lang: Literal["en", "ko"] = "en",
+                     member=Depends(viewer)):
+        return change_habitat(action_id, "undo", body, member, lang)
 
     @app.get("/crew/{crew_id}/today")
     def read_today(crew_id: str, lang: Literal["en", "ko"] = "en", member=Depends(viewer)):
