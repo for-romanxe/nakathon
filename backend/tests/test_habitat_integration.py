@@ -158,6 +158,14 @@ class HabitatIntegrationTest(TestCase):
             self.assertTrue(after['applied_at'])
             schedule = one(items, 'schedule')
             self.assertEqual(schedule['id'], sid)
+            set_clock(client, 16, '20:00')
+            self.assertEqual(one(actions(client, 16), 'lighting'), after)
+            undo = client.post(f"/habitat/actions/{after['id']}/undo", headers=C1, json={'reason': 'too dim'})
+            self.assertEqual(undo.status_code, 200)
+            undone = one(actions(client, 16), 'lighting')
+            self.assertEqual(undone['status'], 'undone')
+            set_clock(client, 16, '20:30')
+            self.assertEqual(one(actions(client, 16), 'lighting'), undone)
             self.assertEqual(schedule['status'], 'proposed')
             self.assertTrue(schedule['after'].startswith('EVA') or 'EVA' in schedule['after'])
             self.assertIn('EVA', one(actions(client, 16, 'ko'), 'schedule')['after'])
@@ -200,16 +208,18 @@ class HabitatIntegrationTest(TestCase):
             before = actions(client, 16)
             mission = client.get('/mission').json()
 
-            def broken(connection, now, cite_ids):
-                connection.execute('DELETE FROM habitat_action WHERE id=?', (before[0]['id'],))
-                raise sqlite3.OperationalError('disk I/O error')
+            for error in (sqlite3.OperationalError('disk I/O error'), ValueError('bad stored data')):
+                with self.subTest(error=type(error).__name__):
+                    def broken(connection, now, cite_ids, error=error):
+                        connection.execute('DELETE FROM habitat_action WHERE id=?', (before[0]['id'],))
+                        raise error
 
-            with mock.patch('backend.habitat.sync', side_effect=broken):
-                r = client.post('/demo/clock', json={'sol': 17, 'time': '08:00'}, headers=C2)
-            self.assertEqual(r.status_code, 503)
-            self.assertEqual(r.json()['error']['code'], 'clock_sync_failed')
-            self.assertEqual(client.get('/mission').json(), mission)
-            self.assertEqual(actions(client, 16), before)
+                    with mock.patch('backend.habitat.sync', side_effect=broken):
+                        r = client.post('/demo/clock', json={'sol': 17, 'time': '08:00'}, headers=C2)
+                    self.assertEqual(r.status_code, 503)
+                    self.assertEqual(r.json()['error']['code'], 'clock_sync_failed')
+                    self.assertEqual(client.get('/mission').json(), mission)
+                    self.assertEqual(actions(client, 16), before)
 
     def test_default_database_has_no_actions(self):
         with TestClient(create_app(self.directory / 'default.sqlite3')) as client:

@@ -296,10 +296,11 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
                 with closing(connect(db_path)) as connection, connection:
                     connection.execute("BEGIN IMMEDIATE")
                     habitat.sync(connection, upcoming, cite_ids)
-            except sqlite3.Error:
+            except (sqlite3.Error, ValueError):
+                # ValueError covers JSONDecodeError from stored data; the transaction has already rolled back.
                 logging.getLogger(__name__).exception("clock sync failed")
                 return JSONResponse(status_code=503, content={"error": {
-                    "code": "clock_sync_failed", "message": "Clock not changed; storage unavailable."}})
+                    "code": "clock_sync_failed", "message": "Clock not changed; habitat adjustments could not be updated."}})
             clock = upcoming
             return response
 
