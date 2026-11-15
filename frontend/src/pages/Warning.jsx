@@ -12,6 +12,8 @@ import { ackWarning, warningKey } from '../warningAck.js'
 import { CURRENT_CREW } from '../session.js'
 import { useMission } from '../mission.jsx'
 import Cite from '../components/Cite.jsx'
+import EarthReports from '../components/EarthReports.jsx'
+import { nextWindowJump, nextWindowLabel } from '../nextWindow.js'
 import DeviationScale from '../components/DeviationScale.jsx'
 import ProcedureSteps from '../components/ProcedureSteps.jsx'
 import { useT } from '../i18n/index.jsx'
@@ -124,16 +126,17 @@ export default function Warning() {
       const queue = packet ? await api.sendTx() : await (event ? api.queueTx(event.id) : api.queueDaily()).then(() => api.sendTx())
       const p = queue.find((x) => (event ? x.event_id === event.id : x.kind === 'daily' && x.crew === CURRENT_CREW)) ?? null
       setPacket(p)
-      setSendNote(p?.status === 'queued' ? t('warning.tx.no_window', { time: mission?.next_window ?? '–' }) : null)
+      setSendNote(p?.status === 'queued' ? t('warning.tx.no_window', { time: nextWindowLabel(await api.getMission().catch(() => mission)) }) : null)
       refreshMission()
     } catch {
       setSendNote(t('warning.tx.failed')) // the send button stays, so it can be retried
     }
   }
 
-  // Earliest reply: a packet still waiting leaves at the next window; one already out left about now
-  const leavesAt = packet && packet.status !== 'queued' && packet.status !== 'missing' ? mission?.clock?.time : mission?.next_window
-  const hasTime = typeof leavesAt === 'string' && /^\d{2}:\d{2}$/.test(leavesAt)
+  // Earliest reply: a packet still waiting leaves at the next window (Sol 57 in a blackout); one already out left now
+  const out = packet && packet.status !== 'queued' && packet.status !== 'missing'
+  const leaves = !mission ? null : out ? { sol: mission.clock.sol, time: mission.clock.time } : nextWindowJump(mission)
+  const hasTime = typeof leaves?.time === 'string' && /^\d{2}:\d{2}$/.test(leaves.time)
   // 3) step list for the current language, falling back to English, never undefined
   const stepList = steps?.steps?.[lang] ?? steps?.steps?.en ?? []
 
@@ -189,14 +192,14 @@ export default function Warning() {
           <h2>{t('warning.tx')}</h2>
           <p>
             {!canTransmit ? t('warning.tx.cmo_only') : packet
-              ? t(`warning.tx.${packet.status}`, { time: mission?.next_window ?? '–' })
+              ? t(`warning.tx.${packet.status}`, { time: nextWindowLabel(mission) })
               : t('warning.tx.none')}
           </p>
           {canTransmit && mission && hasTime && (
             <p className="muted num">
               {t('warning.tx.delay', {
                 n: mission.one_way_delay_min,
-                reply: addMinutes(leavesAt, mission.one_way_delay_min * 2),
+                reply: `Sol ${leaves.sol} · ${addMinutes(leaves.time, mission.one_way_delay_min * 2)}`,
               })}
             </p>
           )}
@@ -205,6 +208,9 @@ export default function Warning() {
           )}
           {sendNote && <p className="muted">{sendNote}</p>}
         </section>
+
+        {/* The report saved by two-person consent for this event, and where its packet is (#47 FE-04) */}
+        {event && <EarthReports eventId={event.id} className="warning-block" />}
 
         <div className="warning-footer">
           <button type="button" className="btn-primary" onClick={done}>

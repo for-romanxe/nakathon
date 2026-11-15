@@ -396,6 +396,14 @@ a.btn-primary, a.btn-secondary { display: inline-flex; align-items: center; text
   color: var(--text); text-decoration: none; border: 1px solid var(--status); border-left-width: 4px; border-radius: var(--radius);
   background: color-mix(in srgb, var(--status) 10%, transparent);
 }
+/* Earth report (#47 FE-04): what was saved for Earth and where its packet is */
+.earth-reports { display: flex; flex-direction: column; gap: 8px; }
+.panel-pad { padding: 14px 16px; }
+.earth-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.earth-report { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--well); }
+.earth-report-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; }
+.earth-metrics { margin: 0; padding-left: 18px; }
+.earth-packet { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
 .warning-numbers { list-style: none; margin: 0; padding: 0; }
 .warning-numbers li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(110px, 180px) 7.5em 7.5em; gap: 14px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
 .warning-numbers .dev-needle { box-shadow: 0 0 0 2px var(--bezel); }

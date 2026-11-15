@@ -165,6 +165,22 @@ function fixtureConsentRequests(crewId) {
     return [{ event_id: p.event_id, patient: p.patient, step_id: step.step_id, approvals: step.approvals.length, required: p.required }]
   })
 }
+// What GET /earth-reports would hold: one report per procedure whose consent is complete, readable by the patient
+// and the medical officer. The warning packet is held during the blackout and waits in the queue otherwise.
+function fixtureEarthReports(crewId) {
+  const blackout = fixtureMission.comms_state === 'blackout'
+  return Object.keys(procStore()).flatMap((id, i) => {
+    let p
+    try { p = fixtureProcedure(id, 'en') } catch { return [] }
+    if (p.current_step !== null || !(crewId === 'c2' || crewId === p.patient)) return []
+    const approvals = p.steps.flatMap((s) => s.approvals).map((a) => ({ crew_id: a.crew, at: a.at }))
+    return [{
+      report_id: i + 1, event_id: p.event_id, created_at: null, level: 'warning',
+      metrics: [], actions: [], cite_ids: p.steps.map((s) => s.cite_id).filter(Boolean), approvals,
+      packet: { seq: p.event_id, status: blackout ? 'held' : 'queued', held_reason: blackout ? 'blackout' : null },
+    }]
+  })
+}
 
 // ---- Fixture-only check-ins: kept per crew member and sol, so a check-in stays done for the person who made it ----
 const fixtureCheckins = {} // "c3:16" -> { morning: true, evening: true }
@@ -399,6 +415,16 @@ export const api = {
     request(`/events/${eventId}/procedure?lang=${lang}`, () => fixtureProcedure(eventId, lang))
       .catch((e) => {
         if (e.code === 'http_404' || e.code === 'not_found') return null
+        throw e
+      }),
+  // GET /earth-reports -> { reports:[{ report_id, event_id, created_at, level, metrics, approvals:[{crew_id, at}],
+  //   actions, cite_ids, packet:{ seq, status, held_reason } }] } (CONTRACT #47). The patient and a medical officer
+  // with access can read a report. No such route -> [].
+  getEarthReports: () =>
+    request('/earth-reports', () => ({ reports: fixtureEarthReports(CURRENT_CREW) }))
+      .then((r) => (Array.isArray(r?.reports) ? r.reports : []))
+      .catch((e) => {
+        if (e.code === 'http_404' || e.code === 'not_found') return []
         throw e
       }),
   // POST /events/{id}/procedure/steps/{step_id}/approve -> the procedure. 403 not a consenter, 409 not the current

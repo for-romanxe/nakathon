@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom'
 import { api, USE_FIXTURES } from '../api/client.js'
 import { metricLabel } from '../api/contract.js'
 import { useMission } from '../mission.jsx'
+import { nextWindowJump, nextWindowLabel } from '../nextWindow.js'
+import EarthReports from '../components/EarthReports.jsx'
 import { CURRENT_CREW } from '../session.js'
 import { useT } from '../i18n/index.jsx'
 
@@ -184,15 +186,13 @@ export default function Crew() {
     if (!q?.some((p) => p.status === 'queued')) return
     // Ask for the window now: the shared mission state may still hold the old one right after "next window"
     const latest = await api.getMission().catch(() => mission)
-    setNote(t('crew.tx.no_window', { time: latest?.next_window ?? '–' }))
+    setNote(t('crew.tx.no_window', { time: nextWindowLabel(latest) }))
   }
 
-  // Demo: move the clock to the next comm window (tomorrow if today's has passed)
+  // Demo: move the clock to the next comm window in which packets can go out (past the blackout)
   function nextWindow() {
     return run(async () => {
-      const { clock, next_window } = await api.getMission()
-      const nextSol = clock.sol + (next_window <= clock.time ? 1 : 0)
-      await api.setDemoClock({ sol: nextSol, time: next_window })
+      await api.setDemoClock(nextWindowJump(await api.getMission()))
       refresh()
       return true
     })
@@ -220,11 +220,13 @@ export default function Crew() {
         {crew.map((c) => <CrewCard key={c.id} member={c} today={todays[c.id]} />)}
       </div>
 
+      <EarthReports className="panel panel-pad" />
+
       <section className="panel">
         <div className="panel-head">
           <h2>{t('tx.title')}</h2>
           <span className="muted small">
-            {t('crew.tx.window', { time: mission?.next_window ?? '–' })} · {t('topbar.delay')}{' '}
+            {t('crew.tx.window', { time: nextWindowLabel(mission) })} · {t('topbar.delay')}{' '}
             {mission ? t('topbar.minutes', { n: mission.one_way_delay_min }) : '–'}
           </span>
         </div>
