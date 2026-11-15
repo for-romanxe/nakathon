@@ -29,22 +29,26 @@ const hhmm = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m %
 // until GET /mission sends them, only fixture mode shows the autonomy dial.
 const BLACKOUT = { start: 43, end: 57 }
 const WINDOW_OPEN_MINUTES = 30
+const inBlackout = (sol) => sol >= BLACKOUT.start && sol < BLACKOUT.end
 function withComms(m) {
   const [h, min] = m.clock.time.split(':').map(Number)
   const minute = h * 60 + min
   const { sol } = m.clock
-  const blackout = sol >= BLACKOUT.start && sol < BLACKOUT.end
+  const blackout = inBlackout(sol)
   const open = WINDOW_MINUTES.some((w) => minute >= w && minute < w + WINDOW_OPEN_MINUTES)
+  // next_window_at = the next window that starts after now (like next_window) in which a packet can really go out,
+  // so a window inside the blackout is skipped: Sol 42 21:00 -> Sol 57 08:00, not Sol 43 08:00
   const next = WINDOW_MINUTES.find((w) => w > minute)
+  const nextSol = next != null ? sol : sol + 1
   return {
     ...m,
     comms_state: blackout ? 'blackout' : open ? 'connected' : 'delayed',
     blackout_start_sol: BLACKOUT.start,
     blackout_end_sol: BLACKOUT.end,
     blackout_days_remaining: blackout ? BLACKOUT.end - sol : null,
-    next_window_at: blackout
+    next_window_at: inBlackout(nextSol)
       ? { sol: BLACKOUT.end, time: hhmm(WINDOW_MINUTES[0]) }
-      : { sol: next != null ? sol : sol + 1, time: hhmm(next ?? WINDOW_MINUTES[0]) },
+      : { sol: nextSol, time: hhmm(next ?? WINDOW_MINUTES[0]) },
     simulation: true,
   }
 }
