@@ -1,4 +1,5 @@
 """시연 중 모델 서버가 쉬다가 느려지지 않게(맥이 모델 메모리를 내보냄) 한 토큰짜리 요청을 계속 보낸다.
+요청이 끝난 뒤 간격만큼 쉬므로 서버가 쉬는 시간은 간격을 넘지 않는다(요청 시작 시각 기준이 아니다).
 느리거나(5초 이상) 실패한 요청만 한 줄씩 찍고, Ctrl-C 로 끝내면 요약을 찍는다.
 
 사용: python3 ml/keep_warm.py [간격 초(양수), 기본 2]   (MODEL_URL·MODEL_NAME 을 따른다)
@@ -17,7 +18,7 @@ body = json.dumps({"model": os.environ.get("MODEL_NAME", "default_model"), "temp
                    "messages": [{"role": "user", "content": "ok"}]}).encode()
 sent = slow = failed = 0
 longest = 0.0
-print(f"keep-warm: {url} every {interval:g}s (Ctrl-C to stop)", flush=True)
+print(f"keep-warm: {url}, {interval:g}s pause after each reply (Ctrl-C to stop)", flush=True)
 try:
     while True:
         t0 = time.monotonic()
@@ -37,6 +38,6 @@ try:
         elif took >= 5:
             slow += 1
             print(f"{time.strftime('%H:%M:%S')} slow {took:.1f}s", flush=True)
-        time.sleep(interval)
+        time.sleep(interval)      # 요청이 끝난 뒤에 쉰다: 쉬는 시간이 간격을 넘지 않고, 서버가 느릴 때 요청이 몰리지 않는다
 except KeyboardInterrupt:
     print(f"\nkeep-warm: sent {sent}, slow {slow}, failed {failed}, longest {longest:.1f}s", flush=True)
