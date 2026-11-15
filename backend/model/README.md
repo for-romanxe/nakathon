@@ -69,3 +69,16 @@ out = pipeline.adjustment_reason("lighting", "caution", findings, evidence, "ko"
 - `MODEL=mock`에서도 문장이 나온다. 이번에 mock 설명이 받은 문단을 인용하도록 고쳤다(전에는 없는 문단 id 를 인용해 실제 근거 파일과 함께 쓰면 항상 보류였다).
 - 어느 문단을 어느 조정에 붙일지는 AI가 고른 초안이고 사람이 검토하지 않았다. 일정 조정에는 수면 문단을 쓴다. 심박변이 문단(`lit:card-09#p2`)은 "변화가 작고 연구마다 일정하지 않다"고 적혀 있어 일정을 바꾸는 근거로 쓰지 않았다.
 
+## 경보 절차 단계 (이슈 #47, 2026-11-15)
+
+```python
+out = pipeline.procedure_steps("cardiac_emergency", evidence, "ko")
+# {"available": True, "steps": [{"step_id": "oxygen", "text": "산소 마스크로 산소를 주세요.", "cite_id": "nasa:card-10#p1", "kind": "treatment"}, ...5개]}
+```
+
+- 모델을 부르지 않는다. 단계와 근거 문단은 `model/procedure_steps.json`에 고정돼 있고 지금은 가슴 통증 하나다. 예외를 던지지 않는다(단계 파일을 읽지 못해도 `available: False`).
+- 단계가 가리키는 문단이 근거 파일에 하나라도 없거나 그 상태의 절차가 없으면 `{"available": False, "steps": []}`다. 출처를 열 수 없는 단계는 보여 주지 않는다. 문단을 더했으므로 근거 파일을 다시 만들어야 한다(`ml/knowledge/README.md`).
+- `kind`: `treatment`(환자에게 하는 처치, 두 사람 동의 후보) · `record`(묻고 재서 적는 일) · `cmo`(의료 장비를 쓰는 진찰) · `contact`(연락). 어느 단계에 두 사람 동의를 걸지는 백엔드가 정한다.
+- 마지막 단계는 "지상의 담당 의사에게 연락"이다. 두절 중에는 할 수 없으므로 화면에서 어떻게 보일지(예: 지구 보고서에 기록)는 백엔드·프론트가 정한다.
+- 단계는 2001년판 점검표를 AI가 요약한 것이고 원문이 아니다. 약이 들어간 갈래는 넣지 않았다. 자세한 한계는 `ml/knowledge/README.md`의 "가슴 통증 절차 문단".
+

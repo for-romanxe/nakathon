@@ -6,6 +6,7 @@ from backend.model import client
 
 MAX_RUNS = 2      # 명세 §12: 루프 상한 2회. 두 번 실패하면 판단 보류
 ADJUSTMENTS = pathlib.Path(__file__).resolve().parent / "adjustment_evidence.json"
+PROCEDURES = pathlib.Path(__file__).resolve().parent / "procedure_steps.json"
 
 
 def explain_verified(level: str, findings: list, condition_candidates: list, paragraphs: list, lang: str) -> dict:
@@ -70,3 +71,23 @@ def adjustment_reason(target: str, level: str, findings: list, evidence: list, l
     result = explain_verified(level, findings, [entry.get("condition_id")], paragraphs, lang)
     reason = " ".join(result["explanation"]["lines"]) if result["explanation"] else None
     return {"reason": reason, "cite_ids": cite_ids, "hold": result["hold"], "verified": result["verified"], "runs": result["runs"]}
+
+
+def procedure_steps(condition_id: str, evidence: list, lang: str) -> dict:
+    """경보 때 보여 줄 절차 단계 (이슈 #47). 모델을 부르지 않는다. 단계와 근거 문단은 procedure_steps.json 에 고정돼 있다.
+
+    반환: {"available": bool, "steps": [{"step_id", "text", "cite_id", "kind"}]}  (kind 의 뜻은 procedure_steps.json 의 _doc)
+    이 상태의 절차가 없거나 단계가 가리키는 문단이 근거 파일에 하나라도 없으면 available 은 False 이고 steps 는 비어 있다.
+    출처를 열 수 없는 단계는 보여 주지 않는다. 그때 화면은 경보와 의무관 호출만 보여 준다.
+    예외를 던지지 않는다. 단계 파일을 읽지 못하거나 모양이 어긋나도 available 이 False 다.
+    """
+    loaded = {row["id"] for row in evidence}
+    try:
+        steps = json.loads(PROCEDURES.read_text(encoding="utf-8"))[condition_id]["steps"]
+        steps = [{"step_id": step["step_id"], "text": step["ko" if lang == "ko" else "en"],
+                  "cite_id": step["cite_id"], "kind": step["kind"]} for step in steps]
+    except (OSError, ValueError, LookupError, TypeError):      # 파일이 없거나, JSON 이 깨졌거나, 이 상태의 절차가 없거나, 칸이 빠졌다
+        return {"available": False, "steps": []}
+    if not steps or not all(step["cite_id"] in loaded for step in steps):
+        return {"available": False, "steps": []}
+    return {"available": True, "steps": steps}
