@@ -1,5 +1,5 @@
 """우주선 조정 이유(pipeline.adjustment_reason, 이슈 #47): 근거 문단은 표가 정하고 모델은 이유 문장만 쓴다."""
-import json, os, sys, unittest
+import json, os, sys, tempfile, unittest
 from pathlib import Path
 from unittest import mock
 
@@ -65,6 +65,18 @@ class Reason(unittest.TestCase):
             self.assertEqual((result["reason"], result["cite_ids"], result["hold"], result["verified"]), (None, [], True, 0))
             self.assertEqual(result["runs"], [{"n": 1, "ok": False, "fails": [], "note": note}])
             self.assertNotIn("explanation", result)
+
+    def test_missing_or_broken_table_file_holds_without_raising_or_calling_the_model(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            broken, not_an_object = Path(tmp) / "broken.json", Path(tmp) / "list.json"
+            broken.write_text("{not json", encoding="utf-8")
+            not_an_object.write_text("[1, 2]", encoding="utf-8")
+            for path, error in ((Path(tmp) / "missing.json", "FileNotFoundError"), (broken, "JSONDecodeError"), (not_an_object, "AttributeError")):
+                with self.subTest(file=path.name), mock.patch.object(pipeline, "ADJUSTMENTS", path), mock.patch.object(client, "explain") as explain:
+                    result = pipeline.adjustment_reason("lighting", "caution", FINDINGS, KO, "ko")
+                    explain.assert_not_called()
+                    self.assertEqual(result, {"reason": None, "cite_ids": [], "hold": True, "verified": 0, "runs": [
+                        {"n": 1, "ok": False, "fails": [], "note": f"adjustment table unreadable: {error}"}]})
 
 
 if __name__ == "__main__":

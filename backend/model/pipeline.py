@@ -53,15 +53,20 @@ def adjustment_reason(target: str, level: str, findings: list, evidence: list, l
     - cite_ids 는 표가 정한 문단 가운데 근거 파일에 있는 것이다. 모델이 정하지 않으므로 모델을 부르기 전에도, 실패한 뒤에도 같다.
     - reason 은 검증을 통과한 설명 문장(1~2개)을 이은 것. 통과하지 못했거나 모델을 못 불렀으면 None 이고 hold 가 True 다.
       그때 화면에는 규칙이 쓴 수치 문장과 cite_ids 만 보여 준다. 조정 자체는 이유가 없어도 적용된다.
-    - 예외를 던지지 않는다. 모르는 target 이거나 근거 문단이 하나도 없으면 모델을 부르지 않고 보류로 끝낸다.
+    - 예외를 던지지 않는다. 표 파일을 읽지 못하거나, 모르는 target 이거나, 근거 문단이 하나도 없으면 모델을 부르지 않고
+      cite_ids 가 빈 보류로 끝낸다.
     """
-    entry = json.loads(ADJUSTMENTS.read_text(encoding="utf-8")).get(target)
+    try:
+        entry = json.loads(ADJUSTMENTS.read_text(encoding="utf-8")).get(target)
+        note = "" if isinstance(entry, dict) else f"unknown adjustment target: {target}"
+    except (OSError, ValueError, AttributeError) as error:      # 표 파일이 없거나, JSON 이 깨졌거나, 객체가 아니다
+        entry, note = None, f"adjustment table unreadable: {type(error).__name__}"
     rows = {row["id"]: row for row in evidence}
-    paragraphs = [{"id": i, "text": rows[i]["text"]} for i in (entry["cite_ids"] if isinstance(entry, dict) else []) if i in rows]
+    paragraphs = [{"id": i, "text": rows[i]["text"]} for i in (entry or {}).get("cite_ids", []) if i in rows]
     cite_ids = [p["id"] for p in paragraphs]
     if not paragraphs:
-        note = f"unknown adjustment target: {target}" if not isinstance(entry, dict) else f"no evidence paragraph loaded for {target}"
+        note = note or f"no evidence paragraph loaded for {target}"
         return {"reason": None, "cite_ids": [], "hold": True, "verified": 0, "runs": _stopped([], 1, note)["runs"]}
-    result = explain_verified(level, findings, [entry["condition_id"]], paragraphs, lang)
+    result = explain_verified(level, findings, [entry.get("condition_id")], paragraphs, lang)
     reason = " ".join(result["explanation"]["lines"]) if result["explanation"] else None
     return {"reason": reason, "cite_ids": cite_ids, "hold": result["hold"], "verified": result["verified"], "runs": result["runs"]}
