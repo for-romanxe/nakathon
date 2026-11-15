@@ -1,0 +1,51 @@
+{
+  "_note": "Arrival outlook (frontend only, no backend or model). Only published NASA figures, each with its source; population averages, not a forecast for one person. Text lives in i18n (arrival.*). Checked 2026-11-15: aerobic 10-30% and the 80% floor are verbatim in NASA-STD-3001 4.1.3/4.1.4; muscle 10-30% (4.6.3) and bone 1-1.5%/month were read from page summaries and the 2024 HRP bone evidence report, so a person should re-read those two on the live pages.",
+  "months": { "min": 4, "max": 9, "default": 7 },
+  "systems": [
+    {
+      "key": "bone",
+      "kind": "per_month",
+      "low": 1.0,
+      "high": 1.5,
+      "sources": [
+        { "label": "NASA · The Human Body in Space", "url": "https://www.nasa.gov/humans-in-space/the-human-body-in-space/" },
+        { "label": "NASA HRP · Bone Fracture Evidence Report (2024)", "url": "https://humanresearchroadmap.nasa.gov/Evidence/reports/Bone%20Fracture%20Evidence%20Report_07-18-2024.pdf" }
+      ],
+      "cites": ["hrp:msk-04#p1", "hrp:dehy-02#p1"]
+    },
+    {
+      "key": "muscle",
+      "kind": "after_flight",
+      "low": 10,
+      "high": 30,
+      "sources": [
+        { "label": "NASA-STD-3001 · 4.6.3 (Human Performance)", "url": "https://www.nasa.gov/reference/4-0-human-performance/" }
+      ],
+      "cites": ["hrp:msk-04#p1", "nasa:msk-08#p1"]
+    },
+    {
+      "key": "aerobic",
+      "kind": "after_flight",
+      "low": 10,
+      "high": 30,
+      "floor": 80,
+      "sources": [
+        { "label": "NASA-STD-3001 · 4.1.3 / 4.1.4 (Human Performance)", "url": "https://www.nasa.gov/reference/4-0-human-performance/" },
+        { "label": "NASA HRP · Aerobic evidence report (HRP-47072)", "url": "https://humanresearchroadmap.nasa.gov/evidence/reports/Aerobic.pdf" }
+      ],
+      "cites": ["hrp:msk-04#p1"]
+    },
+    {
+      "key": "sans",
+      "kind": "note",
+      "sources": [],
+      "cites": ["hrp:sans-01#p2", "hrp:sans-02#p1"]
+    },
+    {
+      "key": "orthostatic",
+      "kind": "note",
+      "sources": [],
+      "cites": ["hrp:oi-01#p1", "hrp:oi-02#p1"]
+    }
+  ]
+}

@@ -10,6 +10,7 @@ import Log from './pages/Log.jsx'
 import EventDetail from './pages/EventDetail.jsx'
 import Warning from './pages/Warning.jsx'
 import ProcedureConsent from './pages/ProcedureConsent.jsx'
+import Arrival from './pages/Arrival.jsx'
 import Procedures from './pages/Procedures.jsx'
 import Body from './pages/Body.jsx'
 import Settings from './pages/Settings.jsx'
@@ -87,6 +88,7 @@ export default function App() {
           <Route path="/trends" element={<Suspense fallback={<p role="status">{t('common.loading')}</p>}><Trends /></Suspense>} />
           <Route path="/log" element={<Log />} />
           <Route path="/procedures" element={<Procedures />} />
+          <Route path="/arrival" element={<Arrival />} />
           <Route path="/crew" element={CURRENT_CREW === 'c2' ? <Crew /> : <Navigate to="/today" replace />} />
           <Route path="/settings" element={<Settings loginRequired={session.login_required} />} />
           <Route path="/events/:id" element={<EventDetail />} />
