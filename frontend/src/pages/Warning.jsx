@@ -13,6 +13,7 @@ import { CURRENT_CREW } from '../session.js'
 import { useMission } from '../mission.jsx'
 import Cite from '../components/Cite.jsx'
 import DeviationScale from '../components/DeviationScale.jsx'
+import ProcedureSteps from '../components/ProcedureSteps.jsx'
 import { useT } from '../i18n/index.jsx'
 
 function addMinutes(hhmm, minutes) {
@@ -148,7 +149,8 @@ export default function Warning() {
 
         <section className="warning-block">
           <h2>{t('warning.first_steps')}</h2>
-          {stepList.length > 0 ? (
+          {/* The event's procedure with two-person consent when the backend has one; otherwise the first steps */}
+          <ProcedureSteps eventId={event?.id} fallback={stepList.length > 0 ? (
             <>
               {USE_FIXTURES && <p className="muted">{t('warning.steps_sample')}</p>}
               <ol className="warning-steps">
@@ -156,7 +158,7 @@ export default function Warning() {
               </ol>
               {steps?.doc && <Cite id={steps.doc} />}
             </>
-          ) : <p className="muted">{t('warning.steps_unavailable')}</p>}
+          ) : <p className="muted">{t('warning.steps_unavailable')}</p>} />
         </section>
 
         {/* The app cannot call anyone yet (no crew-call API), so it must not say it did */}
