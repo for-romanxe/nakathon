@@ -21,7 +21,7 @@ def _low(m, key):
     z = (m.get(key) or {}).get("z")
     return z is not None and z <= LOW_Z
 
-def _fixture(connection):
+def is_rehearsal(connection):
     return connection.execute(
         "SELECT 1 FROM sample WHERE crew_id=? AND source=? AND source_key=? AND value=?",
         (CREW, SOURCE, "c1:sleep:16", float(C1_SOL16_SLEEP))).fetchone() is not None
@@ -33,7 +33,7 @@ def _auto(now):
 
 def sync(connection, now, cite_ids):
     sol = mission_sol(now)
-    if sol < 16 or not _fixture(connection):
+    if sol < 16 or not is_rehearsal(connection):
         return
     if sol == 16:
         m = _metrics(connection, 16)
@@ -54,8 +54,10 @@ def sync(connection, now, cite_ids):
             data = {"rule": rule, "reason": reason, "before": before, "after": after,
                     "trigger": trig, "cite_ids": cites, "outcome": None}
             connection.execute(
-                "INSERT OR IGNORE INTO habitat_action(crew_id,sol,target,status,auto,applied_at,data)"
-                " VALUES(?,?,?,?,?,?,?)",
+                "INSERT INTO habitat_action(crew_id,sol,target,status,auto,applied_at,data)"
+                " VALUES(?,?,?,?,?,?,?) ON CONFLICT(crew_id,sol,target) DO UPDATE SET"
+                " status='applied', auto=1, applied_at=excluded.applied_at"
+                " WHERE excluded.auto=1 AND habitat_action.status='proposed'",
                 (CREW, 16, target, "applied" if auto else "proposed", int(auto),
                  now.isoformat() if auto else None, json.dumps(data)))
         return
@@ -78,8 +80,8 @@ def sync(connection, now, cite_ids):
             (json.dumps(data), now.isoformat() if ok else None, "released" if ok else "applied", row["id"]))
 
 def list_actions(connection, crew_id, sol):
-    return connection.execute("SELECT * FROM habitat_action WHERE crew_id=? AND sol<=? ORDER BY id",
-                              (crew_id, sol)).fetchall()
+    return connection.execute("SELECT * FROM habitat_action WHERE crew_id=? AND sol BETWEEN ? AND ? ORDER BY id",
+                              (crew_id, sol - 1, sol)).fetchall()
 
 def action(connection, action_id):
     return connection.execute("SELECT * FROM habitat_action WHERE id=?", (int(action_id),)).fetchone()
@@ -115,6 +117,7 @@ def _text(target, values, lang):
         return " · ".join(parts)
     if target == "schedule":
         a, s = v.get("activity"), v.get("start")
+        a = str(a).upper() if a else a
         return f"{a} {s} 시작" if ko else f"{a} starts {s}"
     return ""
 

@@ -44,6 +44,9 @@ DEVIATIONS = {"c1": {"hr": 2.5, "hrv": -2.5}, "c4": {"hr": 2.5}}
 MISSION_DEMO_SCENES = (16, 17, 40, 46, 57)
 BASELINE_WINDOW = 14
 C1_SOL16_SLEEP = 5.1
+# Opt-in demo only: widen C1 sleep history so Sol16 reads as z ~ -2.5 rather than -8.
+# Existing rehearsal DBs are never rewritten; generate a fresh one with --mission-demo.
+C1_DEMO_SLEEP_SD = 0.96
 C1_SOL17_SLEEP = 7.2
 C1_SOL17_HRV_Z = -0.6
 C4_DEMO_SOL = 46
@@ -103,8 +106,10 @@ def seed(connection: sqlite3.Connection) -> None:
                     _insert_sample(connection, crew_id, metric, sol, center + spread * deviation)
 
 
-def _default_value(crew_id: str, metric: str, sol: int) -> float:
+def _default_value(crew_id: str, metric: str, sol: int, spread_override: float | None = None) -> float:
     center, spread, offsets, baseline_mean, baseline_sd = _profile(crew_id, metric)
+    if spread_override is not None:
+        spread = spread_override
     if sol == DEMO_SOL:
         deviation = DEVIATIONS.get(crew_id, {}).get(metric, 0)
     else:
@@ -120,6 +125,9 @@ def seed_mission_demo(connection: sqlite3.Connection) -> None:
                ON CONFLICT (id) DO NOTHING""",
             CREW,
         )
+        for sol in range(1, DEMO_SOL):
+            _insert_sample(connection, "c1", "sleep", sol,
+                           _default_value("c1", "sleep", sol, spread_override=C1_DEMO_SLEEP_SD))
         _insert_sample(connection, "c1", "sleep", DEMO_SOL, C1_SOL16_SLEEP)
         for metric in CONTRACT["metrics"]:
             center, spread, offsets, baseline_mean, baseline_sd = _profile("c1", metric)

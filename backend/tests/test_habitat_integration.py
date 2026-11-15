@@ -1,12 +1,14 @@
+import sqlite3
 import subprocess
 import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from unittest import TestCase
+from unittest import TestCase, mock
 
 from fastapi.testclient import TestClient
 
 from backend.main import create_app
+from backend.mission import ClockUpdate, DEMO_TIME
 
 ROOT = Path(__file__).resolve().parents[2]
 C1 = {'X-Demo-Viewer': 'c1'}
@@ -87,6 +89,8 @@ class HabitatIntegrationTest(TestCase):
             self.assertNotEqual(ok.json()['status'], 'proposed')
             self.assertEqual(client.post(f'/habitat/actions/{aid}/approve', headers=C1).status_code, 409)
             set_clock(client, 18)
+            self.assertEqual(actions(client), [])
+            set_clock(client, 17)
             past = actions(client, 16)
             for target in ('lighting', 'schedule'):
                 row = one(past, target)
@@ -109,7 +113,11 @@ class HabitatIntegrationTest(TestCase):
             self.assertAlmostEqual(ms['hrv']['after_z'], -0.6, places=2)
             final = past
         with TestClient(create_app(path)) as client:
+            set_clock(client, 17)
             self.assertEqual(actions(client, 16), final)
+            for later_sol in (40, 46):
+                set_clock(client, later_sol)
+                self.assertEqual(actions(client), [])
 
     def test_undo_lighting(self):
         path = self.demo_path()
@@ -120,9 +128,67 @@ class HabitatIntegrationTest(TestCase):
             self.assertEqual(r.status_code, 200)
             self.assertEqual(client.post(f'/habitat/actions/{lid}/undo', headers=C1).status_code, 409)
 
+    def test_connected_proposal_auto_applies_when_delayed(self):
+        path = self.demo_path()
+        start = ClockUpdate(sol=16, time='08:00').apply(DEMO_TIME)
+        with mock.patch('backend.main.DEMO_TIME', start), TestClient(create_app(path)) as client:
+            set_clock(client, 16, '08:00')
+            items = actions(client, 16)
+            lighting = one(items, 'lighting')
+            self.assertEqual(lighting['status'], 'proposed')
+            self.assertIs(lighting['auto'], False)
+            sid = one(items, 'schedule')['id']
+            set_clock(client, 16, '09:00')
+            items = actions(client, 16)
+            after = one(items, 'lighting')
+            self.assertEqual(after['id'], lighting['id'])
+            self.assertEqual(after['status'], 'applied')
+            self.assertIs(after['auto'], True)
+            self.assertTrue(after['applied_at'])
+            schedule = one(items, 'schedule')
+            self.assertEqual(schedule['id'], sid)
+            self.assertEqual(schedule['status'], 'proposed')
+            self.assertTrue(schedule['after'].startswith('EVA') or 'EVA' in schedule['after'])
+            self.assertIn('EVA', one(actions(client, 16, 'ko'), 'schedule')['after'])
+
+    def test_clock_sync_failure_keeps_state(self):
+        path = self.demo_path()
+        with TestClient(create_app(path)) as client:
+            set_clock(client, 16, '09:00')
+            before = actions(client, 16)
+            mission = client.get('/mission').json()
+
+            def broken(connection, now, cite_ids):
+                connection.execute('DELETE FROM habitat_action WHERE id=?', (before[0]['id'],))
+                raise sqlite3.OperationalError('disk I/O error')
+
+            with mock.patch('backend.habitat.sync', side_effect=broken):
+                r = client.post('/demo/clock', json={'sol': 17, 'time': '08:00'}, headers=C2)
+            self.assertEqual(r.status_code, 503)
+            self.assertEqual(r.json()['error']['code'], 'clock_sync_failed')
+            self.assertEqual(client.get('/mission').json(), mission)
+            self.assertEqual(actions(client, 16), before)
+
     def test_default_database_has_no_actions(self):
         with TestClient(create_app(self.directory / 'default.sqlite3')) as client:
             for sol in (16, 17):
                 set_clock(client, sol)
                 self.assertEqual(actions(client), [])
             self.assertEqual(client.post('/habitat/actions/1/undo', headers=C1).status_code, 404)
+
+    def test_mission_demo_cites_served_paragraphs(self):
+        import os
+        from unittest.mock import patch
+        path = self.demo_path()
+        with patch.dict(os.environ):
+            os.environ.pop('CREW_HEALTH_EVIDENCE', None)
+            with TestClient(create_app(path)) as client:
+                set_clock(client, 16, '09:00')
+                cards = actions(client, 16)
+                r = client.get('/docs', headers=C1)
+                r.raise_for_status()
+                served = {f"{doc['id']}#p{p['n']}" for doc in r.json() for p in doc['paragraphs']}
+        cited = [cite for card in cards for cite in card['cite_ids']]
+        self.assertTrue(cited)
+        for cite in cited:
+            self.assertIn(cite, served)

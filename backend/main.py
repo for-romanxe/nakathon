@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import sqlite3
 from contextlib import asynccontextmanager, closing
 from pathlib import Path
 from threading import Lock
@@ -83,6 +84,22 @@ def habitat_cite_ids(evidence) -> dict:
     return result
 
 
+def habitat_fallback_evidence(evidence) -> list:
+    """Add bundled English habitat citation paragraphs when no evidence file is configured."""
+    if os.environ.get("CREW_HEALTH_EVIDENCE"):
+        return evidence
+    try:
+        from ml.knowledge.export_evidence import export
+        bundled = [item for item in export("en") if isinstance(item, dict)]
+    except Exception:
+        logging.getLogger(__name__).warning("Bundled habitat evidence could not be loaded.")
+        return evidence
+    wanted = {cite for ids in habitat_cite_ids(bundled).values() for cite in ids}
+    present = {item.get("id") for item in evidence if isinstance(item, dict)}
+    extra = [item for item in bundled if item.get("id") in wanted and item.get("id") not in present]
+    return [*evidence, *extra]
+
+
 def create_app(db_path=DEMO_DB) -> FastAPI:
     clock = DEMO_TIME
     clock_lock = Lock()
@@ -100,7 +117,6 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
         nonlocal evidence, sessions, docs, medication_references, medication_catalog_failed, cite_ids
         sessions = CrewSessions(crew_id for crew_id, *_ in CREW)
         evidence = event_flow.load_evidence()
-        docs = build_docs(evidence)
         try:
             medication_references = load_medication_references()
             medication_catalog_failed = False
@@ -111,6 +127,10 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
         initialize(db_path)
         with closing(connect(db_path)) as connection:
             seed(connection)
+            mission_fixture = habitat.is_rehearsal(connection)
+        if mission_fixture:
+            evidence = habitat_fallback_evidence(evidence)
+        docs = build_docs(evidence)
         cite_ids = habitat_cite_ids(evidence)
         with clock_lock, closing(connect(db_path)) as connection, connection:
             connection.execute("BEGIN IMMEDIATE")
@@ -270,11 +290,17 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
             cmo_viewer(resolve_viewer(request))
         with clock_lock:
             upcoming = update.apply(clock)
-            with closing(connect(db_path)) as connection, connection:
-                connection.execute("BEGIN IMMEDIATE")
-                habitat.sync(connection, upcoming, cite_ids)
+            response = mission_status(upcoming)
+            try:
+                with closing(connect(db_path)) as connection, connection:
+                    connection.execute("BEGIN IMMEDIATE")
+                    habitat.sync(connection, upcoming, cite_ids)
+            except sqlite3.Error:
+                logging.getLogger(__name__).exception("clock sync failed")
+                return JSONResponse(status_code=503, content={"error": {
+                    "code": "clock_sync_failed", "message": "Clock not changed; storage unavailable."}})
             clock = upcoming
-            return mission_status(clock)
+            return response
 
     @app.get("/habitat/actions")
     def read_habitat_actions(crew: str = Query(...), lang: Literal["en", "ko"] = "en", member=Depends(viewer)):
