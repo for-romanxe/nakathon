@@ -1,0 +1,49 @@
+{
+  "_note": "Frontend fixture for GET /habitat/actions (#47 §3, FE-02). Draft shape until the backend sample lands; example numbers from the #47 plan (Sol 16 C1 sleep 5.1 h, HRV -2.5σ -> Sol 17 7.2 h, -0.6σ). reason_text stands for the sentence from pipeline.adjustment_reason (#48); null means the explanation is on hold. Text fields come per language as the backend would send them with ?lang.",
+  "actions": [
+    {
+      "id": 1,
+      "crew": "c1",
+      "sol": 16,
+      "target": "lighting",
+      "tier": "auto",
+      "status": "applied",
+      "reason": { "metric": "sleep", "value": 5.1, "z": -2.4 },
+      "before": { "en": "Lights off at 23:00", "ko": "23:00 소등" },
+      "after": { "en": "Amber light from 21:00, lights off at 22:00", "ko": "21:00부터 주황 조명, 22:00 소등" },
+      "reason_text": {
+        "en": "Last night's sleep was well below your usual, so the cabin light turns warm earlier to help you wind down.",
+        "ko": "어젯밤 수면이 평소보다 많이 짧아서, 일찍 잠들 수 있도록 기내 조명을 더 이르게 따뜻한 색으로 바꿨어요."
+      },
+      "cite_ids": ["hrp:sleep-01#p1", "hrp:sleep-02#p1"],
+      "approved_by": null,
+      "outcome": {
+        "metrics": [
+          { "metric": "sleep", "before": 5.1, "before_z": -2.4, "after": 7.2, "after_z": -0.4 },
+          { "metric": "hrv", "before": 31, "before_z": -2.5, "after": 44, "after_z": -0.6 }
+        ],
+        "released": true
+      }
+    },
+    {
+      "id": 2,
+      "crew": "c1",
+      "sol": 16,
+      "target": "schedule",
+      "tier": "approve",
+      "status": "proposed",
+      "reason": { "metric": "hrv", "value": 31, "z": -2.5 },
+      "before": { "en": "EVA at 10:00", "ko": "10:00 EVA" },
+      "after": { "en": "EVA moved to 15:00", "ko": "EVA를 15:00으로 옮김" },
+      "reason_text": null,
+      "cite_ids": ["hrp:sleep-01#p1", "hrp:sleep-01#p2"],
+      "approved_by": null,
+      "outcome": {
+        "metrics": [
+          { "metric": "hrv", "before": 31, "before_z": -2.5, "after": 44, "after_z": -0.6 }
+        ],
+        "released": true
+      }
+    }
+  ]
+}

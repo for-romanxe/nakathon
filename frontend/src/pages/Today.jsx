@@ -10,6 +10,7 @@ import { METRICS, metricLabel, formatMetric } from '../api/contract.js'
 import { CURRENT_CREW } from '../session.js'
 import Cite from '../components/Cite.jsx'
 import DeviationScale from '../components/DeviationScale.jsx'
+import HabitatCard from '../components/HabitatCard.jsx'
 import { useT } from '../i18n/index.jsx'
 
 // Status is never shown by color alone: icon + word + color
@@ -135,6 +136,8 @@ export default function Today() {
           ))}
         </ul>
       </section>
+
+      <HabitatCard crewId={CURRENT_CREW} sol={sol} lang={lang} />
 
       <section className="panel">
         <div className="panel-head">
