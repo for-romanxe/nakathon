@@ -42,7 +42,7 @@ def export(lang):
     rest = [p for p in kb if p not in lead]
     ordered = lead + [p for p in rest if p["kind"] != "escalate"] + [p for p in rest if p["kind"] == "escalate"]
     return [{"id": p["id"], "text": p[f"text_{lang}"], "codes": CODES[p["condition"]], "condition_id": p["condition"],
-             "title": first[p["id"].split("#p")[0]][f"title_{lang}"], "org": first[p["id"].split("#p")[0]]["sources"][0]["publisher"]}
+             "title": first[p["id"].split("#p")[0]][f"title_{lang}"], "org": first[p["id"].split("#p")[0]]["sources"][0]["publisher"], "lang": lang}
             for p in ordered]
 
 

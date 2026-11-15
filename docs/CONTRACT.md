@@ -118,6 +118,8 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 
 `?lang=ko|en`(기본 `en`)은 `/today`와 `/checkin` 응답의 `status.text`만 현지화한다. 가이드 문장은 현재 영어.
 
+Evidence rows may carry an optional `lang` field. The backend recognizes only `ko` and `en`. A paragraph keeps `lang` only when its row has one of those values. A document gets a top-level `lang` only when every one of its paragraphs shares the same supported value. Legacy rows, unsupported values, and mixed-language documents are accepted unchanged. Their missing language is omitted, never inferred or rejected. Clients should fall back from paragraph `lang` to document `lang`, and show a language notice only when a document `lang` is present and differs from the UI language.
+
 ### 5.1 `/mission` — 임무 시계와 통신 상태 **[추가 11/14, PR #1·#2 구현 기준]**
 
 ```json
