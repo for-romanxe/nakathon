@@ -428,6 +428,8 @@ export default {
   "demo.clock.steps": "Small steps",
   "demo.clock.at": "Sol {sol} · {time}",
   "demo.clock.act1": "Act 1 · The habitat adjusts",
+  "demo.clock.scene_mismatch": "The clock moved, but the backend says '{got}'. This scene needs '{expected}'.",
+  "demo.clock.scene_no_comms": "The clock moved, but the backend sends no comms state yet, so this scene shows no linked / delayed / blackout state.",
   "demo.clock.act1_result": "Act 1 result · Next day",
   "demo.clock.act2": "Act 2 · 3 days to blackout",
   "demo.clock.act3": "Act 3 · Alert in the blackout",
