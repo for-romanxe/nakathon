@@ -1,0 +1,542 @@
+{
+ "summary": {
+  "cases": 24,
+  "passed_first_run": 24,
+  "passed_within_two_runs": 24,
+  "held": 0,
+  "distinct_reasons": 10,
+  "first_request_seconds": 6.8,
+  "median_seconds": 4.6,
+  "max_seconds": 5.2
+ },
+ "rows": [
+  {
+   "lang": "ko",
+   "target": "lighting",
+   "input": 1,
+   "level": "caution",
+   "seconds": 6.8,
+   "hold": false,
+   "verified": 5,
+   "reason": "과중한 업무나 일정 변경으로 인해 생체 시계가 어긋나고 수면이 부족해질 가능성이 있어요. 잠들기 전에 긴장을 풀 수 있는 시간을 확보하고, 조명을 조절해서 생체 시계를 관리하는 게 좋아요.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-02#p1"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "ko",
+   "target": "lighting",
+   "input": 2,
+   "level": "caution",
+   "seconds": 5.1,
+   "hold": false,
+   "verified": 5,
+   "reason": "과중한 업무나 일정 변경으로 인해 생체 시계가 어긋나고 수면이 부족해질 가능성이 있어요. 잠들기 전에 긴장을 풀 수 있는 시간을 확보하고, 조명을 조절해서 생체 시계를 관리하는 게 좋아요.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-02#p1"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "ko",
+   "target": "lighting",
+   "input": 3,
+   "level": "caution",
+   "seconds": 5.2,
+   "hold": false,
+   "verified": 5,
+   "reason": "과중한 업무나 일정 변경으로 인해 생체 시계가 어긋나고 수면이 부족해질 가능성이 있어요. 잠들기 전에 긴장을 풀 수 있는 시간을 확보하고, 조명을 조절해서 생체 시계를 관리하는 게 좋아요.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-02#p1"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "ko",
+   "target": "lighting",
+   "input": 4,
+   "level": "advisory",
+   "seconds": 5.1,
+   "hold": false,
+   "verified": 5,
+   "reason": "과중한 업무나 일정 변경으로 인해 생체 시계가 어긋나고 수면이 부족해질 가능성이 있어요. 잠들기 전에 긴장을 풀 수 있는 시간을 확보하고, 조명을 조절해서 생체 시계를 관리하는 게 좋아요.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-02#p1"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "ko",
+   "target": "lighting",
+   "input": 5,
+   "level": "caution",
+   "seconds": 5.2,
+   "hold": false,
+   "verified": 5,
+   "reason": "과중한 업무나 일정 변경으로 인해 생체 시계가 어긋나고 수면이 부족해질 가능성이 있어요. 잠들기 전에 긴장을 풀 수 있는 시간을 확보하고, 조명을 조절해서 생체 시계를 관리하는 게 좋아요.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-02#p1"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "ko",
+   "target": "lighting",
+   "input": 6,
+   "level": "advisory",
+   "seconds": 5.2,
+   "hold": false,
+   "verified": 5,
+   "reason": "과중한 업무나 일정 변경으로 인해 생체 시계가 어긋나고 수면이 부족해질 가능성이 있어요. 잠들기 전에 긴장을 풀 수 있는 시간을 확보하고, 조명을 조절해서 생체 시계를 관리하는 게 좋아요.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-02#p1"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "ko",
+   "target": "schedule",
+   "input": 1,
+   "level": "caution",
+   "seconds": 5.1,
+   "hold": false,
+   "verified": 5,
+   "reason": "잠을 짧게 자는 날이 이어지면 스스로 느끼는 것보다 업무 수행 능력이 더 떨어져 있을 가능성이 있어요. 정신이 얼마나 또렷한지만 확인하지 말고, 최근 며칠 동안 얼마나 잤는지도 함께 살펴보는 게 좋아요.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-01#p2"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "ko",
+   "target": "schedule",
+   "input": 2,
+   "level": "caution",
+   "seconds": 5.1,
+   "hold": false,
+   "verified": 5,
+   "reason": "잠을 짧게 자는 날이 이어지면 스스로 느끼는 것보다 업무 수행 능력이 더 떨어져 있을 가능성이 있어요. 정신이 얼마나 또렷한지만 확인하지 말고, 최근 며칠 동안 얼마나 잤는지도 함께 살펴보는 게 좋아요.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-01#p2"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "ko",
+   "target": "schedule",
+   "input": 3,
+   "level": "caution",
+   "seconds": 5.1,
+   "hold": false,
+   "verified": 5,
+   "reason": "잠을 짧게 자는 날이 이어지면 스스로 느끼는 것보다 업무 수행 능력이 더 떨어져 있을 가능성이 있어요. 정신이 얼마나 또렷한지만 확인하지 말고, 최근 며칠 동안 얼마나 잤는지도 함께 살펴보는 게 좋아요.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-01#p2"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "ko",
+   "target": "schedule",
+   "input": 4,
+   "level": "advisory",
+   "seconds": 5.0,
+   "hold": false,
+   "verified": 5,
+   "reason": "잠을 짧게 자는 날이 이어지면 스스로 느끼는 것보다 업무 능력이 더 떨어져 있을 가능성이 있어요. 정신이 얼마나 또렷한지만 확인하지 말고, 최근 며칠 동안 얼마나 잤는지도 함께 살펴보는 게 좋아요.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-01#p2"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "ko",
+   "target": "schedule",
+   "input": 5,
+   "level": "caution",
+   "seconds": 5.1,
+   "hold": false,
+   "verified": 5,
+   "reason": "잠을 짧게 자는 날이 이어지면 업무 수행 능력이 스스로 느끼는 것보다 더 떨어져 있을 가능성이 있어요. 정신이 얼마나 또렷한지만 확인하지 말고, 최근 며칠 동안 얼마나 잤는지도 함께 살펴보는 게 좋아요.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-01#p2"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "ko",
+   "target": "schedule",
+   "input": 6,
+   "level": "advisory",
+   "seconds": 5.1,
+   "hold": false,
+   "verified": 5,
+   "reason": "잠을 짧게 자는 날이 이어지면 스스로 느끼는 것보다 업무 수행 능력이 더 떨어져 있을 가능성이 있어요. 정신이 얼마나 또렷한지만 확인하지 말고, 최근 며칠 동안 얼마나 잤는지도 함께 살펴보는 게 좋아요.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-01#p2"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "target": "lighting",
+   "input": 1,
+   "level": "caution",
+   "seconds": 4.5,
+   "hold": false,
+   "verified": 5,
+   "reason": "Heavy workloads and schedule shifts can push your body clock out of step, which may make falling asleep harder. Protect your wind-down time and use the dimmer lighting setting before sleep.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-02#p1"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "target": "lighting",
+   "input": 2,
+   "level": "caution",
+   "seconds": 4.6,
+   "hold": false,
+   "verified": 5,
+   "reason": "Heavy workloads and schedule shifts can push your body clock out of step, which may make falling asleep harder. Protect your wind-down time and use the dimmer lighting setting before sleep to help your body adjust.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-02#p1"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "target": "lighting",
+   "input": 3,
+   "level": "caution",
+   "seconds": 4.5,
+   "hold": false,
+   "verified": 5,
+   "reason": "Heavy workloads and schedule shifts can push your body clock out of step, which may make falling asleep harder. Protect your wind-down time and use the dimmer lighting setting before sleep to help your body adjust.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-02#p1"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "target": "lighting",
+   "input": 4,
+   "level": "advisory",
+   "seconds": 4.3,
+   "hold": false,
+   "verified": 5,
+   "reason": "Heavy workloads or schedule shifts may be pushing your body clock out of step with your sleep period. Protect your wind-down time before sleep to help make falling asleep easier.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-02#p1"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "target": "lighting",
+   "input": 5,
+   "level": "caution",
+   "seconds": 4.5,
+   "hold": false,
+   "verified": 5,
+   "reason": "Heavy workloads and schedule shifts can push your body clock out of step, which may make falling asleep harder. Protect your wind-down time and use the dimmer lighting setting before sleep to help your body adjust.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-02#p1"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "target": "lighting",
+   "input": 6,
+   "level": "advisory",
+   "seconds": 4.5,
+   "hold": false,
+   "verified": 5,
+   "reason": "Heavy workloads and schedule shifts can push your body clock out of step, which may make falling asleep harder. Protect your wind-down time and use the dimmer lighting setting before sleep to help your body adjust.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-02#p1"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "target": "schedule",
+   "input": 1,
+   "level": "caution",
+   "seconds": 4.3,
+   "hold": false,
+   "verified": 5,
+   "reason": "Short nights can lead to slipping performance, and you may be more impaired than you feel. It is worth looking at how the last several nights have gone rather than only relying on how awake you feel.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-01#p2"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "target": "schedule",
+   "input": 2,
+   "level": "caution",
+   "seconds": 4.4,
+   "hold": false,
+   "verified": 5,
+   "reason": "Short nights can lead to slipping performance, and you may be more impaired than you feel. It is worth looking at how the last several nights have gone rather than only relying on how awake you feel.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-01#p2"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "target": "schedule",
+   "input": 3,
+   "level": "caution",
+   "seconds": 4.3,
+   "hold": false,
+   "verified": 5,
+   "reason": "Short nights can lead to slipping performance, and you may be more impaired than you feel. It is worth looking at how the last several nights have gone rather than only relying on how awake you feel.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-01#p2"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "target": "schedule",
+   "input": 4,
+   "level": "advisory",
+   "seconds": 4.3,
+   "hold": false,
+   "verified": 5,
+   "reason": "Short nights can lead to slipping performance, and you may be more impaired than you feel. It is worth looking at how the last several nights have gone rather than only at how awake you feel.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-01#p2"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "target": "schedule",
+   "input": 5,
+   "level": "caution",
+   "seconds": 4.3,
+   "hold": false,
+   "verified": 5,
+   "reason": "Short nights can cause performance to slip even if you do not feel significantly sleepier. It is worth looking at how the last several nights have gone rather than only relying on how awake you feel.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-01#p2"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "target": "schedule",
+   "input": 6,
+   "level": "advisory",
+   "seconds": 4.4,
+   "hold": false,
+   "verified": 5,
+   "reason": "Short nights can lead to slipping performance, and you may be more impaired than you feel. It is worth looking at how the last several nights have gone rather than only relying on how awake you feel.",
+   "cite_ids": [
+    "hrp:sleep-01#p1",
+    "hrp:sleep-01#p2"
+   ],
+   "runs": [
+    {
+     "n": 1,
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ]
+  }
+ ]
+}

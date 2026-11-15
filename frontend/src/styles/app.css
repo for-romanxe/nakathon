@@ -66,6 +66,24 @@ p { margin: 0; }
 .topbar-label { font-size: 0.74rem; color: var(--muted); }
 .topbar-value { font-family: var(--mono); font-weight: 600; font-size: 0.95rem; }
 
+/* Autonomy dial: which way Earth is (#46). The lit step takes its state's colour; the word is always shown */
+.comms-dial { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.comms-connected { --comms: var(--ok); }
+.comms-delayed { --comms: var(--caution); }
+.comms-blackout { --comms: var(--warning); }
+.comms-steps { list-style: none; margin: 0; padding: 0; display: flex; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.comms-steps li { padding: 3px 12px; font-size: 0.8rem; color: var(--muted); border-left: 1px solid var(--line); }
+.comms-steps li:first-child { border-left: 0; }
+.comms-steps li.on { background: var(--comms); color: var(--accent-ink); font-weight: 700; }
+.comms-note { font-size: 0.78rem; color: var(--comms); font-family: var(--mono); }
+
+/* Blackout: the whole cabin goes red — a red frame around the screen and a red-tinted status strip */
+html[data-comms="blackout"] .topbar { background: color-mix(in srgb, var(--warning) 14%, var(--bg)); border-bottom-color: var(--warning); }
+html[data-comms="blackout"] .app::after {
+  content: ""; position: fixed; inset: 0; z-index: 30; pointer-events: none;
+  box-shadow: inset 0 0 0 3px var(--warning), inset 0 0 60px color-mix(in srgb, var(--warning) 25%, transparent);
+}
+
 /* ---- Page ---- */
 .page { max-width: 960px; padding: 24px 28px 40px; display: flex; flex-direction: column; gap: 20px; }
 .panel { background: var(--bezel); border: 1px solid var(--line); border-radius: var(--radius); }
@@ -203,6 +221,8 @@ p { margin: 0; }
 .demo-clock button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
 .demo-clock button .small { font-weight: 400; }
 .demo-clock button:disabled { opacity: 0.55; cursor: default; }
+.demo-clock-group { margin: 0; padding: 12px 16px 0; font-size: 0.82rem; font-weight: 600; color: var(--muted); }
+.demo-clock button[aria-current] { border-color: var(--accent); }
 
 /* ---- Morning check-in sheet ---- */
 .sheet-backdrop {

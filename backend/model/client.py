@@ -111,9 +111,13 @@ def _mock_explanation(candidates: list, paragraphs: list, lang: str) -> dict:
     by_condition = {row["out"]["condition_id"]: row["out"] for row in _mock_rows("explanation")}
     if not candidates:
         return by_condition["none"]
+    given = [p["id"] for p in paragraphs]
     for condition_id in candidates:
         if condition_id in by_condition:
-            return by_condition[condition_id]
+            out = by_condition[condition_id]
+            if given and not set(out["cites"]) <= set(given):      # 시나리오의 인용이 받은 문단에 없으면 받은 첫 문단을 인용한다
+                out = {**out, "cites": given[:1]}
+            return out
     condition_id = candidates[0]
     condition = _conditions()[condition_id]
     line = (f"{condition['ko']} 가능성을 지켜볼 필요가 있어요." if lang == "ko"

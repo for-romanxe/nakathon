@@ -30,21 +30,43 @@ const SCENES = [
   { key: 'next_sol', body: ({ clock }) => ({ sol: clock.sol + 1, time: '06:10' }) }, // a second day in a row
 ]
 
+// Presentation scenes from issue #47 (FE-06): one press puts the clock on that act, so no one sets a date by hand
+// on stage. Fixed sol and time; the backend decides what each sol looks like (comms state, data). `comms` is the
+// state the script expects there: the frontend never sets it, but warns the operator when the backend's differs.
+const ACTS = [
+  { key: 'act1', sol: 16, time: '06:10', comms: 'delayed' }, // C1 slept badly: the habitat adjusts
+  { key: 'act1_result', sol: 17, time: '06:10', comms: 'delayed' }, // next morning: before / after
+  { key: 'act2', sol: 40, time: '09:00', comms: 'delayed' }, // D-3 before the solar conjunction
+  { key: 'act3', sol: 46, time: '09:00', comms: 'blackout' }, // blackout, 11 days to go: C4 chest pain
+  { key: 'act4', sol: 57, time: '08:00', comms: 'connected' }, // first window after the blackout opens
+].map((a) => ({ ...a, body: () => ({ sol: a.sol, time: a.time }) }))
+
+// After a scene jump: null when the backend's comms state is what the scene needs, else a warning to show
+function sceneWarning(scene, after) {
+  if (!scene.comms) return null
+  if (!after?.comms_state) return { key: 'demo.clock.scene_no_comms' }
+  if (after.comms_state !== scene.comms) return { key: 'demo.clock.scene_mismatch', expected: scene.comms, got: after.comms_state }
+  return null
+}
+
 export default function DemoClock() {
   const { t } = useT()
   const { mission, refresh } = useMission()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
+  const [warning, setWarning] = useState(null)
 
   async function go(scene) {
     setBusy(true)
     setError(null)
+    setWarning(null)
     try {
       const now = await api.getMission() // the shared state can be up to 15 s old
       if (!validMission(now)) { setError('demo.clock.bad_mission'); return }
       const body = scene.body(now)
       if (!body) { setError('demo.clock.no_window'); return }
-      await api.setDemoClock(body)
+      const after = await api.setDemoClock(body) // same shape as GET /mission
+      setWarning(sceneWarning(scene, after))
       refresh()
     } catch (e) {
       // with sign-in on, only the medical officer may move the clock (403)
@@ -62,6 +84,20 @@ export default function DemoClock() {
           {validMission(mission) ? t('demo.clock.now', { sol: mission.clock.sol, time: mission.clock.time }) : '–'}
         </span>
       </div>
+      <h3 className="demo-clock-group">{t('demo.clock.acts')}</h3>
+      <div className="demo-clock">
+        {ACTS.map((a) => {
+          const here = mission?.clock?.sol === a.sol && mission?.clock?.time === a.time
+          return (
+            <button key={a.key} type="button" className="btn-secondary" onClick={() => go(a)} disabled={busy}
+              aria-current={here ? 'step' : undefined}>
+              <span>{t(`demo.clock.${a.key}`)}</span>
+              <span className="muted small num">{t('demo.clock.at', { sol: a.sol, time: a.time })}</span>
+            </button>
+          )
+        })}
+      </div>
+      <h3 className="demo-clock-group">{t('demo.clock.steps')}</h3>
       <div className="demo-clock">
         {SCENES.map((s) => (
           <button key={s.key} type="button" className="btn-secondary" onClick={() => go(s)}
@@ -72,6 +108,11 @@ export default function DemoClock() {
         ))}
       </div>
       {error && <p role="alert" className="panel-empty error">{t(error)}</p>}
+      {warning && (
+        <p role="status" className="notice lv-hold">
+          {t(warning.key, warning.expected && { expected: t(`comms.${warning.expected}`), got: t(`comms.${warning.got}`) })}
+        </p>
+      )}
     </section>
   )
 }

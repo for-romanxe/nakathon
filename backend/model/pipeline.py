@@ -1,8 +1,12 @@
 """설명 생성 → 검증 → 재생성 루프 (명세 §11·§12). 백엔드는 설명이 필요할 때 이 함수 하나만 부른다."""
+import json, pathlib
+
 from backend import contracts, verify
 from backend.model import client
 
 MAX_RUNS = 2      # 명세 §12: 루프 상한 2회. 두 번 실패하면 판단 보류
+ADJUSTMENTS = pathlib.Path(__file__).resolve().parent / "adjustment_evidence.json"
+PROCEDURES = pathlib.Path(__file__).resolve().parent / "procedure_steps.json"
 
 
 def explain_verified(level: str, findings: list, condition_candidates: list, paragraphs: list, lang: str) -> dict:
@@ -40,3 +44,59 @@ def _stopped(runs: list, n: int, note: str) -> dict:
     """검사를 돌리지 못하고 끝난 경우: 이유를 적고 보류."""
     runs.append({"n": n, "ok": False, "fails": [], "note": note[:200]})
     return {"explanation": None, "hold": True, "verified": 0, "runs": runs}
+
+
+def _texts(evidence) -> dict:
+    """근거 목록을 {문단 id: 본문}으로 바꾼다. id 와 text 가 둘 다 문자열인 dict 행만 남기고 나머지 행은 하나씩 건너뛰며, 목록이 아니면 빈 dict 를 돌려준다."""
+    try:
+        return {row["id"]: row["text"] for row in evidence if isinstance(row, dict) and isinstance(row.get("id"), str) and isinstance(row.get("text"), str)}
+    except TypeError:      # 목록이 아니다 (순회할 수 없는 값)
+        return {}
+
+
+def adjustment_reason(target: str, level: str, findings: list, evidence: list, lang: str) -> dict:
+    """우주선 조정(조명·일정) 한 건에 붙일 이유 (이슈 #47). 조정할지와 전후 값은 규칙이 정한다. 여기서는 이유 문장만 만든다.
+
+    target 은 adjustment_evidence.json 의 키(lighting, schedule). evidence 는 event_flow.load_evidence() 가 읽은 근거 목록.
+    반환: {"reason": str | None, "cite_ids": [문단 id], "hold": bool, "verified": 0~5, "runs": [...]}
+    - cite_ids 는 표가 정한 문단 가운데 근거 파일에 있는 것이다. 모델이 정하지 않으므로 모델을 부르기 전에도, 실패한 뒤에도 같다.
+    - reason 은 검증을 통과한 설명 문장(1~2개)을 이은 것. 통과하지 못했거나 모델을 못 불렀으면 None 이고 hold 가 True 다.
+      그때 화면에는 규칙이 쓴 수치 문장과 cite_ids 만 보여 준다. 조정 자체는 이유가 없어도 적용된다.
+    - 예외를 던지지 않는다. 표 파일을 읽지 못하거나, 모르는 target 이거나, 근거 문단이 하나도 없으면 모델을 부르지 않고
+      cite_ids 가 빈 보류로 끝낸다. evidence 에 id 나 text 가 빠진 행이 있으면 그 행만 건너뛴다.
+    """
+    try:
+        entry = json.loads(ADJUSTMENTS.read_text(encoding="utf-8")).get(target)
+        note = "" if isinstance(entry, dict) else f"unknown adjustment target: {target}"
+    except (OSError, ValueError, AttributeError) as error:      # 표 파일이 없거나, JSON 이 깨졌거나, 객체가 아니다
+        entry, note = None, f"adjustment table unreadable: {type(error).__name__}"
+    texts = _texts(evidence)
+    paragraphs = [{"id": i, "text": texts[i]} for i in (entry or {}).get("cite_ids", []) if i in texts]
+    cite_ids = [p["id"] for p in paragraphs]
+    if not paragraphs:
+        note = note or f"no evidence paragraph loaded for {target}"
+        return {"reason": None, "cite_ids": [], "hold": True, "verified": 0, "runs": _stopped([], 1, note)["runs"]}
+    result = explain_verified(level, findings, [entry.get("condition_id")], paragraphs, lang)
+    reason = " ".join(result["explanation"]["lines"]) if result["explanation"] else None
+    return {"reason": reason, "cite_ids": cite_ids, "hold": result["hold"], "verified": result["verified"], "runs": result["runs"]}
+
+
+def procedure_steps(condition_id: str, evidence: list, lang: str) -> dict:
+    """경보 때 보여 줄 절차 단계 (이슈 #47). 모델을 부르지 않는다. 단계와 근거 문단은 procedure_steps.json 에 고정돼 있다.
+
+    반환: {"available": bool, "steps": [{"step_id", "text", "cite_id", "kind"}]}  (kind 의 뜻은 procedure_steps.json 의 _doc)
+    이 상태의 절차가 없거나 단계가 가리키는 문단이 근거 파일에 하나라도 없으면 available 은 False 이고 steps 는 비어 있다.
+    출처를 열 수 없는 단계는 보여 주지 않는다. 그때 화면은 경보와 의무관 호출만 보여 준다.
+    예외를 던지지 않는다. 단계 파일을 읽지 못하거나 모양이 어긋나도 available 이 False 다.
+    evidence 에 id 나 text 가 빠진 행이 있으면 그 행은 없는 것으로 본다.
+    """
+    loaded = _texts(evidence)
+    try:
+        steps = json.loads(PROCEDURES.read_text(encoding="utf-8"))[condition_id]["steps"]
+        steps = [{"step_id": step["step_id"], "text": step["ko" if lang == "ko" else "en"],
+                  "cite_id": step["cite_id"], "kind": step["kind"]} for step in steps]
+    except (OSError, ValueError, LookupError, TypeError):      # 파일이 없거나, JSON 이 깨졌거나, 이 상태의 절차가 없거나, 칸이 빠졌다
+        return {"available": False, "steps": []}
+    if not steps or not all(step["cite_id"] in loaded for step in steps):
+        return {"available": False, "steps": []}
+    return {"available": True, "steps": steps}
