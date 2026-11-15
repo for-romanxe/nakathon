@@ -106,6 +106,37 @@ class ProcedureConsentTest(TestCase):
             r = again.get("/earth-reports", headers=h("c4")).json()["reports"]
             self.assertEqual(r[0]["packet"]["seq"], seq)
 
+    def reqs(self, who, crew=None):
+        r = self.client.get(f"/crew/{crew or who}/today", headers=h(who)).raise_for_status()
+        return r.json()["consent_requests"]
+
+    def test_today_requests_and_report_metrics(self):
+        want = [{"event_id": self.eid, "patient": "c4", "step_id": "save_report",
+                 "approvals": 0, "required": 2}]
+        self.assertEqual(self.reqs("c1"), want)
+        self.assertEqual(self.reqs("c3"), want)
+        self.assertEqual((self.reqs("c2"), self.reqs("c4"), self.reqs("c2", "c1")), ([], [], []))
+        self.approve("c1").raise_for_status()
+        self.assertEqual(self.reqs("c1"), [])
+        self.assertEqual(self.reqs("c3"), [{**want[0], "approvals": 1}])
+        self.approve("c3").raise_for_status()
+        self.assertEqual((self.reqs("c1"), self.reqs("c3")), ([], []))
+        rep = self.client.get("/earth-reports", headers=h("c4")).json()["reports"][0]
+        got = {m["metric"]: m["value"] for m in rep["metrics"]}
+        self.assertEqual(len(got), 6)
+        self.assertTrue(all(isinstance(v, (int, float)) and not isinstance(v, bool)
+                            for v in got.values()))
+        ev = self.client.get(f"/events/{self.eid}", headers=h("c4")).raise_for_status().json()
+        found = {f["metric"]: f for f in ev["findings"]}
+        self.assertEqual(got, {k: found[k]["value"] for k in got})
+        for m in ("hr", "hrv"):
+            self.assertEqual(found[m]["level"], "caution")
+        self.assertNotIn("chest", json.dumps(rep))
+
+    def test_ordinary_clock_no_requests(self):
+        self.client.post("/demo/clock", json={"sol": 57, "time": "08:00"}, headers=h("c2")).raise_for_status()
+        self.assertEqual((self.reqs("c1"), self.reqs("c3")), ([], []))
+
     def test_concurrent_approvals(self):
         with ThreadPoolExecutor(4) as pool:
             codes = list(pool.map(lambda w: self.approve(w).status_code, ["c1", "c3", "c1", "c3"]))

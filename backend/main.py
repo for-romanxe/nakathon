@@ -343,7 +343,12 @@ def create_app(db_path=DEMO_DB) -> FastAPI:
         with closing(connect(db_path)) as connection:
             if not can_read_crew(connection, crew_id, member):
                 return crew_not_found()
-            return today(connection, crew_id, mission_sol(clock), lang)
+            now = clock
+            body = today(connection, crew_id, mission_sol(now), lang)
+            body["consent_requests"] = (
+                procedure_consent.pending_requests(connection, crew_id, now)
+                if member["id"] == crew_id else [])
+            return body
 
     @app.get("/crew/{crew_id}/preflight")
     def get_preflight(crew_id: str, member=Depends(viewer)):
