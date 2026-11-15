@@ -97,7 +97,7 @@ export default {
   'comms.delayed': 'Delayed',
   'comms.blackout': 'Blackout',
   'comms.connected_hint': 'Comm window open',
-  'comms.delayed_hint': 'Earth replies at the next window',
+  'comms.delayed_hint': 'Can send in the next comm window',
   'comms.blackout_hint': 'No contact with Earth',
   'comms.blackout_left': 'Solar conjunction · {n} days to go',
   'env.mars_base': 'Mars base',

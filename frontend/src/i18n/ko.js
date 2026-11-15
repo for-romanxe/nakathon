@@ -97,7 +97,7 @@ export default {
   'comms.delayed': '지연',
   'comms.blackout': '두절',
   'comms.connected_hint': '통신 창이 열려 있어요',
-  'comms.delayed_hint': '지구 답장은 다음 창에',
+  'comms.delayed_hint': '다음 통신 창에서 전송 가능',
   'comms.blackout_hint': '지구와 연락이 끊겼어요',
   'comms.blackout_left': '태양 합 · 복구까지 {n}일',
   'env.mars_base': '화성 기지',
