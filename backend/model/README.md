@@ -73,7 +73,7 @@ out = pipeline.adjustment_reason("lighting", "caution", findings, evidence, "ko"
 
 ```python
 out = pipeline.procedure_steps("cardiac_emergency", evidence, "ko")
-# {"available": True, "steps": [{"step_id": "oxygen", "text": "산소 마스크로 산소를 주세요.", "cite_id": "nasa:card-10#p1", "kind": "treatment"}, ...5개]}
+# {"available": True, "steps": [{"step_id": "oxygen", "text": "환자에게 산소 마스크를 씌워 주세요.", "cite_id": "nasa:card-10#p1", "kind": "treatment"}, ...5개]}
 ```
 
 - 모델을 부르지 않는다. 단계와 근거 문단은 `model/procedure_steps.json`에 고정돼 있고 지금은 가슴 통증 하나다. 예외를 던지지 않는다(단계 파일을 읽지 못해도 `available: False`).
