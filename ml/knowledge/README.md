@@ -62,7 +62,7 @@ python3 ml/knowledge/export_evidence.py ko > data/evidence-ko.json      # 영어
 `nasa:card-10#p1`~`#p5`는 옛 우주정거장 의료 점검표의 가슴 통증 절차를 단계 순서대로 요약한 문단이다. 경보 화면의 절차 단계(`backend/model/procedure_steps.json`)가 이 문단을 출처로 가리킨다.
 
 - 출처: International Space Station Integrated Medical Group (IMG) Medical Checklist, JSC-48522-E4, 2001년 11월 12일판, 응급 편 "Chest Pain - Acute"(인쇄 쪽수 30·32·34). nasa.gov에 올라 있던 파일인데 지금은 그 주소가 없어서(404) 웹 보관본 주소를 적었다. 조사 에이전트가 보관본에서 받아 글자를 뽑았고, 그 절차 부분(1~9번)을 직접 읽어 단계와 맞춰 봤다. 11-15 15시대에 보관본 주소를 다시 열어 보려 했을 때는 요청 제한(429)으로 열리지 않았다.
-- **원문이 아니라 AI가 쓴 요약이고 사람이 검토하지 않았다.** 화면이나 발표에서 "절차서 원문"이라고 하면 사실과 다르다. "옛 NASA 점검표를 요약한 단계"가 맞는 말이다.
+- **원문이 아니라 AI가 쓴 요약이다.** 화면이나 발표에서 "절차서 원문"이라고 하면 사실과 다르다. "옛 NASA 점검표를 요약한 단계"가 맞는 말이다. 한국어 문단은 2026-11-15에 팀원 한 명이 읽었다(아래 "시연 장면별 근거").
 - **2001년판이다.** 그때의 장비와 처치를 담고 있고 지금의 절차가 아니다. 첫 단계인 산소 공급을 포함해 지금의 진료 지침과 다를 수 있다. 현재 판의 가슴 통증 절차는 공개된 것을 찾지 못했다.
 - 점검표 7~9번은 의사와 몇 분 넘게 연락이 닿지 않을 때 승무원이 먼저 시작하는 처치인데 약이 들어 있어 옮기지 않았다(본문 규칙: 약 이름과 용량을 쓰지 않는다). 5번 문단은 그런 갈래가 있다는 것만 적는다.
 - 다섯 문단 모두 `escalate`라서 근거 파일의 맨 끝에 놓인다. 가슴 통증은 경보 코드라 모델을 건너뛰므로 모델 입력에는 들어가지 않는다.
@@ -72,12 +72,13 @@ python3 ml/knowledge/export_evidence.py ko > data/evidence-ko.json      # 영어
 
 | 장면 | 쓰이는 곳 | 문단 | 주된 출처 | 검토 상태 |
 |---|---|---|---|---|
-| 조명 자동 조정 | `pipeline.adjustment_reason("lighting", …)` | `hrp:sleep-01#p1`, `hrp:sleep-02#p1` | NASA HRP 수면 근거 보고서(2016), NASA HRP 수면·불규칙한 일정 위험 페이지(2025) | 전문 확인, AI 작성, 사람 검토 전 |
+| 조명 자동 조정 | `pipeline.adjustment_reason("lighting", …)` | `hrp:sleep-01#p1`, `hrp:sleep-02#p1` | NASA HRP 수면 근거 보고서(2016), NASA HRP 수면·불규칙한 일정 위험 페이지(2025) | 전문 확인, AI 작성, 팀원 1명이 한국어 문단을 읽음(11-15) |
 | 일정 조정 (지연: 승인 / 두절: 승인 없이 적용, 거부 가능) | `pipeline.adjustment_reason("schedule", …)` | `hrp:sleep-01#p1`, `hrp:sleep-01#p2` | NASA HRP 수면 근거 보고서(2016). `#p2`의 논문 한 편은 초록만 읽음 | 위와 같음 |
-| 두절 중 가슴 통증 경보의 절차 단계 | `pipeline.procedure_steps("cardiac_emergency", …)` | `nasa:card-10#p1`~`#p5` | NASA 우주정거장 의료 점검표 JSC-48522-E4(2001, 보관본) | 절차 부분 확인, AI 요약, 사람 검토 전, 2001년판 |
-| 화성에서는 승무원이 먼저 대응한다는 배경 | 문서 화면 | `hrp:card-01#p1` | NASA 심혈관 위험 페이지(2025), NASA HRP "Distance From Earth"(2024) | 전문 확인, AI 작성, 사람 검토 전 |
+| 두절 중 가슴 통증 경보의 절차 단계 | `pipeline.procedure_steps("cardiac_emergency", …)` | `nasa:card-10#p1`~`#p5` | NASA 우주정거장 의료 점검표 JSC-48522-E4(2001, 보관본) | 절차 부분 확인, AI 요약, 팀원 1명이 한국어 문단과 단계 문구를 읽음(11-15), 2001년판 |
+| 화성에서는 승무원이 먼저 대응한다는 배경 | 문서 화면 | `hrp:card-01#p1` | NASA 심혈관 위험 페이지(2025), NASA HRP "Distance From Earth"(2024) | 전문 확인, AI 작성, 팀원 1명이 한국어 문단을 읽음(11-15) |
 | 태양 합 두절이라는 설정 | 발표·제출물 (문단 없음) | 없음 | NASA, 2023-11-10, "NASA's Mars Fleet Will Still Conduct Science While Lying Low" | 11-15에 페이지를 열어 날짜와 문구 확인 |
 
+- **검토한 범위 (2026-11-15).** 팀원 한 명(AI 담당, 의료 전문가 아님)이 위 문단 9개와 화면 단계 문구 5개, 어느 문단이 어느 조정에 붙는지를 한국어로 읽었다. 단계 1번 문구 한 건을 지적해 고쳤고(PR #56) 그 밖의 지적은 없었다. 영어 문단은 읽지 않았고, 의료 전문가의 검토가 아니며, 나머지 문단 137개는 검토하지 않은 그대로다.
 - 출처 주소 전체는 각 문단의 `sources`에 있다. 태양 합 페이지: https://www.nasa.gov/solar-system/planets/mars/nasas-mars-fleet-will-still-conduct-science-while-lying-low/ (2023년 11월 11~25일 두 주 동안 화성 탐사선들에 명령을 보내지 않았다는 내용). 14일 동안 통신이 완전히 끊긴다는 것은 시연 설정이지 이 페이지의 내용이 아니다. 페이지는 그동안에도 탐사선 상태 정보는 대체로 들어온다고 적는다.
 - 일정 조정에 심박변이 문단(`lit:card-09#p2`)을 붙이지 않았다. 그 문단은 변화가 작고 연구마다 일정하지 않다고 적는다.
 - 시연에는 한 언어의 근거 파일 하나를 쓴다. `python3 ml/knowledge/export_evidence.py ko > data/evidence-ko.json`. 문단을 더했으므로 이 파일을 다시 만들어야 절차 단계가 나온다.
