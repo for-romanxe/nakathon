@@ -9,7 +9,7 @@ ADJUSTMENTS = pathlib.Path(__file__).resolve().parent / "adjustment_evidence.jso
 PROCEDURES = pathlib.Path(__file__).resolve().parent / "procedure_steps.json"
 
 
-def explain_verified(level: str, findings: list, condition_candidates: list, paragraphs: list, lang: str) -> dict:
+def explain_verified(level: str, findings: list, condition_candidates: list, paragraphs: list, lang: str, mock_lines=None) -> dict:
     """검증을 통과한 설명만 돌려준다.
 
     반환: {"explanation": Explanation | None, "hold": bool, "verified": 0~5, "runs": [{"n", "ok", "fails", "note"}]}
@@ -23,7 +23,7 @@ def explain_verified(level: str, findings: list, condition_candidates: list, par
     runs, rejected, passed = [], {}, 0
     for n in range(1, MAX_RUNS + 1):
         try:
-            out = client.explain(level, findings, condition_candidates, paragraphs, lang, rejected=rejected)
+            out = client.explain(level, findings, condition_candidates, paragraphs, lang, rejected=rejected, mock_lines=mock_lines)
             result = verify.verify(out, findings, level, [p["id"] for p in paragraphs], lang, candidates=condition_candidates)
             passed = checks - len(result["fails"])
         except client.ModelUnavailableError as error:      # 서버에 닿지 못하면 다시 불러도 같다
@@ -76,7 +76,9 @@ def adjustment_reason(target: str, level: str, findings: list, evidence: list, l
     if not paragraphs:
         note = note or f"no evidence paragraph loaded for {target}"
         return {"reason": None, "cite_ids": [], "hold": True, "verified": 0, "runs": _stopped([], 1, note)["runs"]}
-    result = explain_verified(level, findings, [entry.get("condition_id")], paragraphs, lang)
+    mock_lines = entry.get("mock_lines")
+    mock_lines = mock_lines.get("ko" if lang == "ko" else "en") if isinstance(mock_lines, dict) else None
+    result = explain_verified(level, findings, [entry.get("condition_id")], paragraphs, lang, mock_lines=mock_lines)
     reason = " ".join(result["explanation"]["lines"]) if result["explanation"] else None
     return {"reason": reason, "cite_ids": cite_ids, "hold": result["hold"], "verified": result["verified"], "runs": result["runs"]}
 

@@ -1,5 +1,9 @@
 {
-  "_doc": "우주선 조정(이슈 #47)의 대상마다 근거 문단을 고정한 표. 순서는 이유 문단 1개 + 살필 것 문단 1개로, 설명 모델이 학습·평가 때 받은 모양과 같다. 문단 id 는 ml/knowledge 의 것이고 둘 다 NASA Human Research Program 자료가 출처다. 어느 문단을 어느 조정에 붙일지는 AI(Claude)가 고른 초안이다. 2026-11-15에 팀원 한 명이 이 묶음과 한국어 문단을 읽었다(의료 전문가 검토 아님). 일정 조정에 심박변이 문단(lit:card-09#p2)을 쓰지 않은 까닭: 그 문단은 변화가 작고 연구마다 일정하지 않다고 적혀 있어 일정을 바꾸는 근거로는 약하다.",
-  "lighting": {"condition_id": "sleep_deficit", "cite_ids": ["hrp:sleep-01#p1", "hrp:sleep-02#p1"]},
-  "schedule": {"condition_id": "sleep_deficit", "cite_ids": ["hrp:sleep-01#p1", "hrp:sleep-01#p2"]}
+  "_doc": "우주선 조정(이슈 #47)의 대상마다 근거 문단을 고정한 표. 순서는 이유 문단 1개 + 살필 것 문단 1개로, 설명 모델이 학습·평가 때 받은 모양과 같다. 문단 id 는 ml/knowledge 의 것이고 둘 다 NASA Human Research Program 자료가 출처다. 어느 문단을 어느 조정에 붙일지는 AI(Claude)가 고른 초안이다. 2026-11-15에 팀원 한 명이 이 묶음과 한국어 문단을 읽었다(의료 전문가 검토 아님). 일정 조정에 심박변이 문단(lit:card-09#p2)을 쓰지 않은 까닭: 그 문단은 변화가 작고 연구마다 일정하지 않다고 적혀 있어 일정을 바꾸는 근거로는 약하다. mock_lines 는 MODEL=mock 에서 mock 모델이 돌려주는 문장이고, 2026-11-15에 실제 모델이 같은 입력으로 쓴 문장을 그대로 옮겼다.",
+  "lighting": {"condition_id": "sleep_deficit", "cite_ids": ["hrp:sleep-01#p1", "hrp:sleep-02#p1"],
+               "mock_lines": {"ko": ["업무 부담이나 생체 시계의 변화로 인해 수면 시간이 짧아질 가능성이 있어요.", "잠들기 전에 긴장을 풀 수 있는 시간을 확보하고 조명을 조절해 보는 게 좋아요."],
+                              "en": ["Heavy workloads and irregular schedules may disrupt your body clock and shorten your sleep.", "Ensure you have enough time to relax before bed to help with falling asleep."]}},
+  "schedule": {"condition_id": "sleep_deficit", "cite_ids": ["hrp:sleep-01#p1", "hrp:sleep-01#p2"],
+               "mock_lines": {"ko": ["잠을 짧게 자는 날이 이어지면 스스로 느끼는 것보다 업무 능력이 더 떨어져 있을 가능성이 있어요.", "정신이 또렷한 느낌만 살피지 말고, 최근 며칠 동안 얼마나 잤는지도 함께 확인해 보는 게 좋아요."],
+                              "en": ["Shortened sleep due to heavy workloads or schedule changes may impair your performance more than you feel.", "Monitor how much you have slept over the last few days rather than relying only on how alert you feel."]}}
 }

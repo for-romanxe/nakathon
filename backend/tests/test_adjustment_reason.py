@@ -40,6 +40,33 @@ class Reason(unittest.TestCase):
                     self.assertEqual(result["cite_ids"], entry["cite_ids"])
                     self.assertEqual(result["verified"], 5)
 
+    def test_mock_mode_returns_each_targets_own_lines_in_the_requested_language(self):
+        reasons = {}
+        with mock.patch.dict(os.environ, {"MODEL": "mock", "MOCK_DELAY": "0"}):
+            for lang in ("ko", "en"):
+                evidence = export_evidence.export(lang)
+                for target, entry in TABLE.items():
+                    with self.subTest(lang=lang, target=target):
+                        result = pipeline.adjustment_reason(target, "caution", FINDINGS, evidence, lang)
+                        self.assertFalse(result["hold"], result["runs"])
+                        self.assertEqual(result["verified"], 5)
+                        self.assertEqual(result["reason"], " ".join(entry["mock_lines"][lang]))
+                        reasons[lang, target] = result["reason"]
+        for lang in ("ko", "en"):
+            self.assertNotEqual(reasons[lang, "lighting"], reasons[lang, "schedule"])
+        for target in TABLE:
+            self.assertNotRegex(reasons["en", target], "[가-힣]")
+
+    def test_malformed_mock_lines_do_not_raise(self):
+        for value in ("not a dict", 5, None, ["a", "b"]):
+            table = {**TABLE, "lighting": {**TABLE["lighting"], "mock_lines": value}}
+            with tempfile.TemporaryDirectory() as tmp, self.subTest(mock_lines=value):
+                path = Path(tmp) / "table.json"
+                path.write_text(json.dumps(table), encoding="utf-8")
+                with mock.patch.object(pipeline, "ADJUSTMENTS", path), mock.patch.dict(os.environ, {"MODEL": "mock", "MOCK_DELAY": "0"}):
+                    result = pipeline.adjustment_reason("lighting", "caution", FINDINGS, KO, "ko")
+                self.assertEqual(result["cite_ids"], TABLE["lighting"]["cite_ids"])
+
     def test_reason_joins_the_verified_lines_and_the_model_sees_only_the_table_paragraphs(self):
         answer = {"category": "sleep", "condition_id": "sleep_deficit", "cites": ["hrp:sleep-02#p1"],
                   "lines": ["빛을 받는 시간대가 어긋나면 잠들기 어려울 수 있어요.", "잠들기 전에는 어두운 조명이 도움이 될 수 있어요."]}

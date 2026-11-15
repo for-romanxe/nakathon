@@ -280,11 +280,12 @@ def _explain_request(level, findings, candidates, texts) -> str:
             f"candidates: {json.dumps({c: conds[c] for c in candidates}, ensure_ascii=False)}\nparagraphs:\n{paras}")
 
 
-def explain(level: str, findings: list, condition_candidates: list, paragraphs: list, lang: str, rejected=None) -> dict:
+def explain(level: str, findings: list, condition_candidates: list, paragraphs: list, lang: str, rejected=None, mock_lines=None) -> dict:
     """③ 규칙 판정 + findings + 검색 문단 → Explanation (category, condition_id, lines[≤3], cites[]).
     숫자 문장은 템플릿이 쓴다. 모델은 '왜·무엇을 조심' 1~2문장만. 반드시 verify.verify() 를 거친다.
     condition_id 는 condition_candidates 중 하나여야 한다(순서가 우선순위). 목록 밖 후보를 넘기면 ValueError.
-    rejected 는 직전 실행의 verify()["detail"] (검사 이름 → 걸린 표현). 주면 프롬프트에 고칠 점을 덧붙인다(재생성, pipeline.py)."""
+    rejected 는 직전 실행의 verify()["detail"] (검사 이름 → 걸린 표현). 주면 프롬프트에 고칠 점을 덧붙인다(재생성, pipeline.py).
+    mock_lines 는 MODEL=mock 에서만 쓴다. 주면 mock 설명의 lines 를 이 문장들로 바꾼다. MODEL=live 에서는 무시한다."""
     conds = _conditions()
     unknown = [c for c in condition_candidates if c not in conds]
     if unknown:
@@ -292,6 +293,8 @@ def explain(level: str, findings: list, condition_candidates: list, paragraphs: 
     if _mode() == "mock":
         _delay()
         out = _mock_explanation(list(condition_candidates), paragraphs, lang)
+        if mock_lines is not None:
+            out = {**out, "lines": list(mock_lines)}
         return _among_candidates(_validated(out, "explanation"), condition_candidates)
     prompt = _explain_prompt()["ko" if lang == "ko" else "en"]      # 지시문과 예시는 출력 언어로 쓴 것을 쓴다
     shots = [(_explain_request(s["level"], s["findings"], s["candidates"], s["paragraphs"]), json.dumps(s["answer"], ensure_ascii=False))
