@@ -150,29 +150,84 @@ def _cite_id(cite, paragraphs: list):
     return cite
 
 
+# 지시문은 한 곳에만 둔다. 학습 데이터(ml/data/build_v2.py)도 이 글을 그대로 가져다 쓴다.
+def _symptom_system() -> str:
+    e = contracts.enums()
+    return ("You extract symptom codes from a crew member's free-text report. Answer with JSON only. "
+            f"codes: array from {json.dumps(e['symptom_codes'])}. onset: one of {json.dumps(e['onset'])}. "
+            f"worse_when: one of {json.dumps(e['worse_when'])}. severity: integer 1-5. needs_question: true or false. "
+            f"locations: array from {json.dumps([p for p in e['body_location'] if p != 'unknown'])}. "
+            "Never invent codes outside the list. "
+            "Code only what the writer has now: not a denied symptom, one that is over, another person's symptom, or a figure of speech. "
+            "If nothing remains, codes is [\"none\"]. A wish to die, to disappear or to end it all is always crisis, even next to other symptoms. "
+            "onset: now = this moment or minutes ago; hours = a stated number of hours, since this afternoon, or since an event earlier today; "
+            "today = since waking, this morning or all day; days = since yesterday or longer; unknown = no time stated. "
+            "worse_when: the situation the report ties the symptom to (standing up, after eating, during or after exercise, lying down); "
+            "none = the writer says nothing changes it; unknown = not stated. "
+            "severity follows the intensity words: 1 slight, 2 no intensity word, 3 quite or bothersome, 4 severe or hard to work, 5 unbearable; "
+            "at least 3 with chest_pain or shortness_of_breath, at least 4 with crisis, 1 with none. "
+            "needs_question: true only when the report is too vague to tell which symptom it is (\"I feel off\"); otherwise false. "
+            "locations: the body parts the report says are affected now; [] when it names none. "
+            "A headache is head, chest pain is chest, a stomach ache is abdomen. head includes face, eyes, ears and nose (\"my right eye\" is head); neck includes the throat; "
+            "abdomen includes stomach and belly; back includes the lower back. Left and right are the writer's own and apply only to arms and legs: "
+            "an arm runs from shoulder to hand, a leg from hip to foot, and an arm or leg named without a side counts as both sides "
+            "(\"my knee\" is left_leg and right_leg). Leave out any part that is denied, over or someone else's.")
+
+
+MOOD_SYSTEM = ("Convert the crew member's free-text mood report into scales. Answer with JSON only: "
+               "{\"mood\": 1-5 (5=best), \"fatigue\": 1-5 (5=most tired), \"stress\": 1-5 (5=most stressed), \"confidence\": 0-1}. "
+               "mood: 1 very unhappy or hopeless, 2 low, flat, irritable or anxious, 3 neutral or mixed, 4 good, 5 very good. "
+               "fatigue: 1 fully alert, 2 a bit tired (an ordinary day), 3 moderately tired, 4 very tired, 5 exhausted. "
+               "stress: 1 calm, 2 slightly tense (an ordinary day), 3 moderately stressed but coping, 4 highly stressed, 5 overwhelmed. "
+               "For a scale the report does not mention use mood 3, fatigue 2, stress 2. "
+               "confidence is 0.3 plus 0.2 for each scale the report states.")
+
+
 def extract_symptoms(text: str, lang: str, recent_summary: str = "") -> dict:
-    """① 증상 문장 → SymptomReport (codes[], onset, worse_when, severity, needs_question)."""
+    """① 증상 문장 → SymptomReport (codes[], onset, worse_when, severity, needs_question, 선택 locations[])."""
     if _mode() == "mock":
         _delay()
         return _validated(_mock_pick("symptom", text), "symptom")
     e = contracts.enums()
-    system = ("You extract symptom codes from a crew member's free-text report. Answer with JSON only. "
-              f"codes: array from {json.dumps(e['symptom_codes'])}. onset: one of {json.dumps(e['onset'])}. "
-              f"worse_when: one of {json.dumps(e['worse_when'])}. severity: integer 1-5. "
-              "needs_question: true when a single follow-up question would change the codes. Never invent codes outside the list.")
     user = text if not recent_summary else f"{text}\n\n[recent metrics] {recent_summary}"
-    out = _chat(system, user)
+    out = _chat(_symptom_system(), user)
     for key in ("onset", "worse_when"):      # 보조 필드를 지어내면 unknown 으로 둔다. codes 는 건드리지 않는다(목록 밖이면 거부).
         if key in out and out[key] not in e[key]:
             out[key] = "unknown"
+    return _validated(finish_symptom(out), "symptom")      # locations 정리도 finish_symptom 에서 한다
+
+
+URGENT_CODES = ("crisis", "chest_pain", "shortness_of_breath")
+ASK_CODES = ("dizziness", "headache", "nausea", "fatigue")      # 언제부터·언제 심해지는지에 따라 판단이 달라지는 증상
+
+
+def finish_symptom(out: dict) -> dict:
+    """모델 출력에 정해진 규칙을 적용한다. 모델은 문장을 읽는 일만 하고, 계산할 수 있는 것은 여기서 계산한다.
+    - severity: 척도 밖 숫자는 끝값으로(증상이 없으면 모델이 0 을 쓴다). 가슴 통증·호흡 곤란은 3 이상, 위기는 4 이상, 증상 없음은 1.
+    - needs_question: 모델은 '모호한가'만 답한다. 여기에 '어지러움·두통·메스꺼움·피로인데 언제부터인지도 언제 심해지는지도 없다'를 더하고,
+      급한 증상이면 묻지 않는다.
+    - locations(몸 화면 표시용, 판정에 안 쓴다, CONTRACT §5.5): 목록 밖 값·겹친 값은 그 값만 버린다. [] 는 '봤고 부위가 없다'라 그대로 둔다.
+      쓸 수 있는 값이 하나도 없거나 배열이 아니면 ["unknown"](프론트가 문장에서 찾는다). 증상이 없으면 []. 모델이 칸을 안 쓰면 키를 만들지 않는다."""
+    codes = out.get("codes")
+    if not isinstance(codes, list):
+        return out
     if "locations" in out:
-        raw = out["locations"]
-        allowed = contracts.schema("symptom")["properties"]["locations"]["items"]["enum"]
-        locations = dict.fromkeys(
-            location for location in raw if isinstance(location, str) and location in allowed and location != "unknown"
-        ) if isinstance(raw, list) else {}
-        out["locations"] = [] if raw == [] else list(locations) or ["unknown"]
-    return _validated(out, "symptom")
+        raw = out["locations"] if isinstance(out["locations"], list) else ["?"]
+        known = [p for p in contracts.enums()["body_location"] if p != "unknown"]
+        named = list(dict.fromkeys(x for x in raw if isinstance(x, str) and x in known))
+        out["locations"] = [] if codes == ["none"] or not raw else named or ["unknown"]
+    if isinstance(out.get("severity"), str) and out["severity"].strip().isdigit():      # "4" 나 2.0 처럼 쓴 숫자는 정수로 맞춘다
+        out["severity"] = int(out["severity"])
+    if type(out.get("severity")) is float:
+        out["severity"] = int(out["severity"] + 0.5)
+    if type(out.get("severity")) is int:
+        floor = 4 if "crisis" in codes else 3 if ("chest_pain" in codes or "shortness_of_breath" in codes) else 1
+        out["severity"] = 1 if codes == ["none"] else min(5, max(floor, out["severity"]))
+    if type(out.get("needs_question")) is bool:
+        unstated = out.get("onset") == "unknown" and out.get("worse_when") == "unknown"
+        asks = out["needs_question"] or (unstated and any(c in ASK_CODES for c in codes))
+        out["needs_question"] = asks and not any(c in URGENT_CODES for c in codes)
+    return out
 
 
 def score_mood(text: str, lang: str) -> dict:
@@ -180,9 +235,10 @@ def score_mood(text: str, lang: str) -> dict:
     if _mode() == "mock":
         _delay()
         return _validated(_mock_pick("mood", text), "mood")
-    system = ("Convert the crew member's free-text mood report into scales. Answer with JSON only: "
-              "{\"mood\": 1-5 (5=best), \"fatigue\": 1-5 (5=most tired), \"stress\": 1-5 (5=most stressed), \"confidence\": 0-1}.")
-    return _validated(_chat(system, text, 60), "mood")
+    out = _chat(MOOD_SYSTEM, text, 60)
+    if type(out.get("confidence")) in (int, float):      # 0~1 밖으로 쓴 신뢰도는 끝값으로 당긴다. 척도 값은 건드리지 않는다.
+        out["confidence"] = min(1, max(0, out["confidence"]))
+    return _validated(out, "mood")
 
 
 # 재생성 때 모델에게 알려 주는 말: 검증기 검사 이름 → 고칠 점. 걸린 표현(verify 의 detail)이 있으면 뒤에 붙인다.

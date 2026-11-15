@@ -6,9 +6,15 @@ __pycache__/
 .venv/
 data/*
 ml/.venv/
-ml/adapters/
+ml/adapters/*
+!ml/adapters/gemma-12b-v2/
+ml/adapters/gemma-12b-v2/*
+!ml/adapters/gemma-12b-v2/adapters.safetensors
+!ml/adapters/gemma-12b-v2/adapter_config.json
 ml/data/symptoms/
 ml/models/
 mockup/refs/
 node_modules/
 ml/logs/
+ml/data/v2/train.jsonl
+ml/data/v2/valid.jsonl

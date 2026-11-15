@@ -1,0 +1,20 @@
+# 학습 v2 설정 (ml 폴더에서: .venv/bin/python train_v2.py -c train_v2.yaml)
+model: models/gemma-4-12B-it-qat-OptiQ-4bit
+data: data/v2                  # build_v2.py 가 만든 train.jsonl · valid.jsonl
+adapter_path: adapters/gemma-12b-v2
+train: true
+fine_tune_type: lora
+mask_prompt: true              # 답 부분만 손실에 넣는다
+num_layers: 16
+lora_parameters: {rank: 8, dropout: 0.0, scale: 20.0}   # scale 20 은 mlx-lm 기본값. PEFT 의 alpha/r=2 보다 10배 크므로 학습률을 그만큼 낮게 둔다
+learning_rate: 1.0e-5
+batch_size: 2               # 설명 문항 4개 묶음은 최대 메모리 18.8GB 였다(24GB 맥). 2개씩 묶고 두 번 모아 갱신한다
+grad_accumulation_steps: 2
+iters: 1500                 # 묶음 1500번 = 문항 3000개 ≈ 학습셋 두 바퀴
+max_seq_length: 1280           # 설명 문항(지시문 + 예시 2개 + 문단)이 가장 길다
+grad_checkpoint: true
+steps_per_report: 20
+steps_per_eval: 250
+val_batches: 25
+save_every: 250
+seed: 7

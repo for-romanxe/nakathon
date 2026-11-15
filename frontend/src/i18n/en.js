@@ -307,6 +307,7 @@ export default {
   "crew.tx.actions": "Actions",
   "crew.tx.hint": "Warnings go first. Packets leave only inside a comm window, and a reply from Earth takes at least twice the one-way delay.",
   "proc.search": "Search title, text or id",
+  "proc.back": "← All documents",
   "proc.paragraphs": "{n} paragraphs",
   "proc.no_results": "No documents match.",
   "proc.empty": "There are no documents on this device yet.",

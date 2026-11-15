@@ -1,0 +1,2125 @@
+{
+ "label": "gemma-12b-v2-1500",
+ "split": "dev",
+ "date": "2026-11-14T16:48",
+ "model_url": "http://127.0.0.1:8080",
+ "summary": [
+  "symptom  model 29/30 (exact 29/30)  keyword 13/30  | ko 16/17  en 13/13",
+  "  by kind: context 3/3  hard_negative 6/6  indirect 4/4  mixed 4/4  multi 3/4  negation 3/3  none 3/3  paraphrase 2/2  plain 1/1",
+  "  urgent codes (chest pain, breathlessness, crisis) caught: model 10/10  keyword 5/10",
+  "  schema errors: 0",
+  "mood     in range 12/12  schema errors 0",
+  "explain  all: first-run pass 20/20  hold 0/20  picked first candidate 20/20  해요체 10/10  avoid-term hits 1  grounding median 0.55 (min 0.19)",
+  "latency  symptom median 1.9s  max 3.4s  (n=30)",
+  "latency  mood median 1.4s  max 1.7s  (n=12)",
+  "latency  explain median 4.0s  max 4.8s  (n=20)"
+ ],
+ "rows": [
+  {
+   "section": "symptom",
+   "id": "SD-001",
+   "lang": "ko",
+   "kind": "none",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-001",
+   "lang": "ko",
+   "kind": "none",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 3.39,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-002",
+   "lang": "ko",
+   "kind": "none",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-002",
+   "lang": "ko",
+   "kind": "none",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.74,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-003",
+   "lang": "en",
+   "kind": "none",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "sleep_issue"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-003",
+   "lang": "en",
+   "kind": "none",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.71,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-004",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "fatigue"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-004",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "fatigue"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": true
+   },
+   "error": null,
+   "sec": 1.77,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-005",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-005",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.8,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-006",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "dizziness"
+    ],
+    "onset": "today",
+    "worse_when": "standing",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-006",
+   "lang": "ko",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.01,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-007",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-007",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.76,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-008",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-008",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.76,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-009",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "skin_rash"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-009",
+   "lang": "en",
+   "kind": "hard_negative",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "skin_rash"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.87,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-010",
+   "lang": "ko",
+   "kind": "negation",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-010",
+   "lang": "ko",
+   "kind": "negation",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "nausea"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.78,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-011",
+   "lang": "en",
+   "kind": "negation",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "headache"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-011",
+   "lang": "en",
+   "kind": "negation",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "vision_change"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.83,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-012",
+   "lang": "en",
+   "kind": "negation",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-012",
+   "lang": "en",
+   "kind": "negation",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "musculoskeletal_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.9,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-013",
+   "lang": "ko",
+   "kind": "multi",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "congestion"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-013",
+   "lang": "ko",
+   "kind": "multi",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "congestion",
+     "fatigue"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "sec": 1.94,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-014",
+   "lang": "ko",
+   "kind": "multi",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-014",
+   "lang": "ko",
+   "kind": "multi",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "shortness_of_breath",
+     "dizziness"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.11,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-015",
+   "lang": "en",
+   "kind": "multi",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "skin_rash"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-015",
+   "lang": "en",
+   "kind": "multi",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "musculoskeletal_pain",
+     "skin_rash"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.08,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-016",
+   "lang": "en",
+   "kind": "multi",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "sleep_issue"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-016",
+   "lang": "en",
+   "kind": "multi",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "crisis",
+     "low_mood",
+     "sleep_issue"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 2.23,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-017",
+   "lang": "ko",
+   "kind": "context",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "nausea"
+    ],
+    "onset": "today",
+    "worse_when": "after_meal",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-017",
+   "lang": "ko",
+   "kind": "context",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "nausea"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.77,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-018",
+   "lang": "ko",
+   "kind": "context",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-018",
+   "lang": "ko",
+   "kind": "context",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "sleep_issue"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.87,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-019",
+   "lang": "en",
+   "kind": "context",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "headache"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-019",
+   "lang": "en",
+   "kind": "context",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "dizziness"
+    ],
+    "onset": "unknown",
+    "worse_when": "standing",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.77,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-020",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "headache"
+    ],
+    "onset": "hours",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-020",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "congestion",
+     "headache"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": true
+   },
+   "error": null,
+   "sec": 1.88,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-021",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-021",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.94,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-022",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-022",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "low_mood"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.81,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-023",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-023",
+   "lang": "ko",
+   "kind": "mixed",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.87,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-024",
+   "lang": "en",
+   "kind": "plain",
+   "urgent": false,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "vision_change"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-024",
+   "lang": "en",
+   "kind": "plain",
+   "urgent": false,
+   "by": "model",
+   "out": {
+    "codes": [
+     "vision_change"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 2,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.89,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-025",
+   "lang": "ko",
+   "kind": "paraphrase",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-025",
+   "lang": "ko",
+   "kind": "paraphrase",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.96,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-026",
+   "lang": "en",
+   "kind": "paraphrase",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-026",
+   "lang": "en",
+   "kind": "paraphrase",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.73,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-027",
+   "lang": "ko",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-027",
+   "lang": "ko",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "unknown",
+    "worse_when": "exercise",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.85,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-028",
+   "lang": "ko",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "none"
+    ],
+    "onset": "unknown",
+    "worse_when": "unknown",
+    "severity": 1,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": false,
+   "exact": false
+  },
+  {
+   "section": "symptom",
+   "id": "SD-028",
+   "lang": "ko",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "crisis"
+    ],
+    "onset": "days",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.72,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-029",
+   "lang": "en",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-029",
+   "lang": "en",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "shortness_of_breath"
+    ],
+    "onset": "now",
+    "worse_when": "lying",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.94,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-030",
+   "lang": "en",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "keyword",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "now",
+    "worse_when": "unknown",
+    "severity": 4,
+    "needs_question": false
+   },
+   "error": null,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "symptom",
+   "id": "SD-030",
+   "lang": "en",
+   "kind": "indirect",
+   "urgent": true,
+   "by": "model",
+   "out": {
+    "codes": [
+     "chest_pain"
+    ],
+    "onset": "today",
+    "worse_when": "unknown",
+    "severity": 3,
+    "needs_question": false
+   },
+   "error": null,
+   "sec": 1.83,
+   "hit": true,
+   "exact": true
+  },
+  {
+   "section": "mood",
+   "id": "MD-001",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 3,
+    "fatigue": 5,
+    "stress": 2,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.67,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MD-002",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 3,
+    "fatigue": 4,
+    "stress": 1,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 1.41,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MD-003",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 2,
+    "fatigue": 2,
+    "stress": 2,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.45,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MD-004",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 3,
+    "fatigue": 2,
+    "stress": 2,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.44,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MD-005",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 3,
+    "fatigue": 1,
+    "stress": 3,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 1.47,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MD-006",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 5,
+    "fatigue": 2,
+    "stress": 2,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.4,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MD-007",
+   "lang": "ko",
+   "by": "model",
+   "out": {
+    "mood": 3,
+    "fatigue": 2,
+    "stress": 3,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.43,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MD-008",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 2,
+    "fatigue": 2,
+    "stress": 2,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.41,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MD-009",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 3,
+    "fatigue": 5,
+    "stress": 4,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 1.47,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MD-010",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 4,
+    "fatigue": 1,
+    "stress": 1,
+    "confidence": 0.9
+   },
+   "error": null,
+   "sec": 1.45,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MD-011",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 4,
+    "fatigue": 3,
+    "stress": 2,
+    "confidence": 0.7
+   },
+   "error": null,
+   "sec": 1.41,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "mood",
+   "id": "MD-012",
+   "lang": "en",
+   "by": "model",
+   "out": {
+    "mood": 1,
+    "fatigue": 2,
+    "stress": 2,
+    "confidence": 0.5
+   },
+   "error": null,
+   "sec": 1.41,
+   "ok": true,
+   "out_of_range": []
+  },
+  {
+   "section": "explain",
+   "id": "ED-001",
+   "lang": "ko",
+   "para_lang": "ko",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "environment",
+      "condition_id": "co2_headache",
+      "lines": [
+       "이산화탄소 농도가 높은 곳에서 작업하거나 잠을 잘 때 두통이 생길 가능성이 있어요.",
+       "두통이 이런 상황에서 시작되었는지 기록해 두는 게 도움이 될 수 있어요."
+      ],
+      "cites": [
+       "nasa:co2-01#p4"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 4.59,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": 0.25
+  },
+  {
+   "section": "explain",
+   "id": "ED-002",
+   "lang": "en",
+   "para_lang": "en",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "environment",
+      "condition_id": "co2_headache",
+      "lines": [
+       "Headaches may occur in areas with locally raised carbon dioxide, such as sleep stations or fixed work positions.",
+       "Note if your headache began in one of these specific settings."
+      ],
+      "cites": [
+       "nasa:co2-01#p5",
+       "nasa:co2-01#p4"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 4.03,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": null,
+   "avoid_hits": [],
+   "grounding": 0.7
+  },
+  {
+   "section": "explain",
+   "id": "ED-003",
+   "lang": "ko",
+   "para_lang": "ko",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "nutrition",
+      "condition_id": "dehydration",
+      "lines": [
+       "우주에서는 체온이 높게 유지되어 평소보다 더 많은 수분이 필요할 가능성이 있어요.",
+       "갈증이 나지 않더라도 권장량을 채울 수 있도록 물을 충분히 마시는 게 좋아요."
+      ],
+      "cites": [
+       "nasa:dehy-01#p1",
+       "lit:dehy-06#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 4.34,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": 0.24
+  },
+  {
+   "section": "explain",
+   "id": "ED-004",
+   "lang": "en",
+   "para_lang": "en",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "nutrition",
+      "condition_id": "dehydration",
+      "lines": [
+       "Dehydration may occur more easily during long exercise sessions, in heat, or during illness.",
+       "Keep a closer eye on your fluid intake and be mindful that too much caffeine can add to fluid loss."
+      ],
+      "cites": [
+       "ochmo:dehy-03#p3"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.45,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": null,
+   "avoid_hits": [],
+   "grounding": 0.64
+  },
+  {
+   "section": "explain",
+   "id": "ED-005",
+   "lang": "ko",
+   "para_lang": "ko",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "lines": [
+       "단조로운 일상이나 수면 부족 같은 요인들이 기분을 저하시킬 가능성이 있어요.",
+       "기분이 가라앉는 변화가 얼마나 오래 이어지는지 기록해 두는 게 좋아요."
+      ],
+      "cites": [
+       "hrp:mood-02#p1",
+       "nih:mood-02#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.96,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [
+    "수면 부족"
+   ],
+   "grounding": 0.39
+  },
+  {
+   "section": "explain",
+   "id": "ED-006",
+   "lang": "en",
+   "para_lang": "en",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "lines": [
+       "Living in an isolated space can lead to low mood or irritability, which may also affect your sleep.",
+       "Aerobic exercise can help ease these feelings, and keeping regular times for meals and sleep is recommended."
+      ],
+      "cites": [
+       "hrp:mood-01#p1",
+       "hrp:mood-02#p3"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.65,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": null,
+   "avoid_hits": [],
+   "grounding": 0.64
+  },
+  {
+   "section": "explain",
+   "id": "ED-007",
+   "lang": "ko",
+   "para_lang": "ko",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "musculoskeletal",
+      "condition_id": "musculoskeletal_strain",
+      "lines": [
+       "무중력 환경에서 척추가 펴지면서 허리 통증이 생길 가능성이 있어요.",
+       "착륙 후 척추에 실리는 하중을 되도록 줄이는 게 도움이 될 수 있어요."
+      ],
+      "cites": [
+       "hrp:msk-02#p1",
+       "nasa:msk-06#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 4.81,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": 0.35
+  },
+  {
+   "section": "explain",
+   "id": "ED-008",
+   "lang": "en",
+   "para_lang": "en",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "musculoskeletal",
+      "condition_id": "musculoskeletal_strain",
+      "lines": [
+       "Joint and muscle pain can become more frequent due to exercise equipment and spacesuit work.",
+       "Try curling up with knees toward your chest or stretching your lower back while staying gently active."
+      ],
+      "cites": [
+       "nih:msk-03#p1",
+       "nasa:msk-01#p2"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.46,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": null,
+   "avoid_hits": [],
+   "grounding": 0.77
+  },
+  {
+   "section": "explain",
+   "id": "ED-009",
+   "lang": "ko",
+   "para_lang": "ko",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "cardiovascular",
+      "condition_id": "orthostatic_intolerance",
+      "lines": [
+       "중력이 돌아온 뒤 일어설 때 머리가 아찔하거나 심장이 빨리 뛸 가능성이 있어요.",
+       "이런 느낌은 실신에 앞서 나타날 수 있으니 몸 상태를 미리 살피는 게 좋아요."
+      ],
+      "cites": [
+       "ochmo:oi-05#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.97,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": 0.45
+  },
+  {
+   "section": "explain",
+   "id": "ED-010",
+   "lang": "en",
+   "para_lang": "en",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "cardiovascular",
+      "condition_id": "orthostatic_intolerance",
+      "lines": [
+       "Blood pooling in the legs upon return to gravity can cause blood pressure to fall if vessels do not tighten enough.",
+       "You may experience symptoms for several days; during this time, rest and put off activities that tend to bring on a drop in blood pressure."
+      ],
+      "cites": [
+       "hrp:oi-04#p1",
+       "hrp:oi-03#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 4.14,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": null,
+   "avoid_hits": [],
+   "grounding": 0.78
+  },
+  {
+   "section": "explain",
+   "id": "ED-011",
+   "lang": "ko",
+   "para_lang": "ko",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "sans",
+      "condition_id": "sans_suspect",
+      "lines": [
+       "장기 임무 중에는 가까운 것을 보는 시력이 달라질 가능성이 있어요.",
+       "가까운 작업을 할 때 흐려 보인다면 미리 준비한 도수가 높은 안경으로 바꿔 쓰는 게 도움이 될 수 있어요."
+      ],
+      "cites": [
+       "ochmo:sans-01#p2"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.82,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": 0.53
+  },
+  {
+   "section": "explain",
+   "id": "ED-012",
+   "lang": "en",
+   "para_lang": "en",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "sans",
+      "condition_id": "sans_suspect",
+      "lines": [
+       "Early signs of SANS may appear on eye imaging during long missions, though vision changes can often be corrected with lenses.",
+       "Eye examinations continue after the flight to monitor for any long-term changes in focus."
+      ],
+      "cites": [
+       "hrp:sans-01#p2",
+       "hrp:sans-02#p2"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.74,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": null,
+   "avoid_hits": [],
+   "grounding": 0.65
+  },
+  {
+   "section": "explain",
+   "id": "ED-013",
+   "lang": "ko",
+   "para_lang": "ko",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "immune",
+      "condition_id": "skin_irritation",
+      "lines": [
+       "피부가 건조해지거나 가려움이 느껴지는 등 피부 자극이 생길 가능성이 있어요.",
+       "비누나 세정제, 거친 옷감 등 자극이 될 만한 것과의 접촉을 줄여 보는 게 좋아요."
+      ],
+      "cites": [
+       "lit:skin-03#p1",
+       "nih:skin-04#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 4.28,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": 0.32
+  },
+  {
+   "section": "explain",
+   "id": "ED-014",
+   "lang": "en",
+   "para_lang": "en",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "immune",
+      "condition_id": "skin_irritation",
+      "lines": [
+       "Gear that presses or rubs can damage the skin and may lead to irritation or blisters.",
+       "Clean the area with a mild cleanser, pat dry, and moisturize while avoiding rubbing or overheating."
+      ],
+      "cites": [
+       "hrp:skin-02#p1",
+       "nih:skin-04#p2"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.58,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": null,
+   "avoid_hits": [],
+   "grounding": 0.69
+  },
+  {
+   "section": "explain",
+   "id": "ED-015",
+   "lang": "ko",
+   "para_lang": "ko",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "sleep",
+      "condition_id": "sleep_deficit",
+      "lines": [
+       "잠이 부족한 날이 계속되면 피로가 쌓여 컨디션에 영향을 줄 수 있어요.",
+       "잠들기 전에 긴장을 풀 수 있는 시간을 확보하고 조명을 조절해 보는 게 좋아요."
+      ],
+      "cites": [
+       "nih:sleep-01#p1",
+       "hrp:sleep-02#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 4.61,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": 0.19
+  },
+  {
+   "section": "explain",
+   "id": "ED-016",
+   "lang": "en",
+   "para_lang": "en",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "sleep",
+      "condition_id": "sleep_deficit",
+      "lines": [
+       "Shortfalls in sleep can build up night after night, which may impact your recovery.",
+       "Avoid caffeine later in the day as it can disturb the next sleep cycle."
+      ],
+      "cites": [
+       "nih:sleep-01#p1",
+       "cdc:sleep-01#p1"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.21,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": null,
+   "avoid_hits": [],
+   "grounding": 0.56
+  },
+  {
+   "section": "explain",
+   "id": "ED-017",
+   "lang": "ko",
+   "para_lang": "ko",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "sensorimotor",
+      "condition_id": "space_motion_sickness",
+      "lines": [
+       "몸이 찌뿌둥하거나 속이 거북한 느낌이 드는 등 우주 멀미 증상이 나타날 가능성이 있어요.",
+       "증상이 시작된 뒤 지난 날수를 세어보며 경과를 살펴보는 게 도움이 될 수 있어요."
+      ],
+      "cites": [
+       "hrp:sms-02#p1",
+       "ochmo:sms-01#p5"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 4.42,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": 0.41
+  },
+  {
+   "section": "explain",
+   "id": "ED-018",
+   "lang": "en",
+   "para_lang": "en",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "sensorimotor",
+      "condition_id": "space_motion_sickness",
+      "lines": [
+       "You may be experiencing space motion sickness, which can manifest as feeling generally unwell or having a lack of drive.",
+       "Limiting head movement and activity or closing your eyes for a while can help ease these symptoms."
+      ],
+      "cites": [
+       "hrp:sms-02#p1",
+       "ochmo:sms-01#p2"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.84,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": null,
+   "avoid_hits": [],
+   "grounding": 0.62
+  },
+  {
+   "section": "explain",
+   "id": "ED-019",
+   "lang": "ko",
+   "para_lang": "ko",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "immune",
+      "condition_id": "upper_respiratory",
+      "lines": [
+       "코막힘이 감염으로 이어질 가능성도 있지만, 단순히 코막힘만으로 감염이라 단정하기는 어려울 수 있어요.",
+       "증상이 나아지는지, 열이 있는지, 며칠째 이어지는지를 매일 확인해 두는 게 좋아요."
+      ],
+      "cites": [
+       "lit:uri-02#p1",
+       "cdc:uri-03#p2"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 4.67,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": 0.32
+  },
+  {
+   "section": "explain",
+   "id": "ED-020",
+   "lang": "en",
+   "para_lang": "en",
+   "heldout": false,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "immune",
+      "condition_id": "upper_respiratory",
+      "lines": [
+       "A low fever may be a sign of a viral infection of the nose and throat, which can spread easily in a closed habitat.",
+       "Note when stuffiness began and if symptoms like a sore throat or cough have joined it."
+      ],
+      "cites": [
+       "cdc:uri-03#p1",
+       "lit:uri-02#p2"
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.89,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": null,
+   "avoid_hits": [],
+   "grounding": 0.71
+  }
+ ]
+}

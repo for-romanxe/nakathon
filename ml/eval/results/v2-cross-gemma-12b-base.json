@@ -1,0 +1,348 @@
+{
+ "label": "gemma-12b-base",
+ "split": "cross",
+ "date": "2026-11-14T14:48",
+ "model_url": "http://127.0.0.1:8080",
+ "summary": [
+  "explain  all: first-run pass 10/10  hold 0/10  picked first candidate 10/10  해요체 10/10  avoid-term hits 0",
+  "latency  explain median 3.8s  max 38.0s  (n=10)"
+ ],
+ "rows": [
+  {
+   "section": "explain",
+   "id": "EX-001",
+   "lang": "ko",
+   "para_lang": "en",
+   "heldout": true,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "environment",
+      "condition_id": "co2_headache",
+      "cites": [
+       "nasa:co2-01#p3"
+      ],
+      "lines": [
+       "이산화탄소 수치가 높으면 일반적인 두통 치료에 잘 반응하지 않을 가능성이 있어요.",
+       "가스 수치가 낮아지면 증상이 완화될 수 있으니 관련 절차를 확인해 보는 게 좋아요."
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 37.99,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": null
+  },
+  {
+   "section": "explain",
+   "id": "EX-002",
+   "lang": "ko",
+   "para_lang": "en",
+   "heldout": true,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "nutrition",
+      "condition_id": "dehydration",
+      "cites": [
+       "hrp:dehy-04#p1"
+      ],
+      "lines": [
+       "비행 중 소변량이 줄어들면 신장 결석이 생길 가능성이 있을 수 있어요.",
+       "수분 섭취량과 소변량을 함께 확인해 보는 게 좋을 것 같아요."
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.09,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": null
+  },
+  {
+   "section": "explain",
+   "id": "EX-003",
+   "lang": "ko",
+   "para_lang": "en",
+   "heldout": true,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "behavioral",
+      "condition_id": "mood_low",
+      "cites": [
+       "hrp:mood-02#p4",
+       "hrp:mood-02#p2"
+      ],
+      "lines": [
+       "긴 임무 중에는 기분이 떨어질 수 있고, 이는 개인마다 다른 양상으로 나타날 가능성이 있어요.",
+       "자신의 변화를 살피면서 동료나 가족과 고민을 나누는 게 도움이 될 수 있어요."
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.52,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": null
+  },
+  {
+   "section": "explain",
+   "id": "EX-004",
+   "lang": "ko",
+   "para_lang": "en",
+   "heldout": true,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "musculoskeletal",
+      "condition_id": "musculoskeletal_strain",
+      "cites": [
+       "nih:msk-05#p1"
+      ],
+      "lines": [
+       "가벼운 통증이 느껴진다면 무리하게 움직이지 말고 휴식을 취하는 게 좋을 수 있어요.",
+       "통증이 있는 부위를 하루 이틀 정도 쉬게 한 뒤에 활동량을 서서히 늘려보세요."
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.5,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": null
+  },
+  {
+   "section": "explain",
+   "id": "EX-005",
+   "lang": "ko",
+   "para_lang": "en",
+   "heldout": true,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "cardiovascular",
+      "condition_id": "orthostatic_intolerance",
+      "cites": [
+       "nasa:oi-07#p1",
+       "cdc:oi-09#p1"
+      ],
+      "lines": [
+       "기립 시 어지러움이나 혈압이 떨어지는 증상이 나타날 가능성이 있어요.",
+       "일어설 때 몸의 상태를 살피고, 필요하다면 혈압 변화를 확인해 보는 게 좋아요."
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.62,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": null
+  },
+  {
+   "section": "explain",
+   "id": "EX-006",
+   "lang": "ko",
+   "para_lang": "en",
+   "heldout": true,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "sans",
+      "condition_id": "sans_suspect",
+      "cites": [
+       "hrp:sans-01#p1",
+       "hrp:sans-02#p1"
+      ],
+      "lines": [
+       "무중력 상태에서 체액이 머리 쪽으로 쏠려 시신경이 붓거나 눈의 모양이 변할 가능성이 있어요.",
+       "가까운 곳이 흐릿하게 보이거나 눈이 피로한 느낌이 든다면 다음 검진 때 말씀해 주시는 게 좋아요."
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 4.13,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": null
+  },
+  {
+   "section": "explain",
+   "id": "EX-007",
+   "lang": "ko",
+   "para_lang": "en",
+   "heldout": true,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "immune",
+      "condition_id": "skin_irritation",
+      "cites": [
+       "lit:skin-01#p1"
+      ],
+      "lines": [
+       "장기 임무 중에는 피부 발진이나 비슷한 증상이 나타날 가능성이 있어요.",
+       "작은 돌기나 비늘 같은 부위가 생기는지 잘 살펴보는 게 좋아요."
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.29,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": null
+  },
+  {
+   "section": "explain",
+   "id": "EX-008",
+   "lang": "ko",
+   "para_lang": "en",
+   "heldout": true,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "sleep",
+      "condition_id": "sleep_deficit",
+      "cites": [
+       "hrp:sleep-01#p1",
+       "hrp:sleep-01#p2"
+      ],
+      "lines": [
+       "수면 시간이 짧아지면 실제 느끼는 것보다 수행 능력이 저하될 가능성이 있어요.",
+       "최근 며칠간의 수면 상태가 어땠는지 한번 살펴보는 게 좋아요."
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 4.28,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": null
+  },
+  {
+   "section": "explain",
+   "id": "EX-009",
+   "lang": "ko",
+   "para_lang": "en",
+   "heldout": true,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "sensorimotor",
+      "condition_id": "space_motion_sickness",
+      "cites": [
+       "hrp:sms-01#p1",
+       "hrp:sms-01#p2"
+      ],
+      "lines": [
+       "중력 변화로 인해 우주 멀미나 방향 감각 상실이 나타날 가능성이 있어요.",
+       "임무 수행에 어려움을 겪을 수 있으니 증상이 있다면 미리 알려주는 게 좋아요."
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.88,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": null
+  },
+  {
+   "section": "explain",
+   "id": "EX-010",
+   "lang": "ko",
+   "para_lang": "en",
+   "heldout": true,
+   "by": "model",
+   "attempts": [
+    {
+     "out": {
+      "category": "immune",
+      "condition_id": "upper_respiratory",
+      "cites": [
+       "ochmo:uri-01#p1",
+       "ochmo:uri-04#p2"
+      ],
+      "lines": [
+       "무중력 상태에서는 체액이 머리 쪽으로 쏠려 코가 막히거나 얼굴이 부을 수 있어요.",
+       "감염이 의심될 때는 손을 자주 씻고 기침을 가릴 때 거리를 유지하는 게 좋을 수 있어요."
+      ]
+     },
+     "ok": true,
+     "fails": [],
+     "note": ""
+    }
+   ],
+   "sec": 3.99,
+   "first_ok": true,
+   "hold": false,
+   "picked_first": true,
+   "yo": true,
+   "avoid_hits": [],
+   "grounding": null
+  }
+ ]
+}
