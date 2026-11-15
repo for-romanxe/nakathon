@@ -6,29 +6,29 @@
     "step_id": "oxygen",
     "kind": "treatment",
     "cite_id": "nasa:card-10#p1",
-    "ko": "산소 마스크로 산소를 주세요.",
-    "en": "Give oxygen through a mask."
+    "ko": "환자에게 산소 마스크를 씌워 주세요.",
+    "en": "Put an oxygen mask on the patient."
    },
    {
     "step_id": "describe_pain",
     "kind": "record",
     "cite_id": "nasa:card-10#p2",
-    "ko": "통증을 묻고 적으세요: 위치, 퍼지는지, 세기(1~10), 계속되는지, 얼마나 됐는지, 어떤 느낌인지.",
-    "en": "Ask about the pain and write it down: location, spreading or not, strength (1-10), constant or not, how long, what it feels like."
+    "ko": "환자에게 통증을 묻고 적으세요: 위치, 퍼지는지, 세기(1~10), 계속되는지, 얼마나 됐는지, 어떤 느낌인지.",
+    "en": "Ask the patient about the pain and write it down: location, spreading or not, strength (1-10), constant or not, how long, what it feels like."
    },
    {
     "step_id": "vitals",
     "kind": "record",
     "cite_id": "nasa:card-10#p3",
-    "ko": "활력 징후를 5분마다 재서 30분 동안 적으세요: 혈압, 맥박, 호흡수, 체온, 산소 포화도.",
-    "en": "Measure vital signs every 5 minutes for 30 minutes: blood pressure, pulse, breathing rate, temperature, oxygen saturation."
+    "ko": "환자의 활력 징후를 5분마다 재서 30분 동안 적으세요: 혈압, 맥박, 호흡수, 체온, 산소 포화도.",
+    "en": "Measure the patient's vital signs every 5 minutes for 30 minutes: blood pressure, pulse, breathing rate, temperature, oxygen saturation."
    },
    {
     "step_id": "ecg_exam",
     "kind": "cmo",
     "cite_id": "nasa:card-10#p4",
-    "ko": "심전도를 지켜보고, 청진기로 심장 소리와 숨소리를 확인하세요.",
-    "en": "Monitor the ECG and check heart and breath sounds with a stethoscope."
+    "ko": "심전도를 지켜보고, 청진기로 환자의 심장 소리와 숨소리를 확인하세요.",
+    "en": "Monitor the ECG and check the patient's heart and breath sounds with a stethoscope."
    },
    {
     "step_id": "contact",
