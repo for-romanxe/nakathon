@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -14,8 +15,10 @@ from fastapi.testclient import TestClient
 from backend import habitat
 from backend.db import connect
 from backend.main import create_app, habitat_fallback_evidence
+from backend.model import pipeline
 from backend.tests.test_habitat_integration import C1, ROOT, actions, one, set_clock
 
+REAL_REASON = pipeline.adjustment_reason
 HELD = {'reason': None, 'cite_ids': [], 'hold': True, 'verified': 0, 'runs': []}
 
 
@@ -195,3 +198,14 @@ class HabitatReasonTest(TestCase):
             for target in ('lighting', 'schedule'):
                 self.assertEqual(one(items, target)['reason_text'], f'en:{target} reason.')
         self.assertEqual(sorted(c.args[0] for c in self.model.call_args_list), ['lighting', 'schedule'])
+
+    def test_mock_model_stores_a_different_sentence_per_target(self):
+        self.model.side_effect = REAL_REASON
+        evidence = habitat_fallback_evidence([])
+        with mock.patch.dict(os.environ, {'MODEL': 'mock', 'MOCK_DELAY': '0'}), mock.patch.object(habitat, 'REASON_WAIT', 5.0):
+            with closing(connect(self.path)) as connection:
+                rows = habitat.rows_with_reasons(connection, self.path, evidence, 'c1', 16, 'en')
+                items = [habitat.payload(row, 'en') for row in rows]
+        texts = {target: one(items, target)['reason_text'] for target in ('lighting', 'schedule')}
+        self.assertTrue(all(texts.values()), texts)
+        self.assertNotEqual(texts['lighting'], texts['schedule'])
