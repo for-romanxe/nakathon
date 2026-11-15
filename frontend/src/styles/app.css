@@ -75,7 +75,7 @@ p { margin: 0; }
 .comms-steps li { padding: 3px 12px; font-size: 0.8rem; color: var(--muted); border-left: 1px solid var(--line); }
 .comms-steps li:first-child { border-left: 0; }
 .comms-steps li.on { background: var(--comms); color: var(--accent-ink); font-weight: 700; }
-.comms-note { font-size: 0.78rem; color: var(--comms); font-family: var(--mono); }
+.comms-note { font-size: 0.78rem; color: var(--comms); }
 
 /* Blackout: the whole cabin goes red — a red frame around the screen and a red-tinted status strip */
 html[data-comms="blackout"] .topbar { background: color-mix(in srgb, var(--warning) 14%, var(--bg)); border-bottom-color: var(--warning); }
@@ -140,6 +140,7 @@ html[data-comms="blackout"] .app::after {
 .habitat-why .cite { margin-right: 8px; }
 .habitat-outcome { padding: 8px 12px; background: var(--well); border-radius: var(--radius); display: flex; flex-direction: column; gap: 4px; }
 .habitat-outcome ul { margin: 0; padding-left: 18px; }
+.habitat-shared { padding: 0 16px 14px; }
 .habitat-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 
 .readouts { display: flex; flex-direction: column; }

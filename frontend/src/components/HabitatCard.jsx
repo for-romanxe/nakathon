@@ -26,7 +26,25 @@ function failureKey(e) {
   return 'habitat.failed'
 }
 
-function Row({ action: a, lang, onChange, onStale }) {
+// What was observed the day after (before -> after per metric), and whether the change was released
+function Outcome({ outcome, lang, shared = false }) {
+  const { t } = useT()
+  return (
+    <div className="habitat-outcome">
+      <p className="small">{t(shared ? 'habitat.outcome_all' : 'habitat.outcome')}</p>
+      <ul>
+        {outcome.metrics.map((m) => (
+          <li key={m.metric} className="num small">
+            {metricLabel(m.metric, lang)}: {reading(m.metric, m.before, m.before_z)} → {reading(m.metric, m.after, m.after_z)}
+          </li>
+        ))}
+      </ul>
+      <p className="muted small">{t(outcome.released ? 'habitat.released' : 'habitat.kept')} {t('habitat.outcome_note')}</p>
+    </div>
+  )
+}
+
+function Row({ action: a, lang, onChange, onStale, sharedOutcome }) {
   const { t } = useT()
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(null)
@@ -65,19 +83,7 @@ function Row({ action: a, lang, onChange, onStale }) {
           {' '}{a.cite_ids.map((c) => <Cite key={c} id={c} />)}
         </p>
       </div>
-      {a.outcome && (
-        <div className="habitat-outcome">
-          <p className="small">{t('habitat.outcome')}</p>
-          <ul>
-            {a.outcome.metrics.map((m) => (
-              <li key={m.metric} className="num small">
-                {metricLabel(m.metric, lang)}: {reading(m.metric, m.before, m.before_z)} → {reading(m.metric, m.after, m.after_z)}
-              </li>
-            ))}
-          </ul>
-          <p className="muted small">{t(a.outcome.released ? 'habitat.released' : 'habitat.kept')} {t('habitat.outcome_note')}</p>
-        </div>
-      )}
+      {a.outcome && !sharedOutcome && <Outcome outcome={a.outcome} lang={lang} />}
       {(a.status === 'proposed' || a.status === 'applied') && (
         <div className="habitat-actions">
           {a.status === 'proposed' && (
@@ -114,6 +120,12 @@ export default function HabitatCard({ crewId, sol, lang }) {
   if (!actions?.length) return null
   const replace = (next) => setActions((list) => list.map((a) => (a.id === next.id ? next : a)))
   const stale = () => setReload((n) => n + 1)
+  // When every adjustment reports the very same next-day outcome (the backend evaluates them together), show it
+  // once under the list instead of repeating it on each row
+  const withOutcome = actions.filter((a) => a.outcome)
+  const sharedOutcome = withOutcome.length > 1
+    && withOutcome.every((a) => JSON.stringify(a.outcome) === JSON.stringify(withOutcome[0].outcome))
+    ? withOutcome[0].outcome : null
   return (
     <section className="panel habitat">
       <div className="panel-head">
@@ -121,8 +133,9 @@ export default function HabitatCard({ crewId, sol, lang }) {
         <span className="muted small">{t('habitat.simulated')}</span>
       </div>
       <ul className="habitat-list">
-        {actions.map((a) => <Row key={a.id} action={a} lang={lang} onChange={replace} onStale={stale} />)}
+        {actions.map((a) => <Row key={a.id} action={a} lang={lang} onChange={replace} onStale={stale} sharedOutcome={sharedOutcome} />)}
       </ul>
+      {sharedOutcome && <div className="habitat-shared"><Outcome outcome={sharedOutcome} lang={lang} shared /></div>}
     </section>
   )
 }

@@ -6,9 +6,19 @@ import ko from './ko.js'
 
 const DICTS = { en, ko }
 const LangContext = createContext(null)
+// The chosen language survives a reload and switching crew member (both reload the page). Browser storage may be
+// unavailable (private window, blocked site data): then it is English as before.
+const LANG_KEY = 'crew-health-lang'
+function storedLang() {
+  try { return DICTS[localStorage.getItem(LANG_KEY)] ? localStorage.getItem(LANG_KEY) : 'en' } catch { return 'en' }
+}
 
 export function LangProvider({ children }) {
-  const [lang, setLang] = useState('en')
+  const [lang, setLangState] = useState(storedLang)
+  const setLang = (next) => {
+    setLangState(next)
+    try { localStorage.setItem(LANG_KEY, next) } catch { /* this page only */ }
+  }
   return <LangContext.Provider value={{ lang, setLang }}>{children}</LangContext.Provider>
 }
 
