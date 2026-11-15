@@ -67,9 +67,9 @@ class Reason(unittest.TestCase):
             self.assertNotIn("explanation", result)
 
     def test_malformed_evidence_rows_are_skipped_and_a_non_list_holds_without_raising(self):
-        junk = [{"text": "no id"}, {"id": "x:y#p1"}, "not a row", None, {"id": ["unhashable"], "text": "t"}]
+        junk = [{"text": "no id"}, {"id": "x:y#p1"}, "not a row", None, {"id": ["unhashable"], "text": "t"}, {"id": "x:z#p1", "text": 5}]
         with mock.patch.dict(os.environ, {"MODEL": "mock", "MOCK_DELAY": "0"}):
-            mixed = pipeline.adjustment_reason("lighting", "caution", FINDINGS, junk[:4] + KO, "ko")
+            mixed = pipeline.adjustment_reason("lighting", "caution", FINDINGS, junk + KO, "ko")
             self.assertEqual((mixed["hold"], mixed["cite_ids"]), (False, TABLE["lighting"]["cite_ids"]))
             for evidence in (junk[:4], junk, None, 7):
                 with self.subTest(evidence=str(evidence)[:40]):

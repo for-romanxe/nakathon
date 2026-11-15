@@ -47,10 +47,10 @@ def _stopped(runs: list, n: int, note: str) -> dict:
 
 
 def _texts(evidence) -> dict:
-    """근거 목록을 {문단 id: 본문}으로 바꾼다. id 나 text 가 빠진 행은 건너뛰고, 목록이 아니면 빈 dict 를 돌려준다."""
+    """근거 목록을 {문단 id: 본문}으로 바꾼다. id 와 text 가 둘 다 문자열인 dict 행만 남기고 나머지 행은 하나씩 건너뛰며, 목록이 아니면 빈 dict 를 돌려준다."""
     try:
-        return {row["id"]: row["text"] for row in evidence if isinstance(row, dict) and "id" in row and "text" in row}
-    except TypeError:      # 목록이 아니거나 id 가 키로 쓸 수 없는 값이다
+        return {row["id"]: row["text"] for row in evidence if isinstance(row, dict) and isinstance(row.get("id"), str) and isinstance(row.get("text"), str)}
+    except TypeError:      # 목록이 아니다 (순회할 수 없는 값)
         return {}
 
 

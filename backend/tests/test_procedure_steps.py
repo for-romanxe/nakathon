@@ -36,10 +36,10 @@ class ProcedureSteps(unittest.TestCase):
 
     def test_malformed_evidence_rows_count_as_missing_and_never_raise(self):
         evidence = export_evidence.export("ko")
-        junk = [{"text": "no id"}, {"id": "x:y#p1"}, "not a row", None]
+        junk = [{"text": "no id"}, {"id": "x:y#p1"}, "not a row", None, {"id": ["unhashable"], "text": "t"}]
         self.assertTrue(pipeline.procedure_steps("cardiac_emergency", junk + evidence, "ko")["available"])
         no_text = [{"id": row["id"]} if row["id"] == "nasa:card-10#p2" else row for row in evidence]
-        for bad in (junk, no_text, [{"id": ["unhashable"], "text": "t"}] + evidence, None, 7):
+        for bad in (junk, no_text, None, 7):
             with self.subTest(evidence=str(bad)[:40]):
                 self.assertEqual(pipeline.procedure_steps("cardiac_emergency", bad, "ko"), {"available": False, "steps": []})
 
