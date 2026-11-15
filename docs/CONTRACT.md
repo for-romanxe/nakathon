@@ -111,6 +111,8 @@ mockup/     정적 HTML 목업 (디자인 참고용, 코드 복붙 금지 아님
 | GET/PUT | `/settings` | | settings |
 | POST | `/demo/clock` | `{sol,time}` 또는 `{advance:"2h"}` | `/mission`과 같은 모양 (§5.1) |
 | POST | `/demo/reset` · `/demo/viewer/{id}` | | |
+| GET | `/habitat/actions?crew=c1` | | Action array for the selected crew member for the current and previous Sol |
+| POST | `/habitat/actions/{id}/approve` · `/undo` | `{reason?}` (trimmed, ≤240 chars) | The updated action object (same fields as GET). Owner only (403), missing 404 `action_not_found`, stale 409 `action_stale` |
 
 프론트 라우트(목업 파일명과 동일): `/today /body /trends /log /procedures /crew /settings /events/:id /warning`.
 
@@ -178,6 +180,16 @@ Submitting a receipt for a visible packet with a mismatched attempt gets HTTP 40
 ```json
 {"error":{"code":"invalid_receipt","message":"Receipt does not match the packet's current attempt."}}
 ```
+
+#### Habitat rehearsal actions (#47)
+
+- The `--mission-demo` database enables C1's Sol 16 rehearsal. The server evaluates it at startup and on clock changes. Each target has at most one action for that Sol.
+- Lighting is proposed when connected and applied automatically when delayed or in blackout. A same-Sol proposal is applied if the connection becomes delayed while it is still awaiting approval; the same action id is kept and its trigger and settings are updated to those in effect when it is applied. Undone or already applied actions are not changed. The connection state only controls whether a new change starts: an applied lighting action stays applied when the connection returns, with the same stored settings and `applied_at`, and the owner can still undo it on the same Sol. After an undo, reconnecting or another delay does not reapply it. The simulated adjustment schedules amber lighting at 21:00 and moves lights-out from 23:00 to 22:00.
+- The schedule proposal moves the simulated EVA from 09:00 to 13:00. It requires low HRV, a sleep deficit, and an EVA assignment. The owner must approve it on the same Sol.
+- Each action includes `id`, `crew`, `sol`, `target`, `status`, `tier`, `before`, `after`, `reason`, `reason_text`, `cite_ids`, `approved_by`, and `outcome`. `tier` is `auto` or `approve`, and `status` is `proposed`, `applied`, `undone`, or `released`.
+- All three endpoints accept `?lang=en|ko` for the display strings `before` and `after`. The structured values are in `before_values` and `after_values`. `reason` contains `{metric,value,z}`. `reason_text` is null until generated explanations are wired up. `cite_ids` list applicable paragraphs available in the loaded evidence.
+- From Sol 17 onward, the server uses the Sol 17 readings to evaluate recovery. `outcome` contains `{sol,released,metrics:[{metric,before,before_z,after,after_z}]}`. Both lighting and schedule are released only when Sol 17 sleep z >= -1 and HRV z > -1. If either reading is missing, evaluation waits. Actions and outcomes persist across restart.
+- Only the owner can approve or undo an action. Other viewers receive 403. An unknown action returns 404 `action_not_found`, and an invalid transition returns 409 `action_stale`.
 
 ### 5.2 체크인 `answers` 키 **[추가 11/14, PR #1·#2 구현 기준]**
 

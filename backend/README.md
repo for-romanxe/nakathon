@@ -52,6 +52,13 @@ python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 - **Restart:** Restarting the backend keeps all data in the rehearsal file, including anything entered live. The mission clock resets to its starting point.
 - **New rehearsal:** Create a fresh file with the command above. Do not reuse or delete a previous rehearsal file.
 
+#### Habitat citations
+
+- When the backend detects the mission rehearsal fixture and `CREW_HEALTH_EVIDENCE` is not set, it adds the bundled English evidence paragraphs cited by the habitat adjustments. These paragraphs then appear in `GET /docs`, so habitat card `cite_ids` resolve. No other bundled paragraphs are added.
+- If `CREW_HEALTH_EVIDENCE` is set, that file is used as-is and the bundled fallback is skipped.
+- The regular database never uses this fallback.
+- Create a fresh rehearsal database with the command above before the Act 1 demo. Older files keep their original sleep baseline and saved citations.
+
 Use the corresponding crew ID in the `X-Demo-Viewer` header for each request.
 
 | Request | Expected status level |

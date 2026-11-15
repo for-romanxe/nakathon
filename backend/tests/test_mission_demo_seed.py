@@ -43,7 +43,12 @@ class MissionDemoSeedTest(TestCase):
     def assert_scenario(self, client: TestClient):
         sol16 = today_at(client, "c1", 16)
         self.assertAlmostEqual(metric(sol16, "sleep")["value"], 5.1, places=2)
+        self.assertAlmostEqual(metric(sol16, "sleep")["z"], -2.5, delta=0.1)
         self.assertAlmostEqual(metric(sol16, "hrv")["z"], -2.5, places=1)
+        self.assertEqual(sol16["status"]["level"], "caution")
+        for item in sol16["metrics"]:
+            self.assertNotEqual(item.get("level"), "warning", item)
+            self.assertNotEqual(item.get("status"), "warning", item)
 
         sol17 = today_at(client, "c1", 17)
         sleep = metric(sol17, "sleep")
@@ -70,6 +75,8 @@ class MissionDemoSeedTest(TestCase):
         with TestClient(create_app(self.directory / "default.sqlite3")) as client:
             sol16 = today_at(client, "c1", 16)
             self.assertNotAlmostEqual(metric(sol16, "sleep")["value"] or 0, 5.1, places=2)
+            self.assertAlmostEqual(metric(sol16, "sleep")["value"], 7.5, places=2)
+            self.assertAlmostEqual(metric(sol16, "sleep")["z"], 0, delta=0.1)
             self.assertEqual(today_at(client, "c4", 46)["events"], [])
 
     def test_existing_path_is_rejected(self):
