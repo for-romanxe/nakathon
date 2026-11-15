@@ -1,5 +1,7 @@
+import os
 import sqlite3
 import subprocess
+from contextlib import closing
 import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -7,7 +9,8 @@ from unittest import TestCase, mock
 
 from fastapi.testclient import TestClient
 
-from backend.main import create_app
+from backend.habitat import FIXED
+from backend.main import create_app, habitat_fallback_evidence
 from backend.mission import ClockUpdate, DEMO_TIME
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -138,10 +141,18 @@ class HabitatIntegrationTest(TestCase):
             self.assertEqual(lighting['status'], 'proposed')
             self.assertIs(lighting['auto'], False)
             sid = one(items, 'schedule')['id']
-            set_clock(client, 16, '09:00')
+            self.assertEqual(lighting['before_values'], FIXED['lighting'][0])
+            self.assertEqual(lighting['after_values'], FIXED['lighting'][1])
+            changed = ({'amber': None, 'off': '23:30'}, {'amber': '20:30', 'off': '21:30'})
+            with mock.patch.dict(FIXED, {'lighting': changed}):
+                set_clock(client, 16, '09:00')
             items = actions(client, 16)
             after = one(items, 'lighting')
             self.assertEqual(after['id'], lighting['id'])
+            self.assertEqual(after['before_values'], changed[0])
+            self.assertEqual(after['after_values'], changed[1])
+            self.assertEqual(after['after'], 'Amber light 20:30 · Lights off 21:30')
+            self.assertIsInstance(after['trigger'], dict)
             self.assertEqual(after['status'], 'applied')
             self.assertIs(after['auto'], True)
             self.assertTrue(after['applied_at'])
@@ -150,6 +161,37 @@ class HabitatIntegrationTest(TestCase):
             self.assertEqual(schedule['status'], 'proposed')
             self.assertTrue(schedule['after'].startswith('EVA') or 'EVA' in schedule['after'])
             self.assertIn('EVA', one(actions(client, 16, 'ko'), 'schedule')['after'])
+
+    def test_sol17_low_sleep_blocks_schedule_release(self):
+        path = self.demo_path()
+        with TestClient(create_app(path)) as client:
+            set_clock(client, 16, '09:00')
+            aid = one(actions(client, 16), 'schedule')['id']
+            self.assertEqual(client.post(f'/habitat/actions/{aid}/approve', headers=C1).status_code, 200)
+            with closing(sqlite3.connect(path)) as db:
+                with db:
+                    cur = db.execute("UPDATE sample SET value=? WHERE crew_id='c1' AND source_key='c1:sleep:17'", (4.0,))
+                    self.assertEqual(cur.rowcount, 1)
+            set_clock(client, 17)
+            schedule = one(actions(client, 16), 'schedule')
+            self.assertEqual(schedule['status'], 'applied')
+            self.assertIsNone(schedule['released_at'])
+            outcome = schedule['outcome']
+            self.assertIs(outcome['rule_satisfied'], False)
+            self.assertIs(outcome['released'], False)
+            ms = {m['metric']: m for m in outcome['metrics']}
+            self.assertGreater(ms['hrv']['after_z'], -1)
+            self.assertLess(ms['sleep']['after_z'], -1)
+
+    def test_fallback_evidence_ignores_nonstandard_items(self):
+        bundled = [{'id': 'a#p1', 'text': 't'}]
+        with mock.patch.dict(os.environ), \
+                mock.patch('ml.knowledge.export_evidence.export', return_value=bundled), \
+                mock.patch('backend.main.habitat_cite_ids', return_value={'lighting': ('a#p1',)}):
+            os.environ.pop('CREW_HEALTH_EVIDENCE', None)
+            odd = [None, 'x', [], {'id': []}]
+            self.assertEqual(habitat_fallback_evidence(odd), [*odd, *bundled])
+            self.assertEqual(habitat_fallback_evidence([]), bundled)
 
     def test_clock_sync_failure_keeps_state(self):
         path = self.demo_path()

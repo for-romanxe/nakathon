@@ -95,8 +95,9 @@ def habitat_fallback_evidence(evidence) -> list:
         logging.getLogger(__name__).warning("Bundled habitat evidence could not be loaded.")
         return evidence
     wanted = {cite for ids in habitat_cite_ids(bundled).values() for cite in ids}
-    present = {item.get("id") for item in evidence if isinstance(item, dict)}
-    extra = [item for item in bundled if item.get("id") in wanted and item.get("id") not in present]
+    present = {item.get("id") for item in evidence if isinstance(item, dict) and isinstance(item.get("id"), str)}
+    extra = [item for item in bundled
+             if isinstance(item.get("id"), str) and item["id"] in wanted and item["id"] not in present]
     return [*evidence, *extra]
 
 

@@ -56,7 +56,7 @@ def sync(connection, now, cite_ids):
             connection.execute(
                 "INSERT INTO habitat_action(crew_id,sol,target,status,auto,applied_at,data)"
                 " VALUES(?,?,?,?,?,?,?) ON CONFLICT(crew_id,sol,target) DO UPDATE SET"
-                " status='applied', auto=1, applied_at=excluded.applied_at"
+                " status='applied', auto=1, applied_at=excluded.applied_at, data=excluded.data"
                 " WHERE excluded.auto=1 AND habitat_action.status='proposed'",
                 (CREW, 16, target, "applied" if auto else "proposed", int(auto),
                  now.isoformat() if auto else None, json.dumps(data)))
@@ -69,10 +69,10 @@ def sync(connection, now, cite_ids):
         if data.get("outcome") is not None:
             continue
         sz, hz = (m.get("sleep") or {}).get("z"), (m.get("hrv") or {}).get("z")
-        if hz is None or (row["target"] == "lighting" and sz is None):
+        if hz is None or sz is None:
             continue
         snap = {k: {"value": v["value"], "z": v["z"]} for k, v in m.items() if k in ("sleep", "hrv")}
-        ok = hz is not None and hz > -1 and (row["target"] != "lighting" or (sz is not None and sz >= -1))
+        ok = hz > -1 and sz >= -1
         data["outcome"] = {"sol": 17, "metrics": snap, "rule_satisfied": ok}
         connection.execute(
             "UPDATE habitat_action SET data=?, released_at=?, status=? WHERE id=? AND status='applied'"
