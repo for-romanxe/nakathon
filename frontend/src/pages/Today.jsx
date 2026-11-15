@@ -1,5 +1,5 @@
 // Today.jsx — Today screen (spec §7-1): greeting -> status sentence -> today's guide -> evidence (6 metrics) -> check-in streak.
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client.js'
 import CheckinSheet from '../components/CheckinSheet.jsx'
@@ -31,6 +31,10 @@ function formatZ(z) {
 
 // Remembers "closed the check-in sheet" per crew, sol and kind, so it stays closed when you come back to Today
 let sheetDismissedFor = null
+// Sol 46+ blackout: C1/C3 consent alerts refresh in the background while Today stays open
+const CONSENT_POLL_MS = 5000
+const CONSENT_POLL_FROM_SOL = 46
+const CONSENT_POLL_CREW = ['c1', 'c3']
 const EVENING_FROM = 18 // the evening check-out is offered from 18:00 mission time, once the morning one is done
 
 // Which check-in is due now: morning until it is done, then the evening check-out in the evening, else none
@@ -53,11 +57,53 @@ export default function Today() {
   const sheetKey = `${CURRENT_CREW}:${sol}:${due}`
   const sheetClosed = sheetDismissedFor === sheetKey
 
+  // Increments on every full replacement of data. An older poll response must not overwrite newer data.
+  const dataVersion = useRef(0)
+  const pollConsents = sol != null && sol >= CONSENT_POLL_FROM_SOL &&
+    mission?.comms_state === 'blackout' &&
+    CONSENT_POLL_CREW.includes(String(CURRENT_CREW).toLowerCase())
+
+  // Initial load (and reload when lang or Sol changes). Responses that arrive after a change or unmount are ignored.
   useEffect(() => {
+    let cancelled = false
     api.getToday(CURRENT_CREW, lang)
-      .then(setData)
-      .catch(setError)
+      .then((next) => {
+        if (cancelled) return
+        dataVersion.current += 1
+        setError(null)
+        setData(next)
+      })
+      .catch((e) => { if (!cancelled) setError(e) })
+    return () => { cancelled = true }
   }, [lang, sol])
+
+  // Background refresh: replace only consent_requests, so other fields (metrics, checkin, guide) are left alone.
+  // One request in flight at a time. A failure keeps the screen already shown.
+  useEffect(() => {
+    if (!pollConsents) return
+    let cancelled = false
+    let busy = false
+    const tick = () => {
+      if (busy || cancelled) return
+      busy = true
+      const version = dataVersion.current
+      api.getToday(CURRENT_CREW, lang)
+        .then((next) => {
+          if (cancelled || version !== dataVersion.current) return
+          if (!next || next.consent_requests === undefined) return // field missing: keep the existing alerts
+          setData((prev) => (prev ? { ...prev, consent_requests: next.consent_requests ?? [] } : prev))
+        })
+        .catch(() => {}) // a temporary error does not replace the screen
+        .finally(() => { busy = false })
+    }
+    const id = setInterval(tick, CONSENT_POLL_MS)
+    window.addEventListener('focus', tick)
+    return () => {
+      cancelled = true
+      clearInterval(id)
+      window.removeEventListener('focus', tick)
+    }
+  }, [pollConsents, lang, sol])
 
   // CONTRACT §5.4: a metric at warning opens the full-screen warning even without a symptom report
   useEffect(() => {
@@ -81,7 +127,11 @@ export default function Today() {
 
   async function submitCheckin(body) {
     const updated = await api.postCheckin(CURRENT_CREW, body, lang) // backend recomputes the guide and returns /today
-    setData(updated)
+    dataVersion.current += 1
+    // If the check-in response has no consent_requests, keep the existing alerts
+    setData((prev) => (updated && updated.consent_requests === undefined
+      ? { ...updated, consent_requests: prev?.consent_requests }
+      : updated))
   }
 
   return (
